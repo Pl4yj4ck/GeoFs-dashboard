@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#080d12">
+<title>GeoFS Dashboard</title>
+
+<!-- Leaflet (opzionale: se non raggiungibile, la dashboard usa una mappa di fallback su canvas) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+:root{
+  --bg:#080d12;
+  --panel:#111a22;
+  --panel-2:#0d151c;
+  --primary:#00d9ff;
+  --green:#00ff88;
+  --warning:#ffc107;
+  --danger:#ff4057;
+  --text:#e8f1f5;
+  --muted:#6f8694;
+  --line:rgba(0,217,255,.14);
+  --line-soft:rgba(232,241,245,.07);
+  --glass:rgba(17,26,34,.72);
+  --shadow:0 8px 28px rgba(0,0,0,.45);
+  --r:16px;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --navw:96px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--sans);
+  font-size:15px;line-height:1.4;
+  background-image:
+    radial-gradient(1200px 600px at 12% -10%, rgba(0,217,255,.07), transparent 60%),
+    radial-gradient(900px 500px at 110% 110%, rgba(0,255,136,.05), transparent 60%);
+}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,select{font-family:inherit;font-size:14px;color:var(--text);background:var(--panel-2);
+  border:1px solid var(--line-soft);border-radius:10px;padding:9px 11px;outline:none;width:100%}
+input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,217,255,.12)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+#app{height:100vh;height:100dvh;display:grid;grid-template-rows:auto 1fr}
+
+/* ---------- TOP BAR ---------- */
+#topbar{
+  display:flex;align-items:center;gap:14px;padding:9px 16px;
+  background:linear-gradient(180deg,rgba(17,26,34,.95),rgba(8,13,18,.85));
+  border-bottom:1px solid var(--line);backdrop-filter:blur(12px);
+  padding-top:max(9px,env(safe-area-inset-top))
+}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:.06em;font-size:14px}
+.brand svg{width:22px;height:22px;color:var(--primary)}
+.brand small{color:var(--muted);font-weight:400;letter-spacing:.14em;font-size:10px;display:block}
+#topbar .spacer{flex:1}
+.clock{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.06em}
+
+.conn{
+  display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;
+  letter-spacing:.08em;padding:6px 12px;border-radius:999px;
+  border:1px solid var(--line-soft);background:var(--panel-2);white-space:nowrap
+}
+.led{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}
+.conn.ok .led{background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 1.8s infinite}
+.conn.ok{color:var(--green);border-color:rgba(0,255,136,.3)}
+.conn.warn .led{background:var(--warning);box-shadow:0 0 10px var(--warning)}
+.conn.warn{color:var(--warning);border-color:rgba(255,193,7,.3)}
+.conn.bad .led{background:var(--danger);box-shadow:0 0 10px var(--danger)}
+.conn.bad{color:var(--danger);border-color:rgba(255,64,87,.3)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* ---------- LAYOUT ---------- */
+#main{display:grid;grid-template-columns:var(--navw) 1fr;min-height:0}
+#nav{
+  display:flex;flex-direction:column;gap:6px;padding:12px 8px;
+  border-right:1px solid var(--line-soft);background:rgba(13,21,28,.6)
+}
+.navbtn{
+  display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:14px;
+  color:var(--muted);font-size:10px;letter-spacing:.1em;transition:.18s;border:1px solid transparent
+}
+.navbtn svg{width:24px;height:24px}
+.navbtn:hover{color:var(--text);background:rgba(0,217,255,.05)}
+.navbtn.active{color:var(--primary);background:rgba(0,217,255,.1);border-color:var(--line);
+  box-shadow:inset 0 0 20px rgba(0,217,255,.07)}
+#nav .navspacer{flex:1}
+
+#pages{position:relative;min-height:0;overflow:hidden}
+.page{position:absolute;inset:0;display:none;overflow-y:auto;overflow-x:hidden;
+  padding:14px;-webkit-overflow-scrolling:touch}
+.page.active{display:block}
+#page-map.active{display:grid;grid-template-rows:1fr auto;padding:0;overflow:hidden}
+
+/* ---------- COMPONENTI ---------- */
+.panel{
+  background:var(--glass);border:1px solid var(--line-soft);border-radius:var(--r);
+  box-shadow:var(--shadow);backdrop-filter:blur(10px);padding:14px
+}
+.panel h2{
+  margin:0 0 12px;font-size:11px;letter-spacing:.16em;color:var(--primary);font-weight:600;
+  display:flex;align-items:center;gap:8px
+}
+.panel h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+.grid{display:grid;gap:12px}
+.cols{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+
+.tile{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:12px;padding:11px 13px;position:relative}
+.tile .k{font-size:10px;letter-spacing:.12em;color:var(--muted);margin-bottom:5px}
+.tile .v{font-family:var(--mono);font-size:24px;font-weight:600;letter-spacing:-.01em;
+  line-height:1.1;font-variant-numeric:tabular-nums;word-break:break-all}
+.tile .v.na{color:var(--muted);font-size:18px;font-weight:400}
+.tile .u{font-size:12px;color:var(--muted);margin-left:4px;font-family:var(--sans)}
+.tile.wide{grid-column:span 2}
+.badge{
+  position:absolute;top:9px;right:9px;font-family:var(--mono);font-size:8px;letter-spacing:.1em;
+  padding:2px 5px;border-radius:5px;background:rgba(255,193,7,.12);color:var(--warning);
+  border:1px solid rgba(255,193,7,.25)
+}
+.badge.calc{background:rgba(0,217,255,.1);color:var(--primary);border-color:rgba(0,217,255,.25)}
+.tiles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+
+.status{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel-2);
+  border:1px solid var(--line-soft);border-radius:11px}
+.status .k{font-size:11px;letter-spacing:.1em;color:var(--muted);flex:1}
+.status .s{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--muted)}
+.status.on .s{color:var(--green)}
+.status.on .led{background:var(--green);box-shadow:0 0 8px var(--green)}
+.status.alert .s{color:var(--danger)}
+.status.alert .led{background:var(--danger);box-shadow:0 0 8px var(--danger);animation:pulse 1s infinite}
+.status.warn .s{color:var(--warning)}
+.status.warn .led{background:var(--warning);box-shadow:0 0 8px var(--warning)}
+
+.note{font-size:12px;color:var(--muted);line-height:1.55}
+.note code{font-family:var(--mono);color:var(--primary);font-size:11px}
+.hint{border-left:2px solid var(--warning);padding-left:10px;margin-top:10px}
+
+/* ---------- MAPPA ---------- */
+#mapwrap{position:relative;min-height:0;background:#0a1117}
+#map{position:absolute;inset:0;background:#0a1117}
+#mapfallback{position:absolute;inset:0;display:none}
+#mapfallback canvas{width:100%;height:100%;display:block}
+.leaflet-container{background:#0a1117;font-family:var(--sans)}
+.leaflet-control-attribution{background:rgba(8,13,18,.7)!important;color:var(--muted)!important;font-size:9px!important}
+.leaflet-control-attribution a{color:var(--muted)!important}
+.leaflet-control-scale-line{background:rgba(8,13,18,.65)!important;border-color:var(--line)!important;
+  color:var(--text)!important;font-family:var(--mono);font-size:10px}
+
+.mapui{position:absolute;z-index:500;display:flex;flex-direction:column;gap:8px}
+.mapui.tr{top:12px;right:12px}
+.mapui.tl{top:12px;left:12px;max-width:min(54%,280px)}
+.mapui.bl{bottom:12px;left:12px}
+.mbtn{
+  width:46px;height:46px;border-radius:13px;background:var(--glass);border:1px solid var(--line-soft);
+  color:var(--text);display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(10px);box-shadow:var(--shadow);font-size:20px;font-family:var(--mono);transition:.15s
+}
+.mbtn:active{transform:scale(.94)}
+.mbtn.on{color:var(--primary);border-color:var(--line);background:rgba(0,217,255,.13)}
+.mbtn svg{width:22px;height:22px}
+.mcard{
+  background:var(--glass);border:1px solid var(--line-soft);border-radius:13px;padding:9px 12px;
+  backdrop-filter:blur(10px);box-shadow:var(--shadow);font-family:var(--mono);font-size:12px;
+  letter-spacing:.04em;font-variant-numeric:tabular-nums
+}
+.mcard .l{font-size:9px;letter-spacing:.14em;color:var(--muted);font-family:var(--sans)}
+.layerpick{display:flex;gap:4px;background:var(--glass);border:1px solid var(--line-soft);
+  border-radius:13px;padding:4px;backdrop-filter:blur(10px)}
+.layerpick button{font-size:10px;letter-spacing:.1em;padding:7px 10px;border-radius:9px;color:var(--muted)}
+.layerpick button.on{background:rgba(0,217,255,.14);color:var(--primary)}
+
+#planeicon{transition:transform .18s linear}
+.acft-dot{filter:drop-shadow(0 0 6px rgba(0,217,255,.7))}
+
+/* striscia dati sotto la mappa */
+#mapstrip{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-soft);
+  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)
+}
+#mapstrip .cell{background:var(--panel-2);padding:10px 14px}
+#mapstrip .k{font-size:9px;letter-spacing:.16em;color:var(--muted)}
+#mapstrip .v{font-family:var(--mono);font-size:clamp(18px,3.4vw,30px);font-weight:600;
+  font-variant-numeric:tabular-nums;line-height:1.15}
+#mapstrip .v span{font-size:12px;color:var(--muted);font-family:var(--sans);margin-left:3px}
+
+/* ---------- ATTITUDE ---------- */
+.attwrap{display:grid;gap:12px;grid-template-columns:minmax(300px,1.3fr) minmax(260px,1fr);align-items:start}
+#adi{width:100%;height:auto;display:block;max-height:58vh;margin:0 auto}
+.adi-off{
+  position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(8,13,18,.74);border-radius:var(--r);font-family:var(--mono);
+  font-size:13px;letter-spacing:.12em;color:var(--warning);text-align:center;padding:20px
+}
+.adi-off.show{display:flex}
+.rel{position:relative}
+.raw{font-family:var(--mono);font-size:11px;color:var(--muted);word-break:break-all;line-height:1.7}
+.raw b{color:var(--text);font-weight:500}
+
+/* ---------- WIND ---------- */
+.windwrap{display:grid;gap:12px;grid-template-columns:minmax(300px,1.2fr) minmax(260px,1fr);align-items:start}
+#windsock{width:100%;height:auto;display:block;max-height:50vh}
+.nowind{
+  position:absolute;inset:0;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;
+  background:rgba(8,13,18,.8);border-radius:var(--r);text-align:center;padding:24px
+}
+.nowind strong{font-family:var(--mono);font-size:14px;letter-spacing:.14em;color:var(--warning)}
+.nowind span{font-size:12px;color:var(--muted);max-width:340px}
+.nowind.hide{display:none}
+
+/* ---------- SETUP ---------- */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10px;letter-spacing:.12em;color:var(--muted);margin-bottom:6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.act{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.act button{
+  padding:11px 16px;border-radius:11px;border:1px solid var(--line);background:rgba(0,217,255,.1);
+  color:var(--primary);font-size:12px;letter-spacing:.08em;transition:.15s
+}
+.act button:active{transform:scale(.97)}
+.act button.ghost{background:var(--panel-2);border-color:var(--line-soft);color:var(--muted)}
+.toggle{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel-2);
+  border:1px solid var(--line-soft);border-radius:11px;font-size:13px;cursor:pointer;margin-bottom:8px}
+.toggle input{width:auto;accent-color:var(--primary);transform:scale(1.25);margin-right:2px}
+
+/* ---------- RESPONSIVE ---------- */
+@media (orientation:portrait),(max-width:760px){
+  #main{grid-template-columns:1fr;grid-template-rows:1fr auto}
+  #nav{
+    flex-direction:row;order:2;border-right:none;border-top:1px solid var(--line);
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom));justify-content:space-around;
+    background:rgba(13,21,28,.92);backdrop-filter:blur(12px)
+  }
+  .navbtn{flex:1;padding:8px 2px;gap:4px}
+  .navbtn svg{width:22px;height:22px}
+  #nav .navspacer{display:none}
+  #pages{order:1}
+  .attwrap,.windwrap{grid-template-columns:1fr}
+  .tile.wide{grid-column:span 1}
+  #mapstrip{padding-bottom:0}
+  #mapstrip .cell{padding:8px 11px}
+  .mapui.tl{max-width:62%}
+}
+@media (max-width:520px){
+  #mapstrip{grid-template-columns:repeat(2,1fr)}
+  .brand small{display:none}
+  .row3{grid-template-columns:1fr}
+  .conn{padding:6px 9px;font-size:11px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== TOP BAR ===================== -->
+  <header id="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5L21 16z"/></svg>
+      <div>GEOFS DASHBOARD<small>ELECTRONIC FLIGHT DISPLAY</small></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="clock" id="clockUtc">--:--:-- Z</div>
+    <div class="conn bad" id="connBox"><span class="led"></span><span id="connText">CONNECTING</span></div>
+  </header>
+
+  <div id="main">
+    <!-- ===================== NAV ===================== -->
+    <nav id="nav">
+      <button class="navbtn active" data-page="map">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>MAPPA</button>
+      <button class="navbtn" data-page="data">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 15l3-4 3 3 4-6"/></svg>DATI</button>
+      <button class="navbtn" data-page="att">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3.5 13.5c3-2 6-2 8.5 0s5.5 2 8.5 0"/><path d="M8 12h8"/></svg>ASSETTO</button>
+      <div class="navspacer"></div>
+      <button class="navbtn" data-page="set">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V20a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 18.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4 13.9H4a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 5.6 7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 11 4.1V4a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.6 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7H22a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.3z"/></svg>SETUP</button>
+    </nav>
+
+    <div id="pages">
+
+      <!-- ===================== PAGINA 1 · MAPPA ===================== -->
+      <section class="page active" id="page-map">
+        <div id="mapwrap">
+          <div id="map"></div>
+          <div id="mapfallback"><canvas id="fbCanvas"></canvas></div>
+
+          <div class="mapui tl">
+            <div class="mcard">
+              <div class="l">POSIZIONE</div>
+              <div id="mLat">--.------ N</div>
+              <div id="mLon">--.------ E</div>
+            </div>
+            <div class="layerpick" id="layerPick">
+              <button data-layer="sat" class="on">SAT</button>
+              <button data-layer="osm">OSM</button>
+            </div>
+          </div>
+
+          <div class="mapui tr">
+            <button class="mbtn" id="zIn" aria-label="Zoom avanti">+</button>
+            <button class="mbtn" id="zOut" aria-label="Zoom indietro">−</button>
+            <button class="mbtn on" id="followBtn" aria-label="Centra sull'aereo" title="Centra sull'aereo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/></svg>
+            </button>
+            <button class="mbtn" id="trackBtn" aria-label="Mostra o nascondi la traccia">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 19c4 0 3-6 7-6s3-8 8-8"/><circle cx="4" cy="19" r="1.6" fill="currentColor"/><circle cx="19" cy="5" r="1.6" fill="currentColor"/></svg>
+            </button>
+          </div>
+
+          <div class="mapui bl">
+            <div class="mcard" id="mTrackInfo">TRACCIA <b id="mTrackN">0</b> PT</div>
+            <button class="mbtn" id="clearTrackMap" aria-label="Cancella la traccia">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><polyline points="3 6 5 4 21 4 23 6 23 20a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V6z"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/><line x1="5" y1="7" x2="19" y2="7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="mapstrip">
+          <div class="cell"><div class="k">ALT</div><div class="v" id="sAlt">N/A</div></div>
+          <div class="cell"><div class="k">SPEED (GS)</div><div class="v" id="sSpd">N/A</div></div>
+          <div class="cell"><div class="k">HDG</div><div class="v" id="sHdg">N/A</div></div>
+          <div class="cell"><div class="k">MACH</div><div class="v" id="sMach">N/A</div></div>
+        </div>
+      </section>
+
+      <!-- ===================== PAGINA 2 · FLIGHT DATA ===================== -->
+      <section class="page" id="page-data">
+        <div class="cols">
+          <div class="panel">
+            <h2>POSIZIONE</h2>
+            <div class="tiles">
+              <div class="tile"><div class="k">LATITUDE</div><div class="v na" id="dLat">N/A</div></div>
+              <div class="tile"><div class="k">LONGITUDE</div><div class="v na" id="dLon">N/A</div></div>
+              <div class="tile"><div class="k">ALTITUDE</div><div class="v na" id="dAlt">N/A</div><div class="badge" id="dAltBadge" hidden>RAW</div></div>
+              <div class="tile"><div class="k">VERTICAL SPEED</div><div class="v na" id="dVs">N/A</div><div class="badge calc" id="dVsBadge" hidden>CALC</div></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>VELOCITÀ</h2>
+            <div class="tiles">
+              <div class="tile"><div class="k">TRUE AIR SPEED</div><div class="v na" id="dTas">N/A</div><div class="badge" id="dTasBadge" hidden>RAW</div></div>
+              <div class="tile"><div class="k">GROUND SPEED</div><div class="v na" id="dGs">N/A</div><div class="badge" id="dGsBadge" hidden>RAW</div></div>
+              <div class="tile"><div class="k">MACH</div><div class="v na" id="dMach">N/A</div><div class="badge" id="dMachBadge" hidden>RAW</div></div>
+              <div class="tile"><div class="k">VELOCITY SCALAR</div><div class="v na" id="dVscal">N/A</div><div class="badge" id="dVscalBadge" hidden>RAW</div></div>
+            </div>
+            <div class="note hint" id="rawSpeedHint">Le velocità sono mostrate nel valore grezzo inviato da GeoFS. Apri Setup per definire la conversione dopo averla verificata in volo.</div>
+          </div>
+
+          <div class="panel">
+            <h2>AERODINAMICA</h2>
+            <div class="tiles">
+              <div class="tile"><div class="k">ANGLE OF ATTACK</div><div class="v na" id="dAoa">N/A</div></div>
+              <div class="tile"><div class="k">HEADING</div><div class="v na" id="dHdg">N/A</div><div class="badge calc" id="dHdgBadge" hidden>TRK</div></div>
+            </div>
+            <div class="grid" style="margin-top:10px">
+              <div class="status" id="stAirborne2"><span class="led"></span><span class="k">AIRBORNE</span><span class="s">N/A</span></div>
+              <div class="status" id="stStall2"><span class="led"></span><span class="k">STALL</span><span class="s">N/A</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>MOTORI</h2>
+            <div class="tiles">
+              <div class="tile"><div class="k">ENGINE RPM</div><div class="v na" id="dRpm">N/A</div></div>
+              <div class="tile"><div class="k">THRUST</div><div class="v na" id="dThr">N/A</div></div>
+            </div>
+            <div class="grid" style="margin-top:10px">
+              <div class="status" id="stEngine"><span class="led"></span><span class="k">ENGINE STATUS</span><span class="s">N/A</span></div>
+            </div>
+            <div class="note hint" id="engHint">Il bridge non invia <code>engine</code>. Aggiungi <code>rpm</code>, <code>thrust</code> e <code>on</code> al JSON per attivare questo pannello.</div>
+          </div>
+
+          <div class="panel">
+            <h2>STATO</h2>
+            <div class="grid">
+              <div class="status" id="stAirborne"><span class="led"></span><span class="k">AIRBORNE</span><span class="s">N/A</span></div>
+              <div class="status" id="stCrashed"><span class="led"></span><span class="k">CRASHED</span><span class="s">N/A</span></div>
+              <div class="status" id="stGround"><span class="led"></span><span class="k">GROUND CONTACT</span><span class="s">N/A</span></div>
+              <div class="status" id="stWater"><span class="led"></span><span class="k">WATER CONTACT</span><span class="s">N/A</span></div>
+              <div class="status" id="stBrakes"><span class="led"></span><span class="k">BRAKES</span><span class="s">N/A</span></div>
+              <div class="status" id="stStall"><span class="led"></span><span class="k">STALL</span><span class="s">N/A</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>PACCHETTO GREZZO</h2>
+            <div class="raw" id="rawJson">In attesa di dati…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== PAGINA 3 · ATTITUDE ===================== -->
+      <section class="page" id="page-att">
+        <div class="attwrap">
+          <div class="panel rel">
+            <h2>ARTIFICIAL HORIZON</h2>
+            <svg id="adi" viewBox="0 0 400 400" role="img" aria-label="Orizzonte artificiale">
+              <defs>
+                <clipPath id="adiClip"><circle cx="200" cy="200" r="150"/></clipPath>
+                <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#0a6ea8"/><stop offset="100%" stop-color="#28b4e8"/>
+                </linearGradient>
+                <linearGradient id="gndG" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#7a4e22"/><stop offset="100%" stop-color="#3d2711"/>
+                </linearGradient>
+              </defs>
+
+              <circle cx="200" cy="200" r="158" fill="#0d151c" stroke="rgba(0,217,255,.18)" stroke-width="1"/>
+
+              <g clip-path="url(#adiClip)">
+                <g id="adiRoll">
+                  <g id="adiPitch">
+                    <rect x="-320" y="-760" width="1040" height="960" fill="url(#skyG)"/>
+                    <rect x="-320" y="200" width="1040" height="960" fill="url(#gndG)"/>
+                    <line x1="-320" y1="200" x2="720" y2="200" stroke="#e8f1f5" stroke-width="2.4"/>
+                    <g id="pitchLadder" stroke="#e8f1f5" stroke-width="1.6" fill="#e8f1f5"
+                       font-family="ui-monospace,monospace" font-size="12"></g>
+                  </g>
+                </g>
+                <!-- scala di rollio, fissa -->
+                <g id="rollScale" stroke="#e8f1f5" stroke-width="2" fill="#e8f1f5"
+                   font-family="ui-monospace,monospace" font-size="11"></g>
+              </g>
+
+              <!-- indice di rollio mobile -->
+              <g id="rollPointer">
+                <polygon points="200,58 191,76 209,76" fill="#00d9ff"/>
+              </g>
+              <polygon points="200,44 192,30 208,30" fill="#e8f1f5" opacity=".85"/>
+
+              <!-- simbolo aereo fisso -->
+              <g stroke="#00ff88" stroke-width="4" fill="none" stroke-linecap="round">
+                <path d="M110 200 h55 l14 14"/>
+                <path d="M290 200 h-55 l-14 14"/>
+              </g>
+              <circle cx="200" cy="200" r="4" fill="#00ff88"/>
+
+              <circle cx="200" cy="200" r="150" fill="none" stroke="rgba(232,241,245,.25)" stroke-width="2"/>
+            </svg>
+            <div class="adi-off show" id="adiOff">NESSUN DATO DI ASSETTO<br><span style="color:var(--muted);letter-spacing:0;font-family:var(--sans)">Il bridge deve inviare <code>htr</code>, oppure <code>pitch</code> e <code>roll</code>.</span></div>
+          </div>
+
+          <div class="grid">
+            <div class="panel">
+              <h2>ASSETTO</h2>
+              <div class="tiles">
+                <div class="tile"><div class="k">ROLL</div><div class="v na" id="aRoll">N/A</div></div>
+                <div class="tile"><div class="k">PITCH</div><div class="v na" id="aPitch">N/A</div></div>
+                <div class="tile"><div class="k">HEADING</div><div class="v na" id="aHdg">N/A</div></div>
+                <div class="tile"><div class="k">AOA</div><div class="v na" id="aAoa">N/A</div></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h2>ROLL INDICATOR</h2>
+              <svg id="rollBar" viewBox="0 0 400 90" style="width:100%;height:auto">
+                <g id="rollBarTicks" stroke="rgba(232,241,245,.5)" stroke-width="2" fill="var(--muted)"
+                   font-family="ui-monospace,monospace" font-size="12"></g>
+                <line x1="200" y1="20" x2="200" y2="62" stroke="rgba(0,217,255,.35)" stroke-width="1"/>
+                <polygon id="rollBarPtr" points="200,26 191,10 209,10" fill="#00d9ff"/>
+              </svg>
+            </div>
+
+            <div class="panel">
+              <h2>SORGENTI GREZZE</h2>
+              <div class="raw">
+                <div>htr &nbsp;= <b id="rawHtr">N/A</b></div>
+                <div>velocityDirection = <b id="rawVdir">N/A</b></div>
+                <div>heading (campo) = <b id="rawHdgField">N/A</b></div>
+              </div>
+              <div class="note hint">L'ordine di <code>htr</code> non è dato per certo. Confronta questi valori con il cockpit di GeoFS e imposta la corrispondenza in Setup.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== PAGINA 4 · WIND ===================== -->
+      <!-- ===================== PAGINA 5 · SETUP ===================== -->
+      <section class="page" id="page-set">
+        <div class="cols">
+          <div class="panel">
+            <h2>CONNESSIONE</h2>
+            <div class="field">
+              <label for="cfgUrl">Indirizzo dei dati</label>
+              <input id="cfgUrl" type="text" spellcheck="false" placeholder="/data oppure http://192.168.1.10:8000/data">
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="cfgInterval">Intervallo di richiesta (ms)</label>
+                <input id="cfgInterval" type="number" min="50" max="5000" step="50">
+              </div>
+              <div class="field">
+                <label for="cfgTimeout">Dati scaduti dopo (ms)</label>
+                <input id="cfgTimeout" type="number" min="500" max="10000" step="100">
+              </div>
+            </div>
+            <div class="note">Se apri la dashboard da un dominio diverso da quello del server, server.py deve inviare l'header <code>Access-Control-Allow-Origin: *</code>. Il modo più semplice resta servire questo file dallo stesso server.py.</div>
+          </div>
+
+          <div class="panel">
+            <h2>ALTITUDINE</h2>
+            <div class="row2">
+              <div class="field">
+                <label for="cfgAltSrc">Unità del valore ricevuto</label>
+                <select id="cfgAltSrc">
+                  <option value="raw">Non verificata — mostra il valore grezzo</option>
+                  <option value="m">Metri</option>
+                  <option value="ft">Piedi</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="cfgAltUnit">Unità di visualizzazione</label>
+                <select id="cfgAltUnit"><option value="ft">ft</option><option value="m">m</option></select>
+              </div>
+            </div>
+            <div class="note">Verifica con l'altimetro di GeoFS su una pista di quota nota prima di scegliere. La velocità verticale viene calcolata da questo valore e resta <code>N/A</code> finché l'unità è non verificata.</div>
+          </div>
+
+          <div class="panel">
+            <h2>VELOCITÀ</h2>
+            <div class="row2">
+              <div class="field">
+                <label for="cfgSpdSrc">Unità del valore ricevuto</label>
+                <select id="cfgSpdSrc">
+                  <option value="raw">Non verificata — mostra il valore grezzo</option>
+                  <option value="kt">Già in nodi</option>
+                  <option value="ms">Metri al secondo</option>
+                  <option value="kmh">Chilometri orari</option>
+                  <option value="factor">Fattore personalizzato</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="cfgSpdUnit">Unità di visualizzazione</label>
+                <select id="cfgSpdUnit"><option value="kt">kt</option><option value="kmh">km/h</option><option value="mph">mph</option></select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="cfgSpdFactor">Fattore: valore ricevuto × fattore = nodi</label>
+              <input id="cfgSpdFactor" type="number" step="any">
+            </div>
+            <div class="panel" style="background:var(--panel-2);padding:12px">
+              <div class="note" style="margin-bottom:10px">Calcolo del fattore: leggi la velocità sull'anemometro di GeoFS e confrontala con il valore grezzo mostrato qui.</div>
+              <div class="row3">
+                <div class="field"><label for="calRaw">Valore grezzo</label><input id="calRaw" type="number" step="any"></div>
+                <div class="field"><label for="calKt">Nodi reali</label><input id="calKt" type="number" step="any"></div>
+                <div class="field"><label>&nbsp;</label><button class="mbtn" id="calGo" style="width:100%;height:40px;border-radius:10px;font-family:var(--sans);font-size:12px;letter-spacing:.08em">CALCOLA</button></div>
+              </div>
+              <div class="note" id="calOut">Groundspeed grezzo attuale: <b id="calNow">N/A</b></div>
+            </div>
+            <div class="field" style="margin-top:12px">
+              <label for="cfgMachSrc">Mach</label>
+              <select id="cfgMachSrc">
+                <option value="raw">Non verificato — mostra il valore grezzo</option>
+                <option value="mach">Già numero di Mach</option>
+                <option value="factor">Fattore personalizzato</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="cfgMachFactor">Fattore Mach</label>
+              <input id="cfgMachFactor" type="number" step="any">
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>ASSETTO · CORRISPONDENZA htr</h2>
+            <div class="row3">
+              <div class="field"><label for="cfgHtrH">Heading da htr[ ]</label>
+                <select id="cfgHtrH"><option value="-1">non usato</option><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+              <div class="field"><label for="cfgHtrP">Pitch da htr[ ]</label>
+                <select id="cfgHtrP"><option value="-1">non usato</option><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+              <div class="field"><label for="cfgHtrR">Roll da htr[ ]</label>
+                <select id="cfgHtrR"><option value="-1">non usato</option><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="cfgInvP"> Inverti il segno del pitch</label>
+            <label class="toggle"><input type="checkbox" id="cfgInvR"> Inverti il segno del roll</label>
+            <div class="field">
+              <label for="cfgHdgSrc">Sorgente della prua</label>
+              <select id="cfgHdgSrc">
+                <option value="auto">Automatica: campo heading, poi htr, poi rotta GPS</option>
+                <option value="field">Solo campo heading o HDG</option>
+                <option value="htr">Solo htr</option>
+                <option value="track">Solo rotta calcolata dalle posizioni</option>
+              </select>
+            </div>
+            <div class="note hint">La corrispondenza proposta è un'ipotesi, non un dato verificato. Mettila alla prova: rulla dritto per controllare la prua, inclina di 20° a sinistra per controllare il segno del rollio, cabra per controllare il pitch. La rotta GPS è una rotta al suolo, non la prua.</div>
+          </div>
+
+          <div class="panel">
+            <h2>MAPPA</h2>
+            <div class="row2">
+              <div class="field"><label for="cfgTrackMax">Punti di traccia conservati</label><input id="cfgTrackMax" type="number" min="50" max="5000" step="50"></div>
+              <div class="field"><label for="cfgZoom">Zoom iniziale</label><input id="cfgZoom" type="number" min="2" max="18" step="1"></div>
+            </div>
+            <div class="act">
+              <button class="ghost" id="clearTrack">Cancella la traccia</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>IMPOSTAZIONI</h2>
+            <div class="act">
+              <button id="saveCfg">Salva le impostazioni</button>
+              <button class="ghost" id="resetCfg">Ripristina i valori iniziali</button>
+            </div>
+            <div class="note" id="cfgSaved" style="margin-top:12px">Le impostazioni restano su questo dispositivo.</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   GEOFS DASHBOARD — dashboard
+   Regola di fondo: nessun valore inventato. Se un dato non arriva, si scrive N/A.
+   Nessuna conversione viene applicata finché l'unità non è stata dichiarata in Setup.
+   ========================================================================= */
+
+/* ------------------------------- CONFIG -------------------------------- */
+const DEFAULTS = {
+  url: "/data",
+  interval: 200,
+  staleMs: 2000,
+  altSrc: "raw", altUnit: "ft",
+  spdSrc: "raw", spdUnit: "kt", spdFactor: 1,
+  machSrc: "raw", machFactor: 1,
+  htrH: 0, htrP: 1, htrR: 2, invP: false, invR: false,
+  hdgSrc: "auto",
+  trackMax: 800,
+  zoom: 11
+};
+let CFG = Object.assign({}, DEFAULTS);
+
+function loadCfg(){
+  try{
+    const s = localStorage.getItem("geofs-dash-cfg");
+    if(s) CFG = Object.assign({}, DEFAULTS, JSON.parse(s));
+  }catch(e){ /* storage non disponibile: si resta sui valori iniziali */ }
+}
+function saveCfg(){
+  try{ localStorage.setItem("geofs-dash-cfg", JSON.stringify(CFG)); return true; }
+  catch(e){ return false; }
+}
+loadCfg();
+
+/* -------------------------------- STATE -------------------------------- */
+const state = {
+  position:   { lat:null, lon:null, alt:null, altM:null, vsFpm:null },
+  aircraft:   { tas:null, gs:null, mach:null, vscalar:null, aoa:null,
+                airborne:null, crashed:null, ground:null, water:null,
+                brakes:null, stall:null },
+  engine:     { rpm:null, thrust:null, on:null },
+  attitude:   { pitch:null, roll:null, heading:null, hdgSource:null,
+                htr:null, vdir:null, hdgField:null },
+  wind:       { available:false, dir:null, speed:null, head:null, cross:null, rel:null },
+  connection: { status:"bad", lastOk:0, latency:null, hz:0, errors:0 },
+  track:      [],
+  raw:        null
+};
+
+/* ------------------------------- HELPERS ------------------------------- */
+const $ = id => document.getElementById(id);
+const NA = "N/A";
+
+function num(v){ return (typeof v === "number" && isFinite(v)) ? v : null; }
+function bool(v){ return (typeof v === "boolean") ? v : (v===0||v===1 ? !!v : null); }
+
+/** primo valore numerico utile fra più alias */
+function pickNum(obj, keys){
+  if(!obj) return null;
+  for(const k of keys){
+    const v = obj[k];
+    if(v !== undefined && v !== null){
+      const n = num(typeof v === "string" ? parseFloat(v) : v);
+      if(n !== null) return n;
+    }
+  }
+  return null;
+}
+function pickBool(obj, keys){
+  if(!obj) return null;
+  for(const k of keys){
+    const b = bool(obj[k]);
+    if(b !== null) return b;
+  }
+  return null;
+}
+function fmt(v, d){
+  if(v === null) return NA;
+  return v.toLocaleString("en-US", {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+/** scrive nel DOM solo se il testo è cambiato */
+function setVal(el, text, isNA){
+  if(!el) return;
+  if(el.textContent !== text) el.textContent = text;
+  const na = isNA === undefined ? (text === NA) : isNA;
+  el.classList.toggle("na", na);
+}
+function setBadge(el, show, label){
+  if(!el) return;
+  if(label && el.textContent !== label) el.textContent = label;
+  if(el.hidden === show) el.hidden = !show;
+}
+function norm360(d){ return ((d % 360) + 360) % 360; }
+function norm180(d){ let x = norm360(d); return x > 180 ? x - 360 : x; }
+
+/* --------------------------- CONVERSIONI ------------------------------- */
+/* Nessuna conversione è implicita: dipende da ciò che l'utente dichiara in Setup. */
+const M_TO_FT = 3.280839895, FT_TO_M = 0.3048;
+
+function altToMeters(raw){
+  if(raw === null) return null;
+  if(CFG.altSrc === "m")  return raw;
+  if(CFG.altSrc === "ft") return raw * FT_TO_M;
+  return null; // non verificata
+}
+function altDisplay(raw){
+  if(raw === null) return {text:NA, raw:true};
+  if(CFG.altSrc === "raw") return {text:fmt(raw,4), raw:true};
+  const m = altToMeters(raw);
+  return CFG.altUnit === "m"
+    ? {text:fmt(m,0)+" m", raw:false}
+    : {text:fmt(m*M_TO_FT,0)+" ft", raw:false};
+}
+function speedToKt(raw){
+  if(raw === null) return null;
+  switch(CFG.spdSrc){
+    case "kt":  return raw;
+    case "ms":  return raw * 1.943844;
+    case "kmh": return raw / 1.852;
+    case "factor": return num(CFG.spdFactor) !== null ? raw * CFG.spdFactor : null;
+    default: return null;
+  }
+}
+function speedDisplay(raw){
+  if(raw === null) return {text:NA, raw:true};
+  if(CFG.spdSrc === "raw") return {text:fmt(raw,5), raw:true};
+  const kt = speedToKt(raw);
+  if(kt === null) return {text:fmt(raw,5), raw:true};
+  if(CFG.spdUnit === "kmh") return {text:fmt(kt*1.852,0)+" km/h", raw:false};
+  if(CFG.spdUnit === "mph") return {text:fmt(kt*1.150779,0)+" mph", raw:false};
+  return {text:fmt(kt,0)+" kt", raw:false};
+}
+function machDisplay(raw){
+  if(raw === null) return {text:NA, raw:true};
+  if(CFG.machSrc === "mach") return {text:fmt(raw,3), raw:false};
+  if(CFG.machSrc === "factor" && num(CFG.machFactor) !== null)
+    return {text:fmt(raw*CFG.machFactor,3), raw:false};
+  return {text:fmt(raw,7), raw:true};
+}
+
+/* ------------------------- ROTTA DA POSIZIONI -------------------------- */
+function bearingFrom(lat1, lon1, lat2, lon2){
+  const R = Math.PI/180;
+  const φ1 = lat1*R, φ2 = lat2*R, Δλ = (lon2-lon1)*R;
+  const y = Math.sin(Δλ)*Math.cos(φ2);
+  const x = Math.cos(φ1)*Math.sin(φ2) - Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
+  return norm360(Math.atan2(y,x)*180/Math.PI);
+}
+function distM(lat1, lon1, lat2, lon2){
+  const R = 6371000, r = Math.PI/180;
+  const dφ = (lat2-lat1)*r, dλ = (lon2-lon1)*r, φm = (lat1+lat2)/2*r;
+  const x = dλ*Math.cos(φm);
+  return Math.sqrt(dφ*dφ + x*x) * R;
+}
+
+/* ============================ FETCH / PARSE ============================= */
+let lastAltSample = null;  // {m, t} per il calcolo della velocità verticale
+let hzWindow = [];
+
+async function fetchData(){
+  const t0 = performance.now();
+  const ctrl = new AbortController();
+  const killer = setTimeout(()=>ctrl.abort(), Math.max(800, CFG.interval*4));
+  try{
+    const res = await fetch(CFG.url + (CFG.url.includes("?") ? "&" : "?") + "_=" + Date.now(),
+                            {signal:ctrl.signal, cache:"no-store"});
+    clearTimeout(killer);
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    state.connection.latency = Math.round(performance.now() - t0);
+    state.connection.lastOk = Date.now();
+    state.connection.errors = 0;
+    hzWindow.push(Date.now());
+    if(hzWindow.length > 20) hzWindow.shift();
+    parseData(data);
+  }catch(e){
+    clearTimeout(killer);
+    state.connection.errors++;
+  }
+  render();
+}
+
+function parseData(d){
+  state.raw = d;
+  const lla = Array.isArray(d.llaLocation) ? d.llaLocation : null;
+
+  /* --- posizione: lla[0]=lon, lla[1]=lat, lla[2]=alt (come osservato) --- */
+  const lat = pickNum(d, ["latitude","lat"]) ?? (lla ? num(lla[1]) : null);
+  const lon = pickNum(d, ["longitude","lon","lng"]) ?? (lla ? num(lla[0]) : null);
+  const alt = pickNum(d, ["altitude","alt"]) ?? (lla ? num(lla[2]) : null);
+  const prevLat = state.position.lat, prevLon = state.position.lon;
+  state.position.lat = lat; state.position.lon = lon; state.position.alt = alt;
+  state.position.altM = altToMeters(alt);
+
+  /* --- velocità verticale: derivata, solo se l'unità è dichiarata --- */
+  const vsField = pickNum(d, ["verticalSpeed","vs"]);
+  if(vsField !== null){
+    state.position.vsFpm = vsField;
+  }else if(state.position.altM !== null){
+    const now = Date.now();
+    if(lastAltSample && now - lastAltSample.t > 400){
+      const fpm = (state.position.altM - lastAltSample.m) * M_TO_FT / ((now - lastAltSample.t)/60000);
+      state.position.vsFpm = state.position.vsFpm === null
+        ? fpm : state.position.vsFpm*0.7 + fpm*0.3;   // leggero smorzamento
+      lastAltSample = {m:state.position.altM, t:now};
+    }else if(!lastAltSample){
+      lastAltSample = {m:state.position.altM, t:now};
+    }
+  }else{
+    state.position.vsFpm = null;
+    lastAltSample = null;
+  }
+
+  /* --- velocità e aerodinamica --- */
+  const a = state.aircraft;
+  a.tas     = pickNum(d, ["trueAirSpeed","tas"]);
+  a.gs      = pickNum(d, ["groundSpeed","gs"]);
+  a.mach    = pickNum(d, ["mach"]);
+  a.vscalar = pickNum(d, ["velocityScalar"]);
+  a.aoa     = pickNum(d, ["angleOfAttack","angleOfAttackDeg","aoa"]);
+  a.airborne= pickBool(d, ["airborne"]);
+  a.crashed = pickBool(d, ["crashed"]);
+  a.ground  = pickBool(d, ["groundContact","onGround"]);
+  a.water   = pickBool(d, ["waterContact"]);
+  a.brakes  = pickBool(d, ["brakesOn","brakes"]);
+  a.stall   = pickBool(d, ["stalling","stall"]);
+
+  /* --- motori --- */
+  const eng = (d.engine && typeof d.engine === "object") ? d.engine : d;
+  state.engine.rpm    = pickNum(eng,  ["rpm","engineRpm","rpmLeft"]);
+  state.engine.thrust = pickNum(eng,  ["thrust","thrustLeft","engineThrust"]);
+  state.engine.on     = pickBool(eng, ["on","engineOn","running"]);
+
+  /* --- assetto: htr è [heading, pitch, roll] --- */
+  const at = state.attitude;
+  at.htr  = Array.isArray(d.htr) ? d.htr : null;
+  at.vdir = Array.isArray(d.velocityDirection) ? d.velocityDirection
+          : (Array.isArray(d.airVelocityDirection) ? d.airVelocityDirection : null);
+  at.hdgField = pickNum(d, ["heading","hdg","HDG","trueHeading"]);
+
+  // Estrai direttamente da htr: [heading, pitch, roll]
+  let heading = null, pitch = null, roll = null;
+  
+  if(at.htr && Array.isArray(at.htr) && at.htr.length >= 3){
+    heading = num(at.htr[0]);
+    pitch   = num(at.htr[1]);
+    roll    = num(at.htr[2]);
+  }
+  
+  // Fallback: cerca nei campi diretti
+  if(heading === null) heading = at.hdgField;
+  if(pitch === null) pitch = pickNum(d, ["pitch"]);
+  if(roll === null) roll = pickNum(d, ["roll","bank"]);
+
+  // GeoFS invia il pitch invertito: negativo quando cabri, positivo quando planhi
+  // Invertiamo per la convenzione standard
+  if(pitch !== null) pitch = -pitch;
+
+  // Applica le inversioni di segno se configurate (oltre quella automatica)
+  if(pitch !== null && CFG.invP) pitch = -pitch;
+  if(roll !== null && CFG.invR) roll = -roll;
+
+  at.pitch = pitch; 
+  at.roll = roll;
+  at.heading = heading === null ? null : norm360(heading);
+
+  /* --- prua: usa quella da htr, fallback su track --- */
+  let src = "htr";
+  const trackOk = (prevLat !== null && lat !== null &&
+                   distM(prevLat, prevLon, lat, lon) > 1.5);
+  const trk = trackOk ? bearingFrom(prevLat, prevLon, lat, lon) : null;
+  if(trk !== null) state.attitude._lastTrk = trk;
+  const lastTrk = state.attitude._lastTrk ?? null;
+
+  // Se heading da htr è null e CFG lo consente, usa la traccia
+  if(at.heading === null && CFG.hdgSrc !== "htr"){
+    if(lastTrk !== null){
+      at.heading = lastTrk;
+      src = "track";
+    }
+  }
+  at.hdgSource = src;
+
+  /* --- vento: estrai dal JSON i campi windDirection e windSpeed --- */
+  const w = state.wind;
+  const wd = pickNum(d, ["windDirection","wind.direction","dir"]);
+  const ws = pickNum(d, ["windSpeed","wind.speed","speed"]);
+  
+  if(wd !== null && ws !== null && isFinite(wd) && isFinite(ws)){
+    w.dir = norm360(wd);
+    w.speed = ws;
+    if(at.heading !== null && isFinite(at.heading)){
+      const rel = norm180(w.dir - at.heading);
+      w.rel = rel;
+      const r = rel * Math.PI/180;
+      w.head  = ws * Math.cos(r);
+      w.cross = ws * Math.sin(r);
+    }else{
+      w.rel = null; w.head = null; w.cross = null;
+    }
+  }else{
+    w.dir = null; w.speed = null;
+    w.head = null; w.cross = null; w.rel = null;
+  }
+
+  /* --- traccia --- */
+  if(lat !== null && lon !== null){
+    const last = state.track[state.track.length-1];
+    if(!last || distM(last[0], last[1], lat, lon) > 2){
+      state.track.push([lat, lon]);
+      if(state.track.length > CFG.trackMax) state.track.splice(0, state.track.length - CFG.trackMax);
+      trackDirty = true;
+    }
+  }
+}
+
+/* ============================== RENDER ================================= */
+let currentPage = "map";
+function render(){
+  updateConnection();
+  if(currentPage === "map")  { updateMap(); updateStrip(); }
+  if(currentPage === "data")   updateFlightData();
+  if(currentPage === "att")    updateAttitude();
+}
+
+/* ---- connessione ---- */
+function updateConnection(){
+  const age = Date.now() - state.connection.lastOk;
+  const box = $("connBox"), txt = $("connText");
+  let cls, label;
+  if(state.connection.lastOk === 0){
+    cls = "bad"; label = "DISCONNECTED";
+  }else if(age > CFG.staleMs){
+    cls = "bad"; label = "DISCONNECTED";
+  }else if(age > Math.max(600, CFG.interval*3)){
+    cls = "warn"; label = "DATA DELAY";
+  }else{
+    cls = "ok";
+    let hz = 0;
+    if(hzWindow.length > 2){
+      const span = (hzWindow[hzWindow.length-1] - hzWindow[0])/1000;
+      if(span > 0) hz = (hzWindow.length-1)/span;
+    }
+    label = "CONNECTED · " + hz.toFixed(1) + " Hz";
+  }
+  state.connection.status = cls;
+  if(box.className !== "conn " + cls) box.className = "conn " + cls;
+  if(txt.textContent !== label) txt.textContent = label;
+}
+
+/* ---- striscia sotto la mappa ---- */
+function updateStrip(){
+  const alt = altDisplay(state.position.alt);
+  setVal($("sAlt"), alt.text);
+  const gs = speedDisplay(state.aircraft.gs);
+  setVal($("sSpd"), gs.text);
+  setVal($("sHdg"), state.attitude.heading === null ? NA : fmt(state.attitude.heading,0)+"°");
+  setVal($("sMach"), machDisplay(state.aircraft.mach).text);
+}
+
+/* ---- pagina dati ---- */
+function statusRow(id, value, opts){
+  const el = $(id); if(!el) return;
+  const s = el.querySelector(".s");
+  let cls = "status", text = NA;
+  if(value === null){ text = NA; }
+  else{
+    text = value ? (opts.on || "YES") : (opts.off || "NO");
+    if(value) cls += " " + (opts.cls || "on");
+    else if(opts.offCls) cls += " " + opts.offCls;
+  }
+  if(el.className !== cls) el.className = cls;
+  if(s.textContent !== text) s.textContent = text;
+}
+
+function updateFlightData(){
+  const p = state.position, a = state.aircraft;
+  setVal($("dLat"), p.lat === null ? NA : p.lat.toFixed(6) + (p.lat>=0?" N":" S"));
+  setVal($("dLon"), p.lon === null ? NA : p.lon.toFixed(6) + (p.lon>=0?" E":" W"));
+
+  const alt = altDisplay(p.alt);
+  setVal($("dAlt"), alt.text); setBadge($("dAltBadge"), alt.raw && p.alt !== null, "RAW");
+
+  setVal($("dVs"), p.vsFpm === null ? NA : (p.vsFpm>0?"+":"") + fmt(p.vsFpm,0) + " ft/min");
+  setBadge($("dVsBadge"), p.vsFpm !== null, "CALC");
+
+  const tas = speedDisplay(a.tas), gs = speedDisplay(a.gs),
+        ma = machDisplay(a.mach), vs = speedDisplay(a.vscalar);
+  setVal($("dTas"), tas.text);   setBadge($("dTasBadge"), tas.raw && a.tas !== null, "RAW");
+  setVal($("dGs"),  gs.text);    setBadge($("dGsBadge"),  gs.raw  && a.gs  !== null, "RAW");
+  setVal($("dMach"),ma.text);    setBadge($("dMachBadge"),ma.raw  && a.mach!== null, "RAW");
+  setVal($("dVscal"),vs.text);   setBadge($("dVscalBadge"),vs.raw && a.vscalar!==null,"RAW");
+  $("rawSpeedHint").style.display = (CFG.spdSrc === "raw") ? "" : "none";
+
+  setVal($("dAoa"), a.aoa === null ? NA : fmt(a.aoa,2) + "°");
+  setVal($("dHdg"), state.attitude.heading === null ? NA : fmt(state.attitude.heading,0) + "°");
+  setBadge($("dHdgBadge"), state.attitude.hdgSource === "track", "TRK");
+
+  setVal($("dRpm"), state.engine.rpm === null ? NA : fmt(state.engine.rpm,0));
+  setVal($("dThr"), state.engine.thrust === null ? NA : fmt(state.engine.thrust,2));
+  statusRow("stEngine", state.engine.on, {on:"RUNNING", off:"OFF"});
+  $("engHint").style.display = (state.engine.rpm === null && state.engine.on === null) ? "" : "none";
+
+  statusRow("stAirborne",  a.airborne, {on:"AIRBORNE", off:"ON GROUND"});
+  statusRow("stAirborne2", a.airborne, {on:"AIRBORNE", off:"ON GROUND"});
+  statusRow("stCrashed",   a.crashed,  {on:"CRASHED", off:"NORMAL", cls:"alert"});
+  statusRow("stGround",    a.ground,   {on:"CONTACT", off:"CLEAR"});
+  statusRow("stWater",     a.water,    {on:"CONTACT", off:"CLEAR", cls:"warn"});
+  statusRow("stBrakes",    a.brakes,   {on:"ON", off:"OFF", cls:"warn"});
+  statusRow("stStall",     a.stall,    {on:"STALL", off:"OK", cls:"alert"});
+  statusRow("stStall2",    a.stall,    {on:"STALL", off:"OK", cls:"alert"});
+
+  const rj = $("rawJson");
+  if(state.raw){
+    const keys = Object.keys(state.raw).sort();
+    let html = keys.map(k=>{
+      let v = state.raw[k];
+      if(typeof v === "object" && v !== null) v = JSON.stringify(v);
+      else if(typeof v === "number") v = String(v);
+      return k + " = <b>" + String(v) + "</b>";
+    }).join("<br>");
+    // Aggiungi stato di parsing
+    html += "<br><br><strong style='color:var(--primary)'>PARSING</strong><br>";
+    html += "pitch (grezzo da htr[1]) = <b>" + (state.attitude.htr ? state.attitude.htr[1] : "N/A") + "</b><br>";
+    html += "pitch (dopo inversione) = <b>" + (state.attitude.pitch ?? "null") + "</b><br>";
+    html += "roll = <b>" + (state.attitude.roll ?? "null") + "</b><br>";
+    html += "heading = <b>" + (state.attitude.heading ?? "null") + "</b><br>";
+    html += "htr completo = <b>" + (state.attitude.htr ? JSON.stringify(state.attitude.htr) : "null") + "</b><br>";
+    html += "CFG.invP=" + CFG.invP + ", CFG.invR=" + CFG.invR + ", CFG.htrH=" + CFG.htrH;
+    if(rj.dataset.sig !== html){ rj.innerHTML = html; rj.dataset.sig = html; }
+  }
+}
+
+/* ---- pagina assetto ---- */
+const PX_PER_DEG = 4.2;
+function buildAdi(){
+  const lad = $("pitchLadder"); let s = "";
+  for(let d = -90; d <= 90; d += 5){
+    if(d === 0) continue;
+    const y = 200 - d*PX_PER_DEG;
+    const major = d % 10 === 0;
+    const w = major ? 58 : 30;
+    s += '<line x1="'+(200-w)+'" y1="'+y+'" x2="'+(200+w)+'" y2="'+y+'" opacity="'+(major?.95:.6)+'"/>';
+    if(major){
+      s += '<text x="'+(200-w-8)+'" y="'+(y+4)+'" text-anchor="end" stroke="none" font-size="10">'+Math.abs(d)+'</text>';
+      s += '<text x="'+(200+w+8)+'" y="'+(y+4)+'" stroke="none" font-size="10">'+Math.abs(d)+'</text>';
+    }
+  }
+  lad.innerHTML = s;
+
+  const rs = $("rollScale"); let r = "";
+  [-60,-45,-30,-20,-10,0,10,20,30,45,60].forEach(deg=>{
+    const rad = (deg - 90) * Math.PI/180;
+    const R1 = 150, R2 = (deg % 30 === 0 || deg === 0) ? 130 : 138;
+    const x1 = 200 + R1*Math.cos(rad), y1 = 200 + R1*Math.sin(rad);
+    const x2 = 200 + R2*Math.cos(rad), y2 = 200 + R2*Math.sin(rad);
+    r += '<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" opacity=".8"/>';
+  });
+  rs.innerHTML = r;
+
+  // barra di rollio
+  let rb = "";
+  for(let d = -60; d <= 60; d += 15){
+    const x = 200 + d*2.6;
+    rb += '<line x1="'+x+'" y1="30" x2="'+x+'" y2="'+(d===0?52:44)+'" stroke-width="'+(d===0?2.5:1.5)+'"/>';
+    rb += '<text x="'+x+'" y="70" text-anchor="middle" stroke="none">'+(d>0?"+":"")+d+'</text>';
+  }
+  $("rollBarTicks").innerHTML = rb;
+
+}
+
+function updateAttitude(){
+  const at = state.attitude;
+  // Mostra l'ADI se abbiamo ALMENO un valore di assetto
+  const has = at.pitch !== null || at.roll !== null || at.heading !== null;
+  const off = $("adiOff");
+  
+  if(has){
+    off.classList.remove("show");
+    if(!window._attLog) { window._attLog = 0; }
+    if(window._attLog++ % 10 === 0) {
+      console.log("[ADI] pitch=" + at.pitch + ", roll=" + at.roll + ", hdg=" + at.heading);
+    }
+  }else{
+    off.classList.add("show");
+  }
+
+  const p = at.pitch ?? 0;
+  const r = at.roll ?? 0;
+  const pc = Math.max(-90, Math.min(90, p));
+
+  // Applica le trasformazioni SVG
+  $("adiRoll").setAttribute("transform", "rotate(" + (-r).toFixed(2) + " 200 200)");
+  $("adiPitch").setAttribute("transform", "translate(0," + (pc*PX_PER_DEG).toFixed(2) + ")");
+  $("rollPointer").setAttribute("transform", "rotate(" + (-r).toFixed(2) + " 200 200)");
+
+  const rb = Math.max(-60, Math.min(60, r));
+  $("rollBarPtr").setAttribute("transform", "translate(" + (rb*2.6).toFixed(1) + ",0)");
+  
+  // Aggiorna i display numerici
+  setVal($("aRoll"),  at.roll  === null ? NA : (at.roll>0?"+":"") + fmt(at.roll,1) + "°");
+  setVal($("aPitch"), at.pitch === null ? NA : (at.pitch>0?"+":"") + fmt(at.pitch,1) + "°");
+  setVal($("aHdg"),   at.heading === null ? NA : fmt(at.heading,0) + "°");
+  setVal($("aAoa"),   state.aircraft.aoa === null ? NA : fmt(state.aircraft.aoa,2) + "°");
+
+  // Debug: mostra i valori grezzi ricevuti
+  setVal($("rawHtr"),  at.htr  ? "[" + at.htr.map(v=>typeof v==="number"?v.toFixed(4):String(v)).join(", ") + "]" : NA);
+  setVal($("rawVdir"), at.vdir ? "[" + at.vdir.map(v=>typeof v==="number"?v.toFixed(4):String(v)).join(", ") + "]" : NA);
+  setVal($("rawHdgField"), at.hdgField === null ? NA : fmt(at.hdgField,2));
+}
+
+/* ---- pagina vento ---- */
+function updateWind(){
+  const w = state.wind;
+  
+  // Mostra "non disponibile" se non ci sono dati di vento
+  const windAvailable = w.dir !== null && w.speed !== null;
+  $("noWind").classList.toggle("hide", windAvailable);
+  $("windArrow").setAttribute("opacity", windAvailable ? "1" : "0");
+
+  if(!windAvailable){
+    $("sockBody").setAttribute("opacity", ".3");
+    $("sockRot").setAttribute("transform", "rotate(0 120 120)");
+    $("sockTilt").setAttribute("transform", "rotate(38 120 120)");
+    ["wDir","wSpd","wHead","wTail","wCross","wRelHdg"].forEach(id=>setVal($(id), NA));
+    ["wHeadBadge","wTailBadge","wCrossBadge"].forEach(id=>setBadge($(id), false));
+    return;
+  }
+
+  // Vento disponibile: mostra i dati
+  const dispUnit = CFG.spdSrc === "raw" ? "" : " " + (CFG.spdUnit === "kmh" ? "km/h" : CFG.spdUnit);
+  const conv = v => {
+    if(v === null) return NA;
+    if(CFG.spdSrc === "raw") return fmt(v,3);
+    const kt = speedToKt(v);
+    if(kt === null) return fmt(v,3);
+    if(CFG.spdUnit === "kmh") return fmt(kt*1.852,0) + dispUnit;
+    if(CFG.spdUnit === "mph") return fmt(kt*1.150779,0) + dispUnit;
+    return fmt(kt,0) + dispUnit;
+  };
+
+  setVal($("wDir"), fmt(w.dir,0) + "°");
+  setVal($("wSpd"), conv(w.speed));
+
+  const head = w.head, cross = w.cross;
+  setVal($("wHead"),  head === null ? NA : (head > 0 ? conv(head) : "—"));
+  setVal($("wTail"),  head === null ? NA : (head < 0 ? conv(-head) : "—"));
+  setVal($("wCross"), cross === null ? NA : conv(Math.abs(cross)) + (cross>0?" R":" L"));
+  setVal($("wRelHdg"),w.rel === null ? NA : (w.rel>0?"+":"") + fmt(w.rel,0) + "°");
+  setBadge($("wHeadBadge"), head !== null, "CALC");
+  setBadge($("wTailBadge"), head !== null, "CALC");
+  setBadge($("wCrossBadge"),cross !== null, "CALC");
+
+  // La manica punta nella direzione verso cui soffia il vento
+  const blowTo = norm360(w.dir + 180);
+  $("sockRot").setAttribute("transform", "rotate(" + (blowTo - 90).toFixed(1) + " 120 120)");
+  
+  // Inclinazione: da 38° (calma) a 0° (vento forte)
+  const kt = CFG.spdSrc === "raw" ? null : speedToKt(w.speed);
+  const strength = kt === null ? Math.min(1, Math.abs(w.speed)) : Math.min(1, kt/15);
+  $("sockTilt").setAttribute("transform", "rotate(" + (38*(1-strength)).toFixed(1) + " 120 120)");
+  $("sockBody").setAttribute("opacity", (0.45 + 0.55*strength).toFixed(2));
+  $("windArrow").setAttribute("transform", "rotate(" + (blowTo).toFixed(1) + " 200 200)");
+}
+
+/* ============================== MAPPA ================================== */
+let map = null, marker = null, trackLine = null, useLeaflet = false;
+let follow = true, showTrack = true, trackDirty = false, mapReady = false;
+  let tileLayers = {}, activeLayer = "sat";
+
+const PLANE_SVG =
+  '<svg viewBox="0 0 24 24" width="42" height="42" id="planeicon" class="acft-dot">' +
+  '<path fill="#00d9ff" stroke="#080d12" stroke-width=".7" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5L21 16z"/></svg>';
+
+function initMap(){
+  if(typeof L === "undefined"){ initFallbackMap(); return; }
+  useLeaflet = true;
+  map = L.map("map", {zoomControl:false, attributionControl:true, preferCanvas:true})
+         .setView([45.42, 10.32], CFG.zoom);
+
+  tileLayers.osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {maxZoom:19, attribution:"© OpenStreetMap"});
+  tileLayers.sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    {maxZoom:18, attribution:"© Esri"});
+  tileLayers.sat.addTo(map);
+
+  L.control.scale({imperial:true, metric:true, position:"bottomright"}).addTo(map);
+
+  marker = L.marker([45.42,10.32], {
+    icon: L.divIcon({html:PLANE_SVG, className:"", iconSize:[42,42], iconAnchor:[21,21]}),
+    interactive:false, keyboard:false
+  }).addTo(map);
+
+  trackLine = L.polyline([], {color:"#00d9ff", weight:2.5, opacity:.65}).addTo(map);
+  map.on("dragstart", ()=>setFollow(false));
+  mapReady = true;
+}
+
+/* --- mappa di riserva su canvas, se Leaflet non è raggiungibile --- */
+let fbZoom = 12;
+function initFallbackMap(){
+  $("mapfallback").style.display = "block";
+  $("map").style.display = "none";
+  fbZoom = CFG.zoom;
+  mapReady = true;
+  window.addEventListener("resize", drawFallback);
+  drawFallback();
+}
+function drawFallback(){
+  const cv = $("fbCanvas"); if(!cv) return;
+  const wrap = $("mapfallback");
+  const dpr = window.devicePixelRatio || 1;
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  if(!W || !H) return;
+  cv.width = W*dpr; cv.height = H*dpr;
+  const g = cv.getContext("2d"); g.setTransform(dpr,0,0,dpr,0,0);
+  g.fillStyle = "#0a1117"; g.fillRect(0,0,W,H);
+
+  const lat = state.position.lat, lon = state.position.lon;
+  const scale = Math.pow(2, fbZoom) * 256 / 360;          // px per grado di longitudine
+  const cx = W/2, cy = H/2;
+  const cosLat = lat === null ? 1 : Math.cos(lat*Math.PI/180);
+  const px = (la,lo) => [cx + (lo-lon)*scale*cosLat, cy - (la-lat)*scale];
+
+  if(lat !== null){
+    // reticolo
+    const step = fbZoom > 12 ? 0.01 : fbZoom > 9 ? 0.05 : 0.5;
+    g.strokeStyle = "rgba(0,217,255,.12)"; g.lineWidth = 1;
+    g.fillStyle = "#3d5866"; g.font = "10px ui-monospace,monospace";
+    const spanLat = (H/2)/scale + step, spanLon = (W/2)/(scale*cosLat) + step;
+    for(let la = Math.ceil((lat-spanLat)/step)*step; la <= lat+spanLat; la += step){
+      const y = px(la,lon)[1];
+      g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke();
+      g.fillText(la.toFixed(3)+"°", 6, y-4);
+    }
+    for(let lo = Math.ceil((lon-spanLon)/step)*step; lo <= lon+spanLon; lo += step){
+      const x = px(lat,lo)[0];
+      g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke();
+      g.fillText(lo.toFixed(3)+"°", x+4, 14);
+    }
+    // traccia
+    if(showTrack && state.track.length > 1){
+      g.strokeStyle = "rgba(0,217,255,.6)"; g.lineWidth = 2; g.beginPath();
+      state.track.forEach((p,i)=>{ const q = px(p[0],p[1]); i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]); });
+      g.stroke();
+    }
+    // aereo
+    const hdg = state.attitude.heading;
+    g.save(); g.translate(cx,cy); if(hdg !== null) g.rotate(hdg*Math.PI/180);
+    g.fillStyle = "#00d9ff"; g.shadowColor = "#00d9ff"; g.shadowBlur = 10;
+    g.beginPath(); g.moveTo(0,-16); g.lineTo(12,12); g.lineTo(0,6); g.lineTo(-12,12); g.closePath(); g.fill();
+    g.restore();
+  }else{
+    g.fillStyle = "#6f8694"; g.font = "13px ui-monospace,monospace"; g.textAlign = "center";
+    g.fillText("IN ATTESA DELLA POSIZIONE", W/2, H/2);
+    g.textAlign = "start";
+  }
+  g.fillStyle = "#3d5866"; g.font = "10px ui-monospace,monospace";
+  g.fillText("MAPPA DI RISERVA · Leaflet non raggiungibile · zoom " + fbZoom, 8, H-10);
+}
+
+let lastMarkerRot = null;
+function updateMap(){
+  const lat = state.position.lat, lon = state.position.lon;
+  setVal($("mLat"), lat === null ? "--.------" : lat.toFixed(6) + (lat>=0?" N":" S"));
+  setVal($("mLon"), lon === null ? "--.------" : lon.toFixed(6) + (lon>=0?" E":" W"));
+  const n = String(state.track.length);
+  if($("mTrackN").textContent !== n) $("mTrackN").textContent = n;
+  if(!mapReady || lat === null) { if(!useLeaflet) drawFallback(); return; }
+
+  if(useLeaflet){
+    marker.setLatLng([lat, lon]);
+    const hdg = state.attitude.heading;
+    if(hdg !== null){
+      const rot = Math.round(hdg);
+      if(rot !== lastMarkerRot){
+        const ic = marker.getElement() && marker.getElement().querySelector("#planeicon");
+        if(ic) ic.style.transform = "rotate(" + rot + "deg)";
+        lastMarkerRot = rot;
+      }
+    }
+    if(trackDirty && showTrack){ trackLine.setLatLngs(state.track); trackDirty = false; }
+    if(follow) map.setView([lat, lon], map.getZoom(), {animate:false});
+  }else{
+    drawFallback();
+  }
+}
+function setFollow(on){
+  follow = on;
+  $("followBtn").classList.toggle("on", on);
+  if(on && useLeaflet && state.position.lat !== null)
+    map.setView([state.position.lat, state.position.lon], map.getZoom(), {animate:true});
+}
+
+/* ============================ INTERFACCIA ============================== */
+function showPage(id){
+  currentPage = id;
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === "page-"+id));
+  document.querySelectorAll(".navbtn").forEach(b => b.classList.toggle("active", b.dataset.page === id));
+  if(id === "map"){
+    setTimeout(()=>{ if(useLeaflet && map) map.invalidateSize(); else drawFallback(); }, 60);
+  }
+  render();
+}
+document.querySelectorAll(".navbtn").forEach(b => b.addEventListener("click", ()=>showPage(b.dataset.page)));
+
+$("zIn").addEventListener("click", ()=>{ if(useLeaflet) map.zoomIn(); else { fbZoom = Math.min(18, fbZoom+1); drawFallback(); } });
+$("zOut").addEventListener("click", ()=>{ if(useLeaflet) map.zoomOut(); else { fbZoom = Math.max(2, fbZoom-1); drawFallback(); } });
+$("followBtn").addEventListener("click", ()=>setFollow(!follow));
+$("trackBtn").addEventListener("click", ()=>{
+  showTrack = !showTrack;
+  $("trackBtn").classList.toggle("on", showTrack);
+  if(useLeaflet) trackLine.setLatLngs(showTrack ? state.track : []);
+  else drawFallback();
+});
+$("trackBtn").classList.add("on");
+
+$("clearTrackMap").addEventListener("click", ()=>{
+  state.track.length = 0;
+  trackDirty = true;
+  if(useLeaflet && trackLine) trackLine.setLatLngs([]);
+  else drawFallback();
+  $("mTrackN").textContent = "0";
+});
+
+$("layerPick").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b || !useLeaflet) return;
+  const key = b.dataset.layer;
+  if(key === activeLayer) return;
+  map.removeLayer(tileLayers[activeLayer]);
+  tileLayers[key].addTo(map);
+  activeLayer = key;
+  document.querySelectorAll("#layerPick button").forEach(x=>x.classList.toggle("on", x === b));
+});
+
+/* --------------------------- SETUP (form) ------------------------------ */
+const CFGMAP = [
+  ["cfgUrl","url","str"], ["cfgInterval","interval","int"], ["cfgTimeout","staleMs","int"],
+  ["cfgAltSrc","altSrc","str"], ["cfgAltUnit","altUnit","str"],
+  ["cfgSpdSrc","spdSrc","str"], ["cfgSpdUnit","spdUnit","str"], ["cfgSpdFactor","spdFactor","float"],
+  ["cfgMachSrc","machSrc","str"], ["cfgMachFactor","machFactor","float"],
+  ["cfgHtrH","htrH","int"], ["cfgHtrP","htrP","int"], ["cfgHtrR","htrR","int"],
+  ["cfgInvP","invP","bool"], ["cfgInvR","invR","bool"],
+  ["cfgHdgSrc","hdgSrc","str"], ["cfgTrackMax","trackMax","int"], ["cfgZoom","zoom","int"]
+];
+function cfgToForm(){
+  CFGMAP.forEach(([id,key,type])=>{
+    const el = $(id); if(!el) return;
+    if(type === "bool") el.checked = !!CFG[key];
+    else el.value = CFG[key];
+  });
+}
+function formToCfg(){
+  CFGMAP.forEach(([id,key,type])=>{
+    const el = $(id); if(!el) return;
+    if(type === "bool") CFG[key] = el.checked;
+    else if(type === "int"){ const v = parseInt(el.value,10); if(isFinite(v)) CFG[key] = v; }
+    else if(type === "float"){ const v = parseFloat(el.value); if(isFinite(v)) CFG[key] = v; }
+    else CFG[key] = String(el.value).trim() || DEFAULTS[key];
+  });
+  CFG.interval = Math.max(50, Math.min(5000, CFG.interval));
+  CFG.staleMs  = Math.max(500, CFG.staleMs);
+  CFG.trackMax = Math.max(50, Math.min(5000, CFG.trackMax));
+}
+cfgToForm();
+
+$("saveCfg").addEventListener("click", ()=>{
+  formToCfg();
+  const ok = saveCfg();
+  restartPolling();
+  $("cfgSaved").textContent = ok
+    ? "Impostazioni salvate su questo dispositivo."
+    : "Impostazioni applicate. Questo browser non permette il salvataggio: andranno reinserite alla prossima apertura.";
+  lastAltSample = null;
+});
+$("resetCfg").addEventListener("click", ()=>{
+  CFG = Object.assign({}, DEFAULTS);
+  saveCfg(); cfgToForm(); restartPolling();
+  $("cfgSaved").textContent = "Valori iniziali ripristinati.";
+});
+$("clearTrack").addEventListener("click", ()=>{
+  state.track.length = 0; trackDirty = true;
+  if(useLeaflet && trackLine) trackLine.setLatLngs([]); else drawFallback();
+});
+$("calGo").addEventListener("click", ()=>{
+  const raw = parseFloat($("calRaw").value), kt = parseFloat($("calKt").value);
+  if(!isFinite(raw) || raw === 0 || !isFinite(kt)){
+    $("calOut").textContent = "Inserisci il valore grezzo e i nodi reali per calcolare il fattore.";
+    return;
+  }
+  const f = kt / raw;
+  $("cfgSpdFactor").value = f;
+  $("cfgSpdSrc").value = "factor";
+  $("calOut").innerHTML = "Fattore calcolato: <b>" + f.toPrecision(8) + "</b> — premi Salva per applicarlo.";
+});
+
+/* --------------------------- LOOP PRINCIPALE --------------------------- */
+let pollTimer = null;
+function restartPolling(){
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(fetchData, CFG.interval);
+}
+setInterval(()=>{           // la connessione va aggiornata anche senza risposte
+  updateConnection();
+  const raw = state.aircraft.gs;
+  const el = $("calNow"); if(el) el.textContent = raw === null ? NA : String(raw);
+  const d = new Date();
+  $("clockUtc").textContent =
+    String(d.getUTCHours()).padStart(2,"0") + ":" +
+    String(d.getUTCMinutes()).padStart(2,"0") + ":" +
+    String(d.getUTCSeconds()).padStart(2,"0") + " Z";
+}, 500);
+
+window.addEventListener("resize", ()=>{
+  if(useLeaflet && map) map.invalidateSize();
+  else drawFallback();
+});
+
+buildAdi();
+updateAttitude();
+initMap();
+fetchData();
+restartPolling();
+</script>
+</body>
+</html>
