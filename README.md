@@ -101,7 +101,6 @@ The executable bundles the dashboard and can be run without installing Python on
 - `dashboard.html`: browser dashboard.
 - `script_tampermonkey.user.js`: GeoFS userscript that sends telemetry.
 - `crea_exe.bat` and `GeoFS_Server.spec`: Windows executable build files.
-- `geofs_dashboard.bat`: optional command-line server launcher.
 - `icon/icon.ico`: application icon used by the build process and GUI.
 
 ## Credits and license
