@@ -103,6 +103,5 @@ The executable bundles the dashboard and can be run without installing Python on
 
 ## Credits and license
 
-- Logo: generated with Google Gemini AI.
 - Project code and dashboard: developed with assistance from GitHub Copilot.
 

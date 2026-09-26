@@ -11,7 +11,7 @@ if errorlevel 1 (
 )
 
 echo Creazione di GeoFS_Server.exe...
-python -m PyInstaller --noconfirm --clean --onefile --windowed --name GeoFS_Server --icon "icon\icon.ico" --add-data "dashboard.html;." --add-data "icon\icon.ico;icon" server_gui.py
+python -m PyInstaller --noconfirm --clean --onefile --windowed --name GeoFS_Server --icon "icon\GeoFS_Server.ico" --add-data "dashboard.html;." --add-data "icon\GeoFS_Server.ico;icon" --add-data "icon\planefavicon.svg;icon" server_gui.py
 if errorlevel 1 (
     echo Build non riuscita.
     pause

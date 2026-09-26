@@ -68,6 +68,29 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_error(500, f"Errore caricamento dashboard: {str(e)}")
                 self.log_message(f"Errore HTML: {str(e)}")
 
+        elif self.path == "/icon/planefavicon.svg":
+            try:
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                filepath = os.path.join(script_dir, "icon", "planefavicon.svg")
+
+                if not os.path.exists(filepath):
+                    self.send_error(404, "planefavicon.svg non trovato")
+                    return
+
+                with open(filepath, "rb") as f:
+                    content = f.read()
+
+                self.send_response(200)
+                self.send_header("Content-Type", "image/svg+xml")
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                self.end_headers()
+                self.wfile.write(content)
+                self.log_message("Favicon servito")
+
+            except Exception as e:
+                self.send_error(500, f"Errore caricamento favicon: {str(e)}")
+                self.log_message(f"Errore favicon: {str(e)}")
+
         elif self.path.startswith("/data"):
             # Servi JSON dei dati
             try:
