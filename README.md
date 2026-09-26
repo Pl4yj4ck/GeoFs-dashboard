@@ -13,7 +13,7 @@ A local flight dashboard for GeoFS. The project includes a small Python HTTP ser
 ## Requirements
 
 - Windows 10 or later is recommended for the included `.bat` scripts and executable build.
-- Python 3.10 or later with Tkinter for running the Python GUI. The standard Windows Python installer normally includes Tkinter.
+- Python 3.10 or later with Tkinter for running the Python GUI. The standard Windows Python installer normally includes Tkinter. Normally you don't need to download python if you want to use the program using GeoFs_Server.exe which is in the releases, but if you want to start it automatically, edit files or simply There is an error related to python so it needs to be installed 
 - A supported browser with the Tampermonkey extension to run the GeoFS bridge userscript.
 - An internet connection for GeoFS, the weather service, Leaflet, and online map tiles. The dashboard has a canvas map fallback if Leaflet cannot be loaded.
 
