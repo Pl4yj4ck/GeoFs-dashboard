@@ -105,3 +105,29 @@ The executable bundles the dashboard and can be run without installing Python on
 
 - Project code and dashboard: developed with assistance from GitHub Copilot.
 
+## Screenshots
+
+### Attitude indicators
+
+The attitude panel displays the aircraft's orientation and flight attitude at a glance.
+
+![Attitude indicators](screenshots/assetto.png)
+
+### Flight data
+
+The data panel shows live flight information received from GeoFS.
+
+![Flight data panel](screenshots/dati.png)
+
+### Satellite map
+
+The map can use satellite imagery to show the aircraft's position and track.
+
+![Satellite map](screenshots/mappa%20sat.png)
+
+### OpenStreetMap
+
+An alternative map view using OpenStreetMap tiles.
+
+![OpenStreetMap view](screenshots/mappaosm.png)
+
