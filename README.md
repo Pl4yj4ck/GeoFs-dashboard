@@ -46,7 +46,7 @@ The dashboard needs the userscript to send it data.
 1. Install Tampermonkey from <https://www.tampermonkey.net/> in the browser where you use GeoFS.
 2. Open the Tampermonkey dashboard and choose **Create a new script**.
 3. Replace the editor contents with the contents of [`script_tampermonkey.user.js`](script_tampermonkey.user.js), then save the script.
-4. To run the script, you need to modify the extension's settings from the Chrome Web Store and change the **Allow user scripts** option from [that page](chrome://extensions/?id=dhdgffkkebhmkfjojejmpbldmpobfkfo).
+4. To run the script, you need to modify the extension's settings from the Chrome Web Store and change the **Allow user scripts** option. Go to `chrome://extensions/?id=dhdgffkkebhmkfjojejmpbldmpobfkfo`, open the extension details, and enable **Allow user scripts**.
 5. Start the Python server and open GeoFS at one of the supported `geo-fs.com` addresses. Make sure the userscript is enabled.
 6. Open the dashboard. Its connection indicator should change from **DISCONNECTED** to **CONNECTED** after GeoFS has loaded and telemetry is being received.
 
