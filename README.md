@@ -39,8 +39,6 @@ The server can also be started without the GUI:
 python _server.py
 ```
 
-The optional `geofs_dashboard.bat` starts this command and prints a local network address. It does not open a browser.
-
 ## Install the GeoFS bridge
 
 The dashboard needs the userscript to send it data.
@@ -48,8 +46,9 @@ The dashboard needs the userscript to send it data.
 1. Install Tampermonkey from <https://www.tampermonkey.net/> in the browser where you use GeoFS.
 2. Open the Tampermonkey dashboard and choose **Create a new script**.
 3. Replace the editor contents with the contents of [`script_tampermonkey.user.js`](script_tampermonkey.user.js), then save the script.
-4. Start the Python server and open GeoFS at one of the supported `geo-fs.com` addresses. Make sure the userscript is enabled.
-5. Open the dashboard. Its connection indicator should change from **DISCONNECTED** to **CONNECTED** after GeoFS has loaded and telemetry is being received.
+4. To run the script, you need to modify the extension's settings from the Chrome Web Store and change the **Allow user scripts** option from [that page](chrome://extensions/?id=dhdgffkkebhmkfjojejmpbldmpobfkfo).
+5. Start the Python server and open GeoFS at one of the supported `geo-fs.com` addresses. Make sure the userscript is enabled.
+6. Open the dashboard. Its connection indicator should change from **DISCONNECTED** to **CONNECTED** after GeoFS has loaded and telemetry is being received.
 
 By default, the userscript sends telemetry to `http://127.0.0.1:8080/data`. This is correct when the browser running GeoFS and the server are on the same computer.
 
@@ -59,10 +58,8 @@ You can view the dashboard on a tablet or another device on the same trusted loc
 
 1. Keep the server running on the computer that runs GeoFS.
 2. Find that computer's local IPv4 address. The GUI displays an address, or run `ipconfig` in Command Prompt.
-3. On the other device, open `http://<computer-ip>:8080/`, replacing `<computer-ip>` with the server computer's address. For example: `http://192.168.1.20:8080/`.
+3. On the other device, open `http://<computer-ip>:8080/`, replacing `<computer-ip>` with the server computer's address.
 4. If the dashboard cannot connect, open **SETUP** and set **Indirizzo dei dati** to `http://<computer-ip>:8080/data`, then save the settings. Allow Python through Windows Firewall on a **private** network if Windows asks.
-
-In this arrangement, GeoFS and the userscript still run on the server computer; only the dashboard is viewed on the second device. If GeoFS itself runs on a different computer from the server, change the `SERVER` value near the top of `script_tampermonkey.user.js` to the server computer's LAN address, such as `http://192.168.1.20:8080/data`.
 
 Dashboard settings are saved in the browser's local storage on that device. Use **SETUP** to adjust units, map options, or the data URL.
 
@@ -101,6 +98,7 @@ The executable bundles the dashboard and can be run without installing Python on
 - `dashboard.html`: browser dashboard.
 - `script_tampermonkey.user.js`: GeoFS userscript that sends telemetry.
 - `crea_exe.bat` and `GeoFS_Server.spec`: Windows executable build files.
+- `geofs_dashboard.bat`: optional command-line server launcher.
 - `icon/icon.ico`: application icon used by the build process and GUI.
 
 ## Credits and license
@@ -108,4 +106,3 @@ The executable bundles the dashboard and can be run without installing Python on
 - Logo: generated with Google Gemini AI.
 - Project code and dashboard: developed with assistance from GitHub Copilot.
 
-No software license has been selected for this repository. Unless a license is added, others should not assume they have permission to reuse, modify, or redistribute the project. Check the terms for GeoFS and all third-party services and assets before distributing a build.
