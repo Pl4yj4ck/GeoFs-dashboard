@@ -5,10 +5,14 @@ A local flight dashboard for GeoFS. The project includes a small Python HTTP ser
 ## Features
 
 - Live position, altitude, speed, heading, attitude, engine, and flight-status data.
-- A map with the aircraft position and track.
+- A map with the aircraft position and track, satellite and OpenStreetMap basemaps, and an OpenAIP aeronautical-data overlay.
+- A six-pack-style instruments page with an airspeed indicator, attitude indicator, altimeter, turn coordinator, heading indicator, and vertical-speed indicator.
 - Optional weather data retrieved from the GeoFS weather service.
+- An airports page with live METAR/TAF, airport elevation, runway and radio-frequency data, nearby weather stations, and links to official NOTAM sources.
 - A setup page for the data URL, display units, and dashboard settings.
 - A Windows GUI and an optional one-file Windows executable.
+
+The instruments page uses analog aircraft-style gauges. The autopilot toggle is not part of the dashboard.
 
 ## Requirements
 
@@ -63,6 +67,18 @@ You can view the dashboard on a tablet or another device on the same trusted loc
 
 Dashboard settings are saved in the browser's local storage on that device. Use **SETUP** to adjust units, map options, or the data URL.
 
+### OpenAIP aeronautical map
+
+The map's **VFR** layer uses OpenAIP's worldwide aeronautical-data PNG tiles. To enable it:
+
+1. Create an OpenAIP account and request an API client/key from your profile. See the [OpenAIP developer documentation](https://www.openaip.net/docs).
+2. Open **SETUP**, enter the key under **MAPPA**, and save the settings.
+3. Select **VFR** in the map layer controls.
+
+The key is stored in this browser's local storage and sent to OpenAIP with tile requests over HTTPS. It is not stored in the project files, but local storage is not encrypted; do not configure the key in a shared browser profile. Never paste a real key into source code or commit it. If a key has already been published, revoke it and create a replacement.
+
+OpenAIP data coverage varies by region and is community-maintained. This layer is not an official aeronautical chart and is not certified or intended for navigation. OpenAIP data is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/); check the license before commercial use. The existing satellite and OpenStreetMap basemaps remain available without an OpenAIP key.
+
 ## Build the Windows executable
 
 From the project folder, run:
@@ -88,8 +104,33 @@ The executable bundles the dashboard and can be run without installing Python on
 - The server binds to `0.0.0.0:8080`, so it is reachable from other devices on the local network. It has no authentication or HTTPS, and it allows cross-origin requests. Do not expose port `8080` to the public internet or use the server on an untrusted network.
 - The userscript sends simulator data, including latitude, longitude, and altitude, to the configured server. The server keeps the latest values in memory and prints position values to its console log.
 - The userscript requests weather data from `weather.geo-fs.com` using the simulated aircraft's latitude and longitude.
-- The dashboard loads Leaflet from `unpkg.com` and map tiles from OpenStreetMap or Esri. Those services may receive network requests from your browser when the dashboard is used.
+- METAR, TAF, and station lookups use AviationWeather.gov. Airport records, runways, and frequencies fall back to the OurAirports public datasets when AWC has no airport record. NOTAMs are not retrieved in the dashboard; use the official aviation-information service for the country concerned.
+- The dashboard loads Leaflet from `unpkg.com` and map tiles from OpenStreetMap, Esri, or OpenAIP. OpenAIP receives the configured API key with VFR tile requests. These services may receive network requests from your browser when the dashboard is used.
 - This project is not affiliated with or endorsed by GeoFS or its operators.
+
+## Screenshots
+
+
+![Satellite map](screenshots/satellitare.png)
+*Map: satellite view for following the aircraft position and track.*
+
+![OpenStreetMap](screenshots/openstreetmap.png)
+*Map: OpenStreetMap as the cartographic basemap.*
+
+![VFR map](screenshots/vfr.png)
+*Map: OpenAIP aeronautical data; coverage varies and is not certified for navigation.*
+
+![Flight data](screenshots/data.png)
+*Data: detailed position, speed, aerodynamics, engine, and aircraft-status telemetry.*
+
+![Aircraft instruments](screenshots/tools.png)
+*Instruments: analog six-pack with airspeed, attitude, altitude, turn rate, heading, and vertical speed.*
+
+![Airport information](screenshots/airport.png)
+*Airports: airport details, runways, frequencies, METAR, and TAF, with links to official NOTAM sources.*
+
+![Multiplayer map](screenshots/multi.png)
+*Multi: GeoFS multiplayer map, also available in a separate browser tab.*
 
 ## Project files
 
@@ -99,35 +140,28 @@ The executable bundles the dashboard and can be run without installing Python on
 - `script_tampermonkey.user.js`: GeoFS userscript that sends telemetry.
 - `crea_exe.bat` and `GeoFS_Server.spec`: Windows executable build files.
 - `geofs_dashboard.bat`: optional command-line server launcher.
+- `CHANGELOG.md`: notable dashboard and server changes.
 - `icon/icon.ico`: application icon used by the build process and GUI.
 
 ## Credits and license
 
-- Project code and dashboard: developed with assistance from GitHub Copilot.
+### Project code
 
-## Screenshots
+Original code in this repository is licensed under the MIT License; see [LICENSE](LICENSE). This license applies only to the project's original code and does not relicense third-party software, map tiles, data, trademarks, or services listed below.
 
-### Attitude indicators
+### Third-party software, data, and services
 
-The attitude panel displays the aircraft's orientation and flight attitude at a glance.
+- **OpenAIP:** VFR aeronautical tiles and data. Credit [OpenAIP](https://www.openaip.net/); OpenAIP data is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). The API and tile service have separate usage requirements; see the [developer documentation](https://www.openaip.net/docs).
+- **OpenStreetMap:** map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), available under the [ODbL 1.0](https://opendatacommons.org/licenses/odbl/). The public tile service is separately governed by its [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/).
+- **Esri World Imagery:** imagery service attribution: “Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community.” Use is subject to [Esri's terms](https://goto.arcgisonline.com/maps/World_Imagery); the imagery is not part of this repository and is not relicensed under MIT.
+- **Leaflet 1.9.4:** mapping library, licensed under the [BSD 2-Clause License](https://github.com/Leaflet/Leaflet/blob/main/LICENSE).
+- **Aviation Weather Center (NOAA):** source for METAR, TAF, station, and airport API information; see the [API documentation](https://aviationweather.gov/data/api/).
+- **OurAirports:** fallback source for airport, runway, and frequency datasets. Its data is released to the public domain with no accuracy or fitness guarantee; see [data and terms](https://ourairports.com/data/).
+- **GeoFS:** external flight simulator, multiplayer map, and weather endpoint used by the bridge. GeoFS names, marks, and service content belong to their respective owners. This project is not affiliated with or endorsed by GeoFS; see [GeoFS terms](https://www.geo-fs.com/pages/terms.php).
+- **Tampermonkey:** third-party browser extension required to run the userscript; see [Tampermonkey](https://www.tampermonkey.net/).
+- **PyInstaller and Pillow:** optional third-party tools used by the Windows executable build; see the [PyInstaller license](https://github.com/pyinstaller/pyinstaller/blob/develop/COPYING.txt) and [Pillow license](https://github.com/python-pillow/Pillow/blob/main/LICENSE).
+- **FAA NOTAM Search and EUROCONTROL EAD:** external links only; this dashboard does not retrieve or redistribute their NOTAM data.
 
-![Attitude indicators](screenshots/assetto.png)
+The map displays provider attribution alongside the active map layer. Provider terms and data coverage can change; review the linked terms before redistribution or commercial use. These credits are a summary, not a legal guarantee.
 
-### Flight data
-
-The data panel shows live flight information received from GeoFS.
-
-![Flight data panel](screenshots/dati.png)
-
-### Satellite map
-
-The map can use satellite imagery to show the aircraft's position and track.
-
-![Satellite map](screenshots/mappa%20sat.png)
-
-### OpenStreetMap
-
-An alternative map view using OpenStreetMap tiles.
-
-![OpenStreetMap view](screenshots/mappaosm.png)
-
+- Project code and dashboard developed with assistance from GitHub Copilot.

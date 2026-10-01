@@ -47,7 +47,7 @@ input,select{font-family:inherit;font-size:14px;color:var(--text);background:var
 input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,217,255,.12)}
 :focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 
-#app{height:100vh;height:100dvh;display:grid;grid-template-rows:auto 1fr}
+#app{height:100vh;height:100dvh;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr;min-width:0}
 
 /* ---------- TOP BAR ---------- */
 #topbar{
@@ -77,7 +77,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
 
 /* ---------- LAYOUT ---------- */
-#main{display:grid;grid-template-columns:var(--navw) 1fr;min-height:0}
+#main{display:grid;grid-template-columns:var(--navw) minmax(0,1fr);min-height:0;min-width:0}
 #nav{
   display:flex;flex-direction:column;gap:6px;padding:12px 8px;
   border-right:1px solid var(--line-soft);background:rgba(13,21,28,.6)
@@ -92,11 +92,15 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
   box-shadow:inset 0 0 20px rgba(0,217,255,.07)}
 #nav .navspacer{flex:1}
 
-#pages{position:relative;min-height:0;overflow:hidden}
+#pages{position:relative;min-height:0;min-width:0;overflow:hidden}
 .page{position:absolute;inset:0;display:none;overflow-y:auto;overflow-x:hidden;
   padding:14px;-webkit-overflow-scrolling:touch}
 .page.active{display:block}
 #page-map.active{display:grid;grid-template-rows:1fr auto;padding:0;overflow:hidden}
+#page-multi.active{display:block;padding:0;overflow:hidden;background:#0a1117}
+#multiMapFrame{display:block;width:100%;height:100%;border:0;background:#0a1117}
+.multi-frame-open{position:absolute;z-index:2;top:12px;right:12px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(8,13,18,.88);color:var(--primary);font-size:11px;letter-spacing:.06em;text-decoration:none;backdrop-filter:blur(8px)}
+.multi-frame-open:hover{background:rgba(0,217,255,.14)}
 
 /* ---------- COMPONENTI ---------- */
 .panel{
@@ -190,8 +194,26 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
 #mapstrip .v span{font-size:12px;color:var(--muted);font-family:var(--sans);margin-left:3px}
 
 /* ---------- ATTITUDE ---------- */
-.attwrap{display:grid;gap:12px;grid-template-columns:minmax(300px,1.3fr) minmax(260px,1fr);align-items:start}
-#adi{width:100%;height:auto;display:block;max-height:58vh;margin:0 auto}
+.instrument-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start;max-width:1120px;margin:0 auto}
+.instrument-card{min-width:0;padding:4px;background:none;border:0;border-radius:0;box-shadow:none}
+.instrument-card h2{justify-content:center;margin:0 0 4px;color:#c7c3b8;letter-spacing:.08em;font-size:9px}
+.instrument-card h2::after{display:none}
+.instrument-dial{display:block;width:min(100%,250px);height:auto;aspect-ratio:1;margin:0 auto 4px;filter:drop-shadow(0 5px 5px rgba(0,0,0,.7))}
+.instrument-dial-wrap{position:relative;width:min(100%,250px);margin:0 auto 4px}
+.instrument-shell{fill:#202124;stroke:#050506;stroke-width:4}
+.instrument-rim{fill:none;stroke:#77787c;stroke-width:2.5}
+.instrument-face{fill:#090a0c;stroke:#3e4044;stroke-width:3}
+.instrument-track{fill:none;stroke:rgba(232,241,245,.25);stroke-width:2}
+.instrument-ticks{stroke:#e6e3d8;stroke-width:1.8;fill:#eeeade;font:9px var(--mono)}
+.instrument-ticks .major{stroke:#fffdf3;stroke-width:2.5}
+.instrument-needle{fill:#eeeade;stroke:#242529;stroke-width:1.5}
+.instrument-hub{fill:#c9c7c0;stroke:#35363a;stroke-width:2.5}
+.instrument-readout{text-align:center;font:600 16px var(--mono);font-variant-numeric:tabular-nums;color:var(--text);min-height:22px}
+.instrument-unit{text-align:center;color:#a8a59d;font-size:9px;letter-spacing:.08em;min-height:13px}
+.instrument-label{fill:#eeeade;font:600 8px var(--mono);letter-spacing:.08em;text-anchor:middle}
+.instrument-horizon #adi{width:100%;height:auto;display:block;max-height:none;margin:0;filter:drop-shadow(0 4px 3px rgba(0,0,0,.55))}
+.instrument-horizon .adi-off{font-size:12px}
+.instrument-horizon .adi-off{border-radius:50%;flex-direction:column;font-size:9px;letter-spacing:.06em;line-height:1.4;padding:18px}
 .adi-off{
   position:absolute;inset:0;display:none;align-items:center;justify-content:center;
   background:rgba(8,13,18,.74);border-radius:var(--r);font-family:var(--mono);
@@ -199,8 +221,9 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
 }
 .adi-off.show{display:flex}
 .rel{position:relative}
-.raw{font-family:var(--mono);font-size:11px;color:var(--muted);word-break:break-all;line-height:1.7}
-.raw b{color:var(--text);font-weight:500}
+.instrument-small-values{display:flex;justify-content:center;gap:18px;color:#d9ded8;font:9px var(--mono);letter-spacing:.08em}
+.instrument-small-values div{display:flex;gap:6px;align-items:center}
+.instrument-small-values b{color:var(--text);font-size:11px}
 
 /* ---------- WIND ---------- */
 .windwrap{display:grid;gap:12px;grid-template-columns:minmax(300px,1.2fr) minmax(260px,1fr);align-items:start}
@@ -214,6 +237,24 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
 .nowind.hide{display:none}
 
 /* ---------- SETUP ---------- */
+.setup-page{padding:22px clamp(14px,3vw,34px) 30px}
+.setup-head{max-width:1240px;margin:0 auto 18px;padding:0 2px 15px;border-bottom:1px solid var(--line-soft)}
+.setup-eyebrow{font:10px var(--mono);color:var(--primary);margin-bottom:5px}
+.setup-head h1{font-size:22px;font-weight:600;line-height:1.2;margin:0;color:var(--text)}
+.setup-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;align-items:start;max-width:1240px;margin:0 auto}
+.setup-grid>.panel{min-width:0;padding:16px;border-radius:12px;background:rgba(17,26,34,.84);box-shadow:0 6px 20px rgba(0,0,0,.28);transition:border-color .18s}
+.setup-grid>.panel:hover{border-color:rgba(0,217,255,.2)}
+.setup-connection,.setup-speed{grid-column:span 7}
+.setup-altitude,.setup-attitude,.setup-map{grid-column:span 5}
+.setup-actions{grid-column:1 / -1;display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 18px}
+.setup-actions h2{grid-column:1;grid-row:1;margin-bottom:0}
+.setup-actions .act{grid-column:2;grid-row:1 / span 2;margin:0}
+.setup-actions .note{grid-column:1;grid-row:2;margin:0}
+.factor-calculator{margin-top:10px;padding-top:12px;border-top:1px solid var(--line-soft)}
+.factor-calculator .row3{align-items:end}
+.factor-calculator .field{margin-bottom:8px}
+.factor-calculator .cal-button{width:100%;min-height:40px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(0,217,255,.1);color:var(--primary);font-size:11px;letter-spacing:.08em;transition:background .15s,border-color .15s}
+.factor-calculator .cal-button:hover{background:rgba(0,217,255,.17);border-color:rgba(0,217,255,.35)}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:10px;letter-spacing:.12em;color:var(--muted);margin-bottom:6px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -229,29 +270,97 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
   border:1px solid var(--line-soft);border-radius:11px;font-size:13px;cursor:pointer;margin-bottom:8px}
 .toggle input{width:auto;accent-color:var(--primary);transform:scale(1.25);margin-right:2px}
 
+/* ---------- AEROPORTI ---------- */
+.airport-page{padding:20px 24px}
+.airport-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.airport-head h1{font-size:18px;letter-spacing:.08em;margin:0;color:var(--text)}
+.airport-search{display:grid;grid-template-columns:minmax(180px,1fr) auto auto;gap:8px;flex:1 1 540px;max-width:720px}
+.airport-search button,.airport-actions a{padding:9px 12px;border:1px solid var(--line);background:rgba(0,217,255,.1);color:var(--primary);border-radius:9px;font-size:11px;letter-spacing:.06em;text-decoration:none;white-space:nowrap}
+.airport-actions{display:flex;gap:8px;flex-wrap:wrap}
+.airport-actions button,.airport-actions a{padding:8px 10px}
+.airport-search button:disabled{opacity:.5;cursor:wait}
+.airport-state{font-size:12px;color:var(--muted);margin:8px 0 14px;min-height:18px}
+.airport-summary{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.airport-code{font:600 26px var(--mono);color:var(--primary)}
+.airport-name{font-size:16px;font-weight:600}
+.airport-meta{font:12px var(--mono);color:var(--muted);margin-top:4px}
+.airport-pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.65 var(--mono);color:var(--text);margin:0}
+.airport-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;align-content:start}
+.airport-grid>.panel{min-width:0;padding:16px;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+.airport-overview{grid-column:span 7}
+.airport-nearby-panel{grid-column:span 5}
+.airport-runways-panel{grid-column:span 8}
+.airport-frequencies-panel{grid-column:span 4}
+.airport-metar-panel,.airport-taf-panel{grid-column:span 6}
+.airport-notam-panel{grid-column:span 7}
+.airport-source-panel{grid-column:span 5}
+.airport-grid>.panel h2{margin-bottom:14px}
+.airport-overview .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+.airport-table-wrap{overflow-x:auto;overscroll-behavior-inline:contain}
+.airport-table{width:100%;border-collapse:collapse;font-size:12px}
+.airport-runways-panel .airport-table{min-width:620px}
+.airport-table th,.airport-table td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.airport-table th{font-size:9px;letter-spacing:.1em;color:var(--muted);font-weight:500}
+.airport-table td:first-child{font-family:var(--mono);color:var(--primary);white-space:nowrap}
+.airport-table tbody tr:last-child td{border-bottom:0}
+.airport-nearby{display:flex;flex-wrap:wrap;gap:6px}
+.airport-nearby button{padding:6px 8px;border:1px solid var(--line-soft);border-radius:7px;background:var(--panel-2);font:11px var(--mono);color:var(--text)}
+.airport-nearby button:hover{border-color:var(--primary);color:var(--primary)}
+.airport-notice{border-left:2px solid var(--warning);padding-left:10px}
+@media (min-width:1101px){
+  .airport-page{padding:22px 28px}
+}
+@media (max-width:1100px){
+  .airport-page{padding:16px}
+  .airport-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .airport-grid>.panel{grid-column:span 1}
+  .airport-grid>.airport-overview,.airport-grid>.airport-nearby-panel,
+  .airport-grid>.airport-runways-panel,.airport-grid>.airport-frequencies-panel{grid-column:1 / -1}
+  .airport-runways-panel .airport-table{min-width:680px}
+}
+
 /* ---------- RESPONSIVE ---------- */
 @media (orientation:portrait),(max-width:760px){
-  #main{grid-template-columns:1fr;grid-template-rows:1fr auto}
+  #main{grid-template-columns:minmax(0,1fr);grid-template-rows:1fr auto}
   #nav{
     flex-direction:row;order:2;border-right:none;border-top:1px solid var(--line);
     padding:6px 6px calc(6px + env(safe-area-inset-bottom));justify-content:space-around;
     background:rgba(13,21,28,.92);backdrop-filter:blur(12px)
   }
-  .navbtn{flex:1;padding:8px 2px;gap:4px}
+  .navbtn{flex:1;min-width:0;padding:8px 2px;gap:4px;font-size:9px}
   .navbtn svg{width:22px;height:22px}
   #nav .navspacer{display:none}
   #pages{order:1}
-  .attwrap,.windwrap{grid-template-columns:1fr}
+  .instrument-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .windwrap{grid-template-columns:1fr}
   .tile.wide{grid-column:span 1}
+  .airport-page{padding:12px}
+  .airport-head{align-items:stretch}
+  .airport-head h1{align-self:center}
+  .airport-search{grid-template-columns:minmax(0,1fr) auto}
+  .airport-search #airportNearest{grid-column:1 / -1}
+  .airport-overview .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .airport-table th,.airport-table td{padding:8px 6px}
   #mapstrip{padding-bottom:0}
   #mapstrip .cell{padding:8px 11px}
   .mapui.tl{max-width:62%}
+  .setup-page{padding:16px 14px 22px}
+  .setup-grid{gap:10px}
+  .setup-grid>.panel{padding:14px}
+  .setup-connection,.setup-altitude,.setup-speed,.setup-attitude,.setup-map,.setup-actions{grid-column:1 / -1}
 }
 @media (max-width:520px){
   #mapstrip{grid-template-columns:repeat(2,1fr)}
   .brand small{display:none}
   .row3{grid-template-columns:1fr}
   .conn{padding:6px 9px;font-size:11px}
+  .setup-head{margin-bottom:12px}
+  .setup-head h1{font-size:20px}
+  .setup-connection,.setup-altitude,.setup-speed,.setup-attitude,.setup-map,.setup-actions{grid-column:1 / -1}
+  .setup-actions{grid-template-columns:1fr;gap:8px}
+  .setup-actions h2,.setup-actions .act,.setup-actions .note{grid-column:1;grid-row:auto}
+  .setup-actions .act{flex-direction:column}
+  .setup-actions .act button{width:100%}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.001ms!important;transition-duration:.001ms!important}
@@ -279,8 +388,12 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>MAPPA</button>
       <button class="navbtn" data-page="data">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 15l3-4 3 3 4-6"/></svg>DATI</button>
-      <button class="navbtn" data-page="att">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3.5 13.5c3-2 6-2 8.5 0s5.5 2 8.5 0"/><path d="M8 12h8"/></svg>ASSETTO</button>
+      <button class="navbtn" data-page="instruments">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3.5 13.5c3-2 6-2 8.5 0s5.5 0 8.5 0"/><path d="M8 12h8"/></svg>STRUMENTI</button>
+      <button class="navbtn" data-page="airport">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 20h18M5 17 19 7M7 15l3 3M14 10l3 3M4 5l15 14"/><path d="m4 5 4 1-3 3z"/></svg>AEROPORTI</button>
+      <button class="navbtn" data-page="multi" title="Mappa multiplayer" aria-label="Mappa multiplayer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.4 2.5 3.5 5.5 3.5 9S14.4 18.5 12 21M12 3C9.6 5.5 8.5 8.5 8.5 12S9.6 18.5 12 21"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="18" cy="16" r="1" fill="currentColor"/></svg>MULTI</button>
       <div class="navspacer"></div>
       <button class="navbtn" data-page="set">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V20a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 18.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4 13.9H4a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 5.6 7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 11 4.1V4a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.6 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7H22a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.3z"/></svg>SETUP</button>
@@ -303,6 +416,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
             <div class="layerpick" id="layerPick">
               <button data-layer="sat" class="on">SAT</button>
               <button data-layer="osm">OSM</button>
+              <button data-layer="openaip" title="Layer aeronautico globale OpenAIP: copertura variabile, non ufficiale e non certificato">VFR</button>
             </div>
           </div>
 
@@ -393,103 +507,198 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
             </div>
           </div>
 
-          <div class="panel">
-            <h2>PACCHETTO GREZZO</h2>
-            <div class="raw" id="rawJson">In attesa di dati…</div>
-          </div>
         </div>
       </section>
 
-      <!-- ===================== PAGINA 3 · ATTITUDE ===================== -->
-      <section class="page" id="page-att">
-        <div class="attwrap">
-          <div class="panel rel">
-            <h2>ARTIFICIAL HORIZON</h2>
-            <svg id="adi" viewBox="0 0 400 400" role="img" aria-label="Orizzonte artificiale">
+      <!-- ===================== PAGINA 3 · STRUMENTI ===================== -->
+      <section class="page" id="page-instruments">
+        <div class="instrument-grid">
+          <div class="panel instrument-card">
+            <h2>ANEMOMETRO · TAS</h2>
+            <svg class="instrument-dial" viewBox="0 0 200 200" role="img" aria-label="Anemometro">
+              <circle class="instrument-shell" cx="100" cy="100" r="97"/><circle class="instrument-rim" cx="100" cy="100" r="92"/><circle class="instrument-face" cx="100" cy="100" r="86"/>
+              <g id="airspeedTicks" class="instrument-ticks"></g>
+              <g id="airspeedNeedle"><path class="instrument-needle" d="M100 111 L96 42 L100 27 L104 42 Z"/></g><circle class="instrument-hub" cx="100" cy="100" r="7"/>
+              <text class="instrument-label" x="100" y="157">KNOTS</text>
+            </svg>
+            <div class="instrument-readout" id="airspeedValue">N/A</div><div class="instrument-unit" id="airspeedUnit">—</div>
+          </div>
+
+          <div class="panel instrument-card instrument-horizon">
+            <h2>ORIZZONTE ARTIFICIALE</h2>
+            <div class="instrument-dial-wrap">
+            <svg id="adi" class="instrument-dial" viewBox="42 42 316 316" role="img" aria-label="Orizzonte artificiale">
               <defs>
                 <clipPath id="adiClip"><circle cx="200" cy="200" r="150"/></clipPath>
                 <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#0a6ea8"/><stop offset="100%" stop-color="#28b4e8"/>
+                  <stop offset="0%" stop-color="#82a7d5"/><stop offset="100%" stop-color="#547da9"/>
                 </linearGradient>
                 <linearGradient id="gndG" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#7a4e22"/><stop offset="100%" stop-color="#3d2711"/>
+                  <stop offset="0%" stop-color="#805947"/><stop offset="100%" stop-color="#513a34"/>
                 </linearGradient>
               </defs>
-
-              <circle cx="200" cy="200" r="158" fill="#0d151c" stroke="rgba(0,217,255,.18)" stroke-width="1"/>
-
+              <circle cx="200" cy="200" r="158" fill="#202124" stroke="#050506" stroke-width="8"/>
+              <circle cx="200" cy="200" r="151" fill="none" stroke="#77787c" stroke-width="3"/>
               <g clip-path="url(#adiClip)">
-                <g id="adiRoll">
-                  <g id="adiPitch">
-                    <rect x="-320" y="-760" width="1040" height="960" fill="url(#skyG)"/>
-                    <rect x="-320" y="200" width="1040" height="960" fill="url(#gndG)"/>
-                    <line x1="-320" y1="200" x2="720" y2="200" stroke="#e8f1f5" stroke-width="2.4"/>
-                    <g id="pitchLadder" stroke="#e8f1f5" stroke-width="1.6" fill="#e8f1f5"
-                       font-family="ui-monospace,monospace" font-size="12"></g>
-                  </g>
-                </g>
-                <!-- scala di rollio, fissa -->
-                <g id="rollScale" stroke="#e8f1f5" stroke-width="2" fill="#e8f1f5"
-                   font-family="ui-monospace,monospace" font-size="11"></g>
+                <g id="adiRoll"><g id="adiPitch">
+                  <rect x="-320" y="-760" width="1040" height="960" fill="url(#skyG)"/>
+                  <rect x="-320" y="200" width="1040" height="960" fill="url(#gndG)"/>
+                  <line x1="-320" y1="200" x2="720" y2="200" stroke="#e8f1f5" stroke-width="2.4"/>
+                  <g id="pitchLadder" stroke="#e8f1f5" stroke-width="1.6" fill="#e8f1f5" font-family="ui-monospace,monospace" font-size="12"></g>
+                </g></g>
+                <g id="rollScale" stroke="#e8f1f5" stroke-width="2" fill="#e8f1f5" font-family="ui-monospace,monospace" font-size="11"></g>
               </g>
-
-              <!-- indice di rollio mobile -->
-              <g id="rollPointer">
-                <polygon points="200,58 191,76 209,76" fill="#00d9ff"/>
-              </g>
+              <g id="rollPointer"><polygon points="200,58 191,76 209,76" fill="#00d9ff"/></g>
               <polygon points="200,44 192,30 208,30" fill="#e8f1f5" opacity=".85"/>
-
-              <!-- simbolo aereo fisso -->
-              <g stroke="#00ff88" stroke-width="4" fill="none" stroke-linecap="round">
-                <path d="M110 200 h55 l14 14"/>
-                <path d="M290 200 h-55 l-14 14"/>
-              </g>
+              <g stroke="#00ff88" stroke-width="4" fill="none" stroke-linecap="round"><path d="M110 200 h55 l14 14"/><path d="M290 200 h-55 l-14 14"/></g>
               <circle cx="200" cy="200" r="4" fill="#00ff88"/>
-
-              <circle cx="200" cy="200" r="150" fill="none" stroke="rgba(232,241,245,.25)" stroke-width="2"/>
+              <circle cx="200" cy="200" r="150" fill="none" stroke="#34363a" stroke-width="5"/>
             </svg>
-            <div class="adi-off show" id="adiOff">NESSUN DATO DI ASSETTO<br><span style="color:var(--muted);letter-spacing:0;font-family:var(--sans)">Il bridge deve inviare <code>htr</code>, oppure <code>pitch</code> e <code>roll</code>.</span></div>
+            <div class="adi-off show" id="adiOff"><strong>ATTESA DATI</strong><span style="color:var(--muted);letter-spacing:0;font-family:var(--sans)">pitch e roll</span></div>
+            </div>
+            <div class="instrument-small-values"><div>ROLL<b id="instrumentRoll">N/A</b></div><div>PITCH<b id="instrumentPitch">N/A</b></div></div>
           </div>
 
-          <div class="grid">
-            <div class="panel">
-              <h2>ASSETTO</h2>
-              <div class="tiles">
-                <div class="tile"><div class="k">ROLL</div><div class="v na" id="aRoll">N/A</div></div>
-                <div class="tile"><div class="k">PITCH</div><div class="v na" id="aPitch">N/A</div></div>
-                <div class="tile"><div class="k">HEADING</div><div class="v na" id="aHdg">N/A</div></div>
-                <div class="tile"><div class="k">AOA</div><div class="v na" id="aAoa">N/A</div></div>
-              </div>
-            </div>
+          <div class="panel instrument-card">
+            <h2>ALTIMETRO</h2>
+            <svg class="instrument-dial" viewBox="0 0 200 200" role="img" aria-label="Altimetro">
+              <circle class="instrument-shell" cx="100" cy="100" r="97"/><circle class="instrument-rim" cx="100" cy="100" r="92"/><circle class="instrument-face" cx="100" cy="100" r="86"/>
+              <g id="altimeterTicks" class="instrument-ticks"></g>
+              <g id="altNeedle10000"><path d="M100 102 L96 73 L100 58 L104 73 Z" fill="#d6d4ce" stroke="#18191b" stroke-width="1.5"/></g>
+              <g id="altNeedle1000"><path d="M100 103 L97 51 L100 40 L103 51 Z" fill="#f3f0e8" stroke="#18191b" stroke-width="1.5"/></g>
+              <g id="altNeedle100"><path d="M100 106 L98 34 L100 25 L102 34 Z" fill="#fffdf3" stroke="#18191b" stroke-width="1.5"/></g><circle class="instrument-hub" cx="100" cy="100" r="7"/>
+              <text class="instrument-label" x="100" y="128">ALTIMETER</text>
+            </svg>
+            <div class="instrument-readout" id="altimeterValue">N/A</div><div class="instrument-unit" id="altimeterUnit">—</div>
+          </div>
 
-            <div class="panel">
-              <h2>ROLL INDICATOR</h2>
-              <svg id="rollBar" viewBox="0 0 400 90" style="width:100%;height:auto">
-                <g id="rollBarTicks" stroke="rgba(232,241,245,.5)" stroke-width="2" fill="var(--muted)"
-                   font-family="ui-monospace,monospace" font-size="12"></g>
-                <line x1="200" y1="20" x2="200" y2="62" stroke="rgba(0,217,255,.35)" stroke-width="1"/>
-                <polygon id="rollBarPtr" points="200,26 191,10 209,10" fill="#00d9ff"/>
-              </svg>
-            </div>
+          <div class="panel instrument-card">
+            <h2>VIROSBANDOMETRO</h2>
+            <svg class="instrument-dial" viewBox="0 0 200 200" role="img" aria-label="Virosbandometro">
+              <circle class="instrument-shell" cx="100" cy="100" r="97"/><circle class="instrument-rim" cx="100" cy="100" r="92"/><circle class="instrument-face" cx="100" cy="100" r="86"/>
+              <g id="turnTicks" class="instrument-ticks"></g>
+              <g id="turnNeedle"><path class="instrument-needle" d="M96 73 Q100 68 104 73 L104 84 L131 75 L138 80 L106 94 L105 107 L116 119 L116 124 L100 121 L84 124 L84 119 L95 107 L94 94 L62 80 L69 75 L96 84 Z"/><path d="M88 113 Q100 109 112 113 L110 118 L100 117 L90 118 Z" fill="#77797d"/><path d="M99 77 L101 77 L101 112 L99 112 Z" fill="#77797d"/></g>
+              <circle class="instrument-hub" cx="100" cy="100" r="4"/><path d="M77 151 Q100 143 123 151 L121 163 Q100 170 79 163 Z" fill="#c8c5bd" stroke="#57585b" stroke-width="2"/><circle cx="100" cy="158" r="8" fill="#141518" stroke="#77787c" stroke-width="2"/>
+              <text class="instrument-label" x="100" y="183">2 MIN · NO PITCH</text>
+            </svg>
+            <div class="instrument-readout" id="turnValue">N/A</div><div class="instrument-unit">°/s · RATEO DA PRUA</div>
+          </div>
 
-            <div class="panel">
-              <h2>SORGENTI GREZZE</h2>
-              <div class="raw">
-                <div>htr &nbsp;= <b id="rawHtr">N/A</b></div>
-                <div>velocityDirection = <b id="rawVdir">N/A</b></div>
-                <div>heading (campo) = <b id="rawHdgField">N/A</b></div>
-              </div>
-              <div class="note hint">L'ordine di <code>htr</code> non è dato per certo. Confronta questi valori con il cockpit di GeoFS e imposta la corrispondenza in Setup.</div>
+          <div class="panel instrument-card">
+            <h2>GIRODIREZIONALE</h2>
+            <svg class="instrument-dial" viewBox="0 0 200 200" role="img" aria-label="Girodirezionale">
+              <circle class="instrument-shell" cx="100" cy="100" r="97"/><circle class="instrument-rim" cx="100" cy="100" r="92"/><circle class="instrument-face" cx="100" cy="100" r="86"/><g id="headingRose" class="instrument-ticks"></g>
+              <path d="M100 6 L95 20 L100 17 L105 20 Z" fill="#e1a145" stroke="#372d22" stroke-width="1"/>
+              <path d="M100 71 L105 94 L130 101 L130 107 L104 104 L103 128 L111 138 L111 142 L100 137 L89 142 L89 138 L97 128 L96 104 L70 107 L70 101 L95 94 Z" fill="#e4e1d8" stroke="#252629" stroke-width="2"/><circle cx="100" cy="100" r="4" fill="#141518"/>
+              <text class="instrument-label" x="100" y="157">VACUUM</text>
+            </svg>
+            <div class="instrument-readout" id="gyroValue">N/A</div><div class="instrument-unit">PRUA · GRADI</div>
+          </div>
+
+          <div class="panel instrument-card">
+            <h2>VARIOMETRO</h2>
+            <svg class="instrument-dial" viewBox="0 0 200 200" role="img" aria-label="Variometro">
+              <circle class="instrument-shell" cx="100" cy="100" r="97"/><circle class="instrument-rim" cx="100" cy="100" r="92"/><circle class="instrument-face" cx="100" cy="100" r="86"/>
+              <g id="vsiNeedle"><path class="instrument-needle" d="M100 110 L96 43 L100 28 L104 43 Z"/></g><g id="vsiTicks" class="instrument-ticks"></g><circle class="instrument-hub" cx="100" cy="100" r="7"/>
+              <text class="instrument-label" x="100" y="132">FEET PER MIN</text>
+            </svg>
+            <div class="instrument-readout" id="vsiValue">N/A</div><div class="instrument-unit">FT/MIN</div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===================== PAGINA 4 · AEROPORTI ===================== -->
+      <section class="page airport-page" id="page-airport">
+        <div class="airport-head">
+          <h1>DATI AEROPORTUALI</h1>
+          <form class="airport-search" id="airportSearchForm">
+            <input id="airportCodeInput" type="text" maxlength="4" minlength="3" pattern="[A-Za-z0-9]{3,4}" autocomplete="off" spellcheck="false" placeholder="Codice ICAO, es. LIMC" aria-label="Codice ICAO aeroporto">
+            <button type="submit">CERCA</button>
+            <button type="button" id="airportNearest">VICINO A ME</button>
+          </form>
+        </div>
+        <div class="airport-state" id="airportState" role="status" aria-live="polite">Inserisci un codice ICAO oppure cerca gli aeroporti vicino alla posizione GeoFS.</div>
+        <div class="airport-grid">
+          <div class="panel airport-overview">
+            <h2>AEROPORTO SELEZIONATO</h2>
+            <div class="airport-summary">
+              <div class="airport-code" id="airportCode">----</div>
+              <div><div class="airport-name" id="airportName">Nessun aeroporto selezionato</div><div class="airport-meta" id="airportLocation">N/A</div></div>
             </div>
+            <div class="tiles" style="margin-top:12px">
+              <div class="tile"><div class="k">ELEV. SLM (FT)</div><div class="v na" id="airportElevation">N/A</div></div>
+              <div class="tile"><div class="k">COORDINATE</div><div class="v na" id="airportCoordinates">N/A</div></div>
+              <div class="tile"><div class="k">VARIAZIONE MAG.</div><div class="v na" id="airportMagvar">N/A</div></div>
+              <div class="tile"><div class="k">TIPO / OPERAZIONI</div><div class="v na" id="airportType">N/A</div></div>
+            </div>
+            <div class="note" id="airportServices" style="margin-top:10px">Servizi aeroportuali: N/A</div>
+          </div>
+          <div class="panel airport-nearby-panel">
+            <h2>STAZIONI VICINE</h2>
+            <div class="note" style="margin-bottom:9px">Stazioni METAR/TAF trovate nell'area della posizione GeoFS.</div>
+            <div class="airport-nearby" id="airportNearby"><span class="note">Nessuna ricerca eseguita.</span></div>
+          </div>
+          <div class="panel airport-runways-panel">
+            <h2>PISTE</h2>
+            <div class="airport-table-wrap">
+              <table class="airport-table"><thead><tr><th>IDENT</th><th>ORIENTAMENTO</th><th>LUNGHEZZA × LARGHEZZA</th><th>SUPERFICIE</th><th>STATO</th></tr></thead><tbody id="airportRunways"><tr><td colspan="5" class="note">N/A</td></tr></tbody></table>
+            </div>
+          </div>
+          <div class="panel airport-frequencies-panel">
+            <h2>FREQUENZE RADIO</h2>
+            <div class="airport-table-wrap">
+              <table class="airport-table"><thead><tr><th>SERVIZIO</th><th>FREQUENZA</th></tr></thead><tbody id="airportFrequencies"><tr><td colspan="2" class="note">N/A</td></tr></tbody></table>
+            </div>
+          </div>
+          <div class="panel airport-metar-panel">
+            <h2>METAR · OSSERVAZIONE</h2>
+            <div class="tiles" style="margin-bottom:10px">
+              <div class="tile"><div class="k">OSSERVATO (UTC)</div><div class="v na" id="metarTime">N/A</div></div>
+              <div class="tile"><div class="k">VENTO</div><div class="v na" id="metarWind">N/A</div></div>
+              <div class="tile"><div class="k">TEMPERATURA / RUGIADA</div><div class="v na" id="metarTemp">N/A</div></div>
+              <div class="tile"><div class="k">QNH</div><div class="v na" id="metarQnh">N/A</div></div>
+              <div class="tile"><div class="k">VISIBILITÀ</div><div class="v na" id="metarVisibility">N/A</div></div>
+              <div class="tile"><div class="k">CATEGORIA VOLO</div><div class="v na" id="metarCategory">N/A</div></div>
+            </div>
+            <pre class="airport-pre" id="metarRaw">METAR non disponibile.</pre>
+          </div>
+          <div class="panel airport-taf-panel">
+            <h2>TAF · PREVISIONE</h2>
+            <pre class="airport-pre" id="tafRaw">TAF non disponibile.</pre>
+            <div class="note" id="tafValidity" style="margin-top:8px"></div>
+          </div>
+          <div class="panel airport-notam-panel">
+            <h2>NOTAM · AVVISI AERONAUTICI</h2>
+            <div class="note airport-notice">I NOTAM non sono forniti dall'API meteo AWC. Consulta la fonte ufficiale per il Paese interessato; questa dashboard non sostituisce la pianificazione pre-volo o i briefing AIS.</div>
+            <div class="airport-actions" style="margin-top:12px">
+              <a href="https://notams.aim.faa.gov/notamSearch/" target="_blank" rel="noopener noreferrer">RICERCA FAA NOTAM</a>
+              <a href="https://www.ead.eurocontrol.int/" target="_blank" rel="noopener noreferrer">EUROCONTROL EAD</a>
+            </div>
+          </div>
+          <div class="panel airport-source-panel">
+            <h2>FONTE E AGGIORNAMENTO</h2>
+            <div class="note">METAR, TAF e stazioni: AviationWeather.gov (NOAA). Anagrafica, piste e frequenze: AWC con fallback OurAirports. I dati possono essere incompleti o non aggiornati; confermali sulle pubblicazioni aeronautiche ufficiali.</div>
+            <div class="airport-actions" style="margin-top:12px"><button id="airportRefresh" type="button">AGGIORNA DATI</button></div>
           </div>
         </div>
       </section>
 
       <!-- ===================== PAGINA 4 · WIND ===================== -->
       <!-- ===================== PAGINA 5 · SETUP ===================== -->
-      <section class="page" id="page-set">
-        <div class="cols">
-          <div class="panel">
+      <!-- ===================== PAGINA · MAPPA MULTIPLAYER ===================== -->
+      <section class="page" id="page-multi" aria-label="Mappa multiplayer">
+        <iframe id="multiMapFrame" src="https://www.geo-fs.com/pages/map.php" title="Mappa multiplayer GeoFS" allowfullscreen loading="lazy"></iframe>
+        <a class="multi-frame-open" href="https://www.geo-fs.com/pages/map.php" target="_blank" rel="noopener noreferrer">APRI IN UNA NUOVA SCHEDA</a>
+      </section>
+
+      <section class="page setup-page" id="page-set">
+        <header class="setup-head">
+          <div class="setup-eyebrow">GEOFS DASHBOARD / CONFIGURAZIONE</div>
+          <h1>Setup</h1>
+        </header>
+        <div class="setup-grid">
+          <div class="panel setup-connection">
             <h2>CONNESSIONE</h2>
             <div class="field">
               <label for="cfgUrl">Indirizzo dei dati</label>
@@ -508,26 +717,16 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
             <div class="note">Se apri la dashboard da un dominio diverso da quello del server, server.py deve inviare l'header <code>Access-Control-Allow-Origin: *</code>. Il modo più semplice resta servire questo file dallo stesso server.py.</div>
           </div>
 
-          <div class="panel">
+          <div class="panel setup-altitude">
             <h2>ALTITUDINE</h2>
-            <div class="row2">
-              <div class="field">
-                <label for="cfgAltSrc">Unità del valore ricevuto</label>
-                <select id="cfgAltSrc">
-                  <option value="raw">Non verificata — mostra il valore grezzo</option>
-                  <option value="m">Metri</option>
-                  <option value="ft">Piedi</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="cfgAltUnit">Unità di visualizzazione</label>
-                <select id="cfgAltUnit"><option value="ft">ft</option><option value="m">m</option></select>
-              </div>
+            <div class="field">
+              <label for="cfgAltUnit">Unità di visualizzazione</label>
+              <select id="cfgAltUnit"><option value="ft">ft</option><option value="m">m</option></select>
             </div>
-            <div class="note">Verifica con l'altimetro di GeoFS su una pista di quota nota prima di scegliere. La velocità verticale viene calcolata da questo valore e resta <code>N/A</code> finché l'unità è non verificata.</div>
+            <div class="note">L'altitudine ricevuta da GeoFS è in metri. Qui puoi scegliere come visualizzarla.</div>
           </div>
 
-          <div class="panel">
+          <div class="panel setup-speed">
             <h2>VELOCITÀ</h2>
             <div class="row2">
               <div class="field">
@@ -549,12 +748,12 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
               <label for="cfgSpdFactor">Fattore: valore ricevuto × fattore = nodi</label>
               <input id="cfgSpdFactor" type="number" step="any">
             </div>
-            <div class="panel" style="background:var(--panel-2);padding:12px">
+            <div class="factor-calculator">
               <div class="note" style="margin-bottom:10px">Calcolo del fattore: leggi la velocità sull'anemometro di GeoFS e confrontala con il valore grezzo mostrato qui.</div>
               <div class="row3">
                 <div class="field"><label for="calRaw">Valore grezzo</label><input id="calRaw" type="number" step="any"></div>
                 <div class="field"><label for="calKt">Nodi reali</label><input id="calKt" type="number" step="any"></div>
-                <div class="field"><label>&nbsp;</label><button class="mbtn" id="calGo" style="width:100%;height:40px;border-radius:10px;font-family:var(--sans);font-size:12px;letter-spacing:.08em">CALCOLA</button></div>
+                <div class="field"><label>&nbsp;</label><button class="cal-button" id="calGo">CALCOLA</button></div>
               </div>
               <div class="note" id="calOut">Groundspeed grezzo attuale: <b id="calNow">N/A</b></div>
             </div>
@@ -572,7 +771,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
             </div>
           </div>
 
-          <div class="panel">
+          <div class="panel setup-attitude">
             <h2>ASSETTO · CORRISPONDENZA htr</h2>
             <div class="row3">
               <div class="field"><label for="cfgHtrH">Heading da htr[ ]</label>
@@ -582,8 +781,6 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
               <div class="field"><label for="cfgHtrR">Roll da htr[ ]</label>
                 <select id="cfgHtrR"><option value="-1">non usato</option><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
             </div>
-            <label class="toggle"><input type="checkbox" id="cfgInvP"> Inverti il segno del pitch</label>
-            <label class="toggle"><input type="checkbox" id="cfgInvR"> Inverti il segno del roll</label>
             <div class="field">
               <label for="cfgHdgSrc">Sorgente della prua</label>
               <select id="cfgHdgSrc">
@@ -596,18 +793,23 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
             <div class="note hint">La corrispondenza proposta è un'ipotesi, non un dato verificato. Mettila alla prova: rulla dritto per controllare la prua, inclina di 20° a sinistra per controllare il segno del rollio, cabra per controllare il pitch. La rotta GPS è una rotta al suolo, non la prua.</div>
           </div>
 
-          <div class="panel">
+          <div class="panel setup-map">
             <h2>MAPPA</h2>
-            <div class="row2">
-              <div class="field"><label for="cfgTrackMax">Punti di traccia conservati</label><input id="cfgTrackMax" type="number" min="50" max="5000" step="50"></div>
-              <div class="field"><label for="cfgZoom">Zoom iniziale</label><input id="cfgZoom" type="number" min="2" max="18" step="1"></div>
+            <div class="field">
+              <label for="cfgZoom">Zoom iniziale</label>
+              <input id="cfgZoom" type="number" min="2" max="18" step="1">
             </div>
+            <div class="field">
+              <label for="cfgOpenAipKey">Chiave API OpenAIP</label>
+              <input id="cfgOpenAipKey" type="password" autocomplete="new-password" spellcheck="false">
+            </div>
+            <div class="note">Per usare VFR, crea una chiave API nel <a href="https://www.openaip.net/" target="_blank" rel="noopener noreferrer">profilo OpenAIP</a>. La chiave resta nelle impostazioni di questo browser e viene inviata nelle richieste tile. Dati globali a copertura variabile, non ufficiali e non certificati per la navigazione; licenza CC BY-NC 4.0.</div>
             <div class="act">
               <button class="ghost" id="clearTrack">Cancella la traccia</button>
             </div>
           </div>
 
-          <div class="panel">
+          <div class="panel setup-actions">
             <h2>IMPOSTAZIONI</h2>
             <div class="act">
               <button id="saveCfg">Salva le impostazioni</button>
@@ -627,7 +829,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
 /* =========================================================================
    GEOFS DASHBOARD — dashboard
    Regola di fondo: nessun valore inventato. Se un dato non arriva, si scrive N/A.
-   Nessuna conversione viene applicata finché l'unità non è stata dichiarata in Setup.
+  GeoFS invia l'altitudine in metri; la dashboard converte solo l'unità di visualizzazione.
    ========================================================================= */
 
 /* ------------------------------- CONFIG -------------------------------- */
@@ -635,13 +837,13 @@ const DEFAULTS = {
   url: "/data",
   interval: 200,
   staleMs: 2000,
-  altSrc: "raw", altUnit: "ft",
+  altUnit: "ft",
   spdSrc: "raw", spdUnit: "kt", spdFactor: 1,
   machSrc: "raw", machFactor: 1,
-  htrH: 0, htrP: 1, htrR: 2, invP: false, invR: false,
+  htrH: 0, htrP: 1, htrR: 2,
   hdgSrc: "auto",
-  trackMax: 800,
-  zoom: 11
+  zoom: 11,
+  openaipKey: ""
 };
 let CFG = Object.assign({}, DEFAULTS);
 
@@ -665,12 +867,12 @@ const state = {
                 brakes:null, stall:null },
   engine:     { rpm:null, thrust:null, on:null },
   attitude:   { pitch:null, roll:null, heading:null, hdgSource:null,
-                htr:null, vdir:null, hdgField:null },
+                htr:null, vdir:null, hdgField:null, turnRate:null },
   wind:       { available:false, dir:null, speed:null, head:null, cross:null, rel:null },
   connection: { status:"bad", lastOk:0, latency:null, hz:0, errors:0 },
   track:      [],
-  raw:        null
 };
+let lastTurnSample = null;
 
 /* ------------------------------- HELPERS ------------------------------- */
 const $ = id => document.getElementById(id);
@@ -719,18 +921,14 @@ function norm360(d){ return ((d % 360) + 360) % 360; }
 function norm180(d){ let x = norm360(d); return x > 180 ? x - 360 : x; }
 
 /* --------------------------- CONVERSIONI ------------------------------- */
-/* Nessuna conversione è implicita: dipende da ciò che l'utente dichiara in Setup. */
-const M_TO_FT = 3.280839895, FT_TO_M = 0.3048;
+/* GeoFS invia l'altitudine in metri; la preferenza riguarda solo la visualizzazione. */
+const M_TO_FT = 3.280839895;
 
 function altToMeters(raw){
-  if(raw === null) return null;
-  if(CFG.altSrc === "m")  return raw;
-  if(CFG.altSrc === "ft") return raw * FT_TO_M;
-  return null; // non verificata
+  return raw;
 }
 function altDisplay(raw){
   if(raw === null) return {text:NA, raw:true};
-  if(CFG.altSrc === "raw") return {text:fmt(raw,4), raw:true};
   const m = altToMeters(raw);
   return CFG.altUnit === "m"
     ? {text:fmt(m,0)+" m", raw:false}
@@ -806,7 +1004,6 @@ async function fetchData(){
 }
 
 function parseData(d){
-  state.raw = d;
   const lla = Array.isArray(d.llaLocation) ? d.llaLocation : null;
 
   /* --- posizione: lla[0]=lon, lla[1]=lat, lla[2]=alt (come osservato) --- */
@@ -881,9 +1078,7 @@ function parseData(d){
   // Invertiamo per la convenzione standard
   if(pitch !== null) pitch = -pitch;
 
-  // Applica le inversioni di segno se configurate (oltre quella automatica)
-  if(pitch !== null && CFG.invP) pitch = -pitch;
-  if(roll !== null && CFG.invR) roll = -roll;
+  if(roll !== null) roll = -roll;
 
   at.pitch = pitch; 
   at.roll = roll;
@@ -905,6 +1100,24 @@ function parseData(d){
     }
   }
   at.hdgSource = src;
+
+  const turnSampleTime = Date.now();
+  if(at.heading === null){
+    at.turnRate = null;
+    lastTurnSample = null;
+  }else if(lastTurnSample){
+    const elapsed = (turnSampleTime - lastTurnSample.time) / 1000;
+    if(elapsed > 0 && elapsed < 2){
+      const rate = norm180(at.heading - lastTurnSample.heading) / elapsed;
+      at.turnRate = at.turnRate === null ? rate : at.turnRate*0.65 + rate*0.35;
+    }else{
+      at.turnRate = 0;
+    }
+    lastTurnSample = {heading:at.heading, time:turnSampleTime};
+  }else{
+    at.turnRate = 0;
+    lastTurnSample = {heading:at.heading, time:turnSampleTime};
+  }
 
   /* --- vento: estrai dal JSON i campi windDirection e windSpeed --- */
   const w = state.wind;
@@ -933,7 +1146,6 @@ function parseData(d){
     const last = state.track[state.track.length-1];
     if(!last || distM(last[0], last[1], lat, lon) > 2){
       state.track.push([lat, lon]);
-      if(state.track.length > CFG.trackMax) state.track.splice(0, state.track.length - CFG.trackMax);
       trackDirty = true;
     }
   }
@@ -945,7 +1157,7 @@ function render(){
   updateConnection();
   if(currentPage === "map")  { updateMap(); updateStrip(); }
   if(currentPage === "data")   updateFlightData();
-  if(currentPage === "att")    updateAttitude();
+  if(currentPage === "instruments") updateInstruments();
 }
 
 /* ---- connessione ---- */
@@ -1035,25 +1247,6 @@ function updateFlightData(){
   statusRow("stStall",     a.stall,    {on:"STALL", off:"OK", cls:"alert"});
   statusRow("stStall2",    a.stall,    {on:"STALL", off:"OK", cls:"alert"});
 
-  const rj = $("rawJson");
-  if(state.raw){
-    const keys = Object.keys(state.raw).sort();
-    let html = keys.map(k=>{
-      let v = state.raw[k];
-      if(typeof v === "object" && v !== null) v = JSON.stringify(v);
-      else if(typeof v === "number") v = String(v);
-      return k + " = <b>" + String(v) + "</b>";
-    }).join("<br>");
-    // Aggiungi stato di parsing
-    html += "<br><br><strong style='color:var(--primary)'>PARSING</strong><br>";
-    html += "pitch (grezzo da htr[1]) = <b>" + (state.attitude.htr ? state.attitude.htr[1] : "N/A") + "</b><br>";
-    html += "pitch (dopo inversione) = <b>" + (state.attitude.pitch ?? "null") + "</b><br>";
-    html += "roll = <b>" + (state.attitude.roll ?? "null") + "</b><br>";
-    html += "heading = <b>" + (state.attitude.heading ?? "null") + "</b><br>";
-    html += "htr completo = <b>" + (state.attitude.htr ? JSON.stringify(state.attitude.htr) : "null") + "</b><br>";
-    html += "CFG.invP=" + CFG.invP + ", CFG.invR=" + CFG.invR + ", CFG.htrH=" + CFG.htrH;
-    if(rj.dataset.sig !== html){ rj.innerHTML = html; rj.dataset.sig = html; }
-  }
 }
 
 /* ---- pagina assetto ---- */
@@ -1083,55 +1276,135 @@ function buildAdi(){
   });
   rs.innerHTML = r;
 
-  // barra di rollio
-  let rb = "";
-  for(let d = -60; d <= 60; d += 15){
-    const x = 200 + d*2.6;
-    rb += '<line x1="'+x+'" y1="30" x2="'+x+'" y2="'+(d===0?52:44)+'" stroke-width="'+(d===0?2.5:1.5)+'"/>';
-    rb += '<text x="'+x+'" y="70" text-anchor="middle" stroke="none">'+(d>0?"+":"")+d+'</text>';
-  }
-  $("rollBarTicks").innerHTML = rb;
-
 }
 
-function updateAttitude(){
-  const at = state.attitude;
-  // Mostra l'ADI se abbiamo ALMENO un valore di assetto
-  const has = at.pitch !== null || at.roll !== null || at.heading !== null;
-  const off = $("adiOff");
-  
-  if(has){
-    off.classList.remove("show");
-    if(!window._attLog) { window._attLog = 0; }
-    if(window._attLog++ % 10 === 0) {
-      console.log("[ADI] pitch=" + at.pitch + ", roll=" + at.roll + ", hdg=" + at.heading);
+function buildInstrumentDials(){
+  buildGaugeTicks("airspeedTicks", 0, 300, 20, 2);
+  buildGaugeTicks("altimeterTicks", 0, 9, 1, 1, 0, 360);
+  buildTurnCoordinatorTicks();
+  buildGaugeTicks("vsiTicks", -3000, 3000, 1000, 1, 135, 405);
+
+  const rose = $("headingRose");
+  let ticks = "";
+  for(let degree=0; degree<360; degree+=10){
+    const radians = (degree-90)*Math.PI/180;
+    const major = degree%30 === 0;
+    const inner = major ? 70 : 76;
+    const x1 = 100 + inner*Math.cos(radians), y1 = 100 + inner*Math.sin(radians);
+    const x2 = 100 + 84*Math.cos(radians), y2 = 100 + 84*Math.sin(radians);
+    ticks += '<line class="'+(major?"major":"")+'" x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'"/>';
+    if(major){
+      const label = degree===0 ? "N" : degree===90 ? "E" : degree===180 ? "S" : degree===270 ? "W" : String(degree/10).padStart(2,"0");
+      const x = 100 + 58*Math.cos(radians), y = 100 + 58*Math.sin(radians) + 3;
+      ticks += '<text x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="middle" stroke="none">'+label+'</text>';
     }
-  }else{
-    off.classList.add("show");
   }
+  rose.innerHTML = ticks;
+}
+
+function buildTurnCoordinatorTicks(){
+  const group = $("turnTicks"); if(!group) return;
+  let markup = "";
+  for(let index=0; index<=6; index++){
+    const angle = (-150 + index*20)*Math.PI/180;
+    const inner = index===3 ? 66 : 72;
+    const x1 = 100 + inner*Math.cos(angle), y1 = 100 + inner*Math.sin(angle);
+    const x2 = 100 + 84*Math.cos(angle), y2 = 100 + 84*Math.sin(angle);
+    markup += '<line class="'+(index===3?"major":"")+'" x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'"/>';
+    const label = index===3 ? "0" : String(Math.abs(index-3));
+    const x = 100 + 55*Math.cos(angle), y = 100 + 55*Math.sin(angle) + 3;
+    markup += '<text x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="middle" stroke="none">'+label+'</text>';
+  }
+  markup += '<text x="34" y="105" text-anchor="middle" stroke="none">L</text><text x="166" y="105" text-anchor="middle" stroke="none">R</text>';
+  group.innerHTML = markup;
+}
+
+function buildGaugeTicks(id, min, max, step, labelEvery, startAngle=-135, endAngle=135, formatLabel=value=>String(value)){
+  const group = $(id); if(!group) return;
+  let markup = "";
+  const count = Math.round((max-min)/step);
+  const fullCircle = Math.abs(endAngle-startAngle) >= 360;
+  for(let index=0; index<=count; index++){
+    const value = min + index*step;
+    const angle = (startAngle + (endAngle-startAngle)*index/(count+(fullCircle?1:0)) - 90)*Math.PI/180;
+    const major = index%labelEvery === 0;
+    const inner = major ? 68 : 74;
+    const x1 = 100 + inner*Math.cos(angle), y1 = 100 + inner*Math.sin(angle);
+    const x2 = 100 + 82*Math.cos(angle), y2 = 100 + 82*Math.sin(angle);
+    markup += '<line class="'+(major?"major":"")+'" x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'"/>';
+    if(major){
+      const x = 100 + 54*Math.cos(angle), y = 100 + 54*Math.sin(angle) + 3;
+      markup += '<text x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="middle" stroke="none">'+formatLabel(value)+'</text>';
+    }
+  }
+  group.innerHTML = markup;
+}
+
+function setDialNeedle(id, value, min, max, startAngle=-135, endAngle=135){
+  const needle = $(id); if(!needle) return;
+  if(value === null || !isFinite(value)){
+    needle.style.opacity = ".35";
+    return;
+  }
+  const ratio = Math.max(0, Math.min(1, (value-min)/(max-min)));
+  const angle = startAngle + ratio*(endAngle-startAngle);
+  needle.style.opacity = "1";
+  needle.setAttribute("transform", "rotate("+angle.toFixed(1)+" 100 100)");
+}
+
+function updateInstruments(){
+  const at = state.attitude;
+  const has = at.pitch !== null || at.roll !== null || at.heading !== null;
+  $("adiOff").classList.toggle("show", !has);
 
   const p = at.pitch ?? 0;
   const r = at.roll ?? 0;
   const pc = Math.max(-90, Math.min(90, p));
 
-  // Applica le trasformazioni SVG
   $("adiRoll").setAttribute("transform", "rotate(" + (-r).toFixed(2) + " 200 200)");
   $("adiPitch").setAttribute("transform", "translate(0," + (pc*PX_PER_DEG).toFixed(2) + ")");
   $("rollPointer").setAttribute("transform", "rotate(" + (-r).toFixed(2) + " 200 200)");
 
-  const rb = Math.max(-60, Math.min(60, r));
-  $("rollBarPtr").setAttribute("transform", "translate(" + (rb*2.6).toFixed(1) + ",0)");
-  
-  // Aggiorna i display numerici
-  setVal($("aRoll"),  at.roll  === null ? NA : (at.roll>0?"+":"") + fmt(at.roll,1) + "°");
-  setVal($("aPitch"), at.pitch === null ? NA : (at.pitch>0?"+":"") + fmt(at.pitch,1) + "°");
-  setVal($("aHdg"),   at.heading === null ? NA : fmt(at.heading,0) + "°");
-  setVal($("aAoa"),   state.aircraft.aoa === null ? NA : fmt(state.aircraft.aoa,2) + "°");
+  setVal($("instrumentRoll"), at.roll === null ? NA : (at.roll>0?"+":"")+fmt(at.roll,1)+"°");
+  setVal($("instrumentPitch"), at.pitch === null ? NA : (at.pitch>0?"+":"")+fmt(at.pitch,1)+"°");
 
-  // Debug: mostra i valori grezzi ricevuti
-  setVal($("rawHtr"),  at.htr  ? "[" + at.htr.map(v=>typeof v==="number"?v.toFixed(4):String(v)).join(", ") + "]" : NA);
-  setVal($("rawVdir"), at.vdir ? "[" + at.vdir.map(v=>typeof v==="number"?v.toFixed(4):String(v)).join(", ") + "]" : NA);
-  setVal($("rawHdgField"), at.hdgField === null ? NA : fmt(at.hdgField,2));
+  const tas = state.aircraft.tas;
+  const tasDisplay = speedDisplay(tas);
+  const tasKt = speedToKt(tas);
+  const speedUnit = CFG.spdSrc === "raw" || tasKt === null ? "VALORE NON CONVERTITO" : CFG.spdUnit;
+  const speedDial = tasKt === null ? tas : CFG.spdUnit === "kmh" ? tasKt*1.852 : CFG.spdUnit === "mph" ? tasKt*1.150779 : tasKt;
+  setDialNeedle("airspeedNeedle", speedDial, 0, 300);
+  setVal($("airspeedValue"), tasDisplay.text);
+  setVal($("airspeedUnit"), speedUnit);
+
+  const altitude = state.position.alt;
+  const altitudeValue = altitude === null ? null : CFG.altUnit === "m" ? altitude : altitude*M_TO_FT;
+  const altitudeDisplay = altDisplay(altitude);
+  if(altitudeValue === null){
+    ["altNeedle100","altNeedle1000","altNeedle10000"].forEach(id=>setDialNeedle(id,null,0,1));
+  }else{
+    setDialNeedle("altNeedle100", altitudeValue%1000, 0, 1000, 0, 360);
+    setDialNeedle("altNeedle1000", altitudeValue%10000, 0, 10000, 0, 360);
+    setDialNeedle("altNeedle10000", altitudeValue%100000, 0, 100000, 0, 360);
+  }
+  setVal($("altimeterValue"), altitudeDisplay.text);
+  setVal($("altimeterUnit"), CFG.altUnit.toUpperCase());
+
+  setDialNeedle("turnNeedle", at.turnRate, -3, 3, -25, 25);
+  setVal($("turnValue"), at.turnRate === null ? NA : (at.turnRate>0?"+":"")+fmt(at.turnRate,1));
+
+  if(at.heading === null){
+    $("headingRose").style.opacity = ".35";
+    setVal($("gyroValue"), NA);
+  }else{
+    $("headingRose").style.opacity = "1";
+    $("headingRose").setAttribute("transform", "rotate("+(-at.heading).toFixed(1)+" 100 100)");
+    setVal($("gyroValue"), fmt(at.heading,0)+"°");
+  }
+
+  const vsi = state.position.vsFpm;
+  setDialNeedle("vsiNeedle", vsi, -3000, 3000, 135, 405);
+  setVal($("vsiValue"), vsi === null ? NA : (vsi>0?"+":"")+fmt(vsi,0));
 }
 
 /* ---- pagina vento ---- */
@@ -1207,6 +1480,10 @@ function initMap(){
     {maxZoom:19, attribution:"© OpenStreetMap"});
   tileLayers.sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     {maxZoom:18, attribution:"© Esri"});
+  tileLayers.openaip = L.tileLayer(
+    openAipTileUrl(),
+    {minZoom:2, maxZoom:18, attribution:'<a href="https://www.openaip.net/" target="_blank" rel="noopener noreferrer">© OpenAIP</a> · CC BY-NC 4.0 · copertura variabile, non certificata'}
+  );
   tileLayers.sat.addTo(map);
 
   L.control.scale({imperial:true, metric:true, position:"bottomright"}).addTo(map);
@@ -1219,6 +1496,12 @@ function initMap(){
   trackLine = L.polyline([], {color:"#00d9ff", weight:2.5, opacity:.65}).addTo(map);
   map.on("dragstart", ()=>setFollow(false));
   mapReady = true;
+}
+
+function openAipTileUrl(){
+  const key = String(CFG.openaipKey || "").trim();
+  return "https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.png" +
+    (key ? "?apiKey=" + encodeURIComponent(key) : "");
 }
 
 /* --- mappa di riserva su canvas, se Leaflet non è raggiungibile --- */
@@ -1317,6 +1600,213 @@ function setFollow(on){
     map.setView([state.position.lat, state.position.lon], map.getZoom(), {animate:true});
 }
 
+let airportSelectedCode = "";
+let airportRequestId = 0;
+let nearbyLoaded = false;
+
+function setAirportState(text){
+  const el = $("airportState");
+  if(el.textContent !== text) el.textContent = text;
+}
+
+async function fetchAwc(endpoint, params){
+  const query = new URLSearchParams(Object.assign({product:endpoint}, params));
+  const response = await fetch("/aviation?" + query.toString(), {cache:"no-store"});
+  if(!response.ok) throw new Error("HTTP " + response.status);
+  return response.json();
+}
+
+function setAirportText(id, value){
+  const text = value === null || value === undefined || value === "" ? NA : String(value);
+  setVal($(id), text);
+}
+
+function distanceKm(lat1, lon1, lat2, lon2){
+  const rad = Math.PI/180, dLat = (lat2-lat1)*rad, dLon = (lon2-lon1)*rad;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLon/2)**2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function addAirportTableRows(id, rows, colCount, emptyText){
+  const body = $(id);
+  body.replaceChildren();
+  if(!rows.length){
+    const row = document.createElement("tr"), cell = document.createElement("td");
+    cell.colSpan = colCount; cell.className = "note"; cell.textContent = emptyText;
+    row.appendChild(cell); body.appendChild(row); return;
+  }
+  rows.forEach(values=>{
+    const row = document.createElement("tr");
+    values.forEach(value=>{
+      const cell = document.createElement("td");
+      cell.textContent = value === null || value === undefined || value === "" ? NA : String(value);
+      row.appendChild(cell);
+    });
+    body.appendChild(row);
+  });
+}
+
+function runwayOrientation(ident, runway){
+  const trueHeadings = [runway.le_heading_degT, runway.he_heading_degT]
+    .filter(value=>value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)));
+  if(trueHeadings.length) return trueHeadings.map(value=>String(Math.round(Number(value))).padStart(3,"0") + "°T").join(" / ");
+  const ends = String(ident || "").match(/\d{2}/g);
+  if(!ends || !ends.length) return NA;
+  return ends.slice(0,2).map(end=>String(Number(end)*10).padStart(3,"0") + "°").join(" / ") + " MAG";
+}
+
+function renderAirportDetails(airport, station){
+  const data = airport || station || {};
+  const code = data.icaoId || data.id || airportSelectedCode;
+  setAirportText("airportCode", code);
+  setAirportText("airportName", data.name || data.site || "Nome non disponibile");
+  const state = data.state && !data.state.startsWith((data.country || "") + "-") ? data.state : "";
+  const region = [state, data.country].filter(Boolean).join(", ");
+  setAirportText("airportLocation", [data.iataId ? "IATA " + data.iataId : "", region].filter(Boolean).join(" · "));
+  const elevationFt = data.elev !== null && data.elev !== undefined
+    ? Number(data.elev) / 0.3048
+    : data.elevationFt !== null && data.elevationFt !== undefined
+      ? Number(data.elevationFt)
+      : null;
+  const elevation = elevationFt === null || !Number.isFinite(elevationFt)
+    ? null : Math.round(elevationFt).toLocaleString("it-IT") + " ft SLM";
+  setAirportText("airportElevation", elevation);
+  setAirportText("airportCoordinates", data.lat !== null && data.lat !== undefined && data.lon !== null && data.lon !== undefined && Number.isFinite(Number(data.lat)) && Number.isFinite(Number(data.lon))
+    ? Number(data.lat).toFixed(4) + ", " + Number(data.lon).toFixed(4) : null);
+  setAirportText("airportMagvar", data.magdec || null);
+  setAirportText("airportType", [data.type, data.operations ? "OPS " + data.operations : ""].filter(Boolean).join(" · ") || null);
+  const services = [data.tower ? "Torre " + data.tower : "", data.services ? "Servizi " + data.services : "", data.beacon ? "Faro " + data.beacon : ""]
+    .filter(Boolean).join(" · ");
+  $("airportServices").textContent = services ? "Codici AWC: " + services : "Codici dei servizi aeroportuali non disponibili nella fonte.";
+
+  const surfaceNames = {A:"Asfalto", ASP:"Asfalto", C:"Calcestruzzo", CON:"Calcestruzzo", G:"Erba", GRS:"Erba", GRE:"Ghiaia", GR:"Ghiaia", TURF:"Erba", WATER:"Acqua", DIRT:"Terra", UNK:"Sconosciuta"};
+  const runways = Array.isArray(data.runways) ? data.runways.map(runway=>{
+    const dimensions = String(runway.dimension || "").match(/^(\d+)x(\d+)$/i);
+    let length = NA, width = NA;
+    if(dimensions){
+      const lengthFt = Number(dimensions[1]), widthFt = Number(dimensions[2]);
+      length = lengthFt.toLocaleString("it-IT") + " ft / " + Math.round(lengthFt*0.3048).toLocaleString("it-IT") + " m";
+      width = widthFt.toLocaleString("it-IT") + " ft / " + Math.round(widthFt*0.3048).toLocaleString("it-IT") + " m";
+    }
+    const surface = String(runway.surface || "").trim().toUpperCase();
+    const status = runway.closed === true || runway.closed === "1" ? "CHIUSA"
+      : runway.closed === false || runway.closed === "0" ? "APERTA" : "NON VERIFICATO";
+    return [runway.id || NA, runwayOrientation(runway.id, runway), length + " × " + width,
+      (surfaceNames[surface] || (surface ? "Codice " + surface : "Non indicata")), status];
+  }) : [];
+  addAirportTableRows("airportRunways", runways, 5, "Piste non presenti nella fonte per questo aeroporto.");
+
+  let frequencies = [];
+  if(typeof data.freqs === "string"){
+    frequencies = data.freqs.split(";").map(entry=>{
+      const parts = entry.split(",");
+      return [parts.slice(0,-1).join(",").trim() || "Servizio", parts[parts.length-1].trim() + " MHz"];
+    }).filter(row=>row[1] !== " MHz");
+  }else if(Array.isArray(data.freqs)){
+    frequencies = data.freqs.map(frequency=>[frequency.description || frequency.type || "Servizio", frequency.frequency_mhz ? frequency.frequency_mhz + " MHz" : NA]);
+  }
+  addAirportTableRows("airportFrequencies", frequencies, 2, "Frequenze non disponibili nella fonte.");
+}
+
+function renderMetar(metar){
+  const item = metar || {};
+  setAirportText("metarTime", item.obsTime ? new Date(item.obsTime*1000).toISOString().replace("T"," ").slice(0,16) + "Z" : null);
+  const wind = item.wdir === null || item.wdir === undefined ? "" : String(item.wdir).padStart(3,"0") + "° ";
+  const windSpeed = item.wspd === null || item.wspd === undefined ? "" : item.wspd + " kt";
+  const gust = item.wgst === null || item.wgst === undefined ? "" : " G" + item.wgst;
+  setAirportText("metarWind", wind || windSpeed ? (wind + windSpeed + gust).trim() : null);
+  setAirportText("metarTemp", item.temp === null || item.temp === undefined ? null : item.temp + "°C / " + (item.dewp ?? NA) + "°C");
+  setAirportText("metarQnh", item.altim === null || item.altim === undefined ? null : Number(item.altim).toFixed(1) + " hPa");
+  setAirportText("metarVisibility", item.visib ? item.visib + " SM" : null);
+  setAirportText("metarCategory", item.fltCat || null);
+  $("metarRaw").textContent = item.rawOb || "METAR non disponibile per questa stazione.";
+}
+
+function renderTaf(taf){
+  const item = taf || {};
+  $("tafRaw").textContent = item.rawTAF || "TAF non disponibile per questa stazione.";
+  const from = item.validTimeFrom ? new Date(item.validTimeFrom*1000).toISOString().replace("T"," ").slice(0,16) + "Z" : "";
+  const to = item.validTimeTo ? new Date(item.validTimeTo*1000).toISOString().replace("T"," ").slice(0,16) + "Z" : "";
+  $("tafValidity").textContent = from && to ? "Validità: " + from + " → " + to : "";
+}
+
+async function loadAirport(code){
+  const id = ++airportRequestId;
+  const airportCode = String(code || "").trim().toUpperCase();
+  if(!/^[A-Z0-9]{3,4}$/.test(airportCode)){ setAirportState("Inserisci un codice ICAO valido (3 o 4 caratteri)."); return; }
+  airportSelectedCode = airportCode;
+  $("airportCodeInput").value = airportCode;
+  setAirportState("Caricamento dati per " + airportCode + "…");
+  $("metarRaw").textContent = "Caricamento METAR…";
+  $("tafRaw").textContent = "Caricamento TAF…";
+  const results = await Promise.allSettled([
+    fetchAwc("airport", {ids:airportCode}), fetchAwc("stationinfo", {ids:airportCode}),
+    fetchAwc("metar", {ids:airportCode}), fetchAwc("taf", {ids:airportCode})
+  ]);
+  if(id !== airportRequestId) return;
+  const value = index => results[index].status === "fulfilled" && Array.isArray(results[index].value) ? results[index].value[0] || null : null;
+  const airport = value(0), station = value(1), metar = value(2), taf = value(3);
+  renderAirportDetails(airport, station);
+  renderMetar(metar);
+  renderTaf(taf);
+  const failures = results.filter(result=>result.status === "rejected").length;
+  const available = [airport, station, metar, taf].filter(Boolean).length;
+  const source = airport && airport.source ? airport.source : "AviationWeather.gov";
+  setAirportState(available ? "Dati ricevuti per " + airportCode + ". Anagrafica: " + source + "; meteo: AviationWeather.gov." + (failures ? " Alcuni prodotti non hanno risposto; consulta le sezioni senza dati." : "")
+    : "Nessun dato trovato per " + airportCode + ". Verifica il codice o prova una stazione vicina.");
+}
+
+function renderNearbyStations(stations, lat, lon){
+  const container = $("airportNearby");
+  container.replaceChildren();
+  if(!stations.length){
+    const empty = document.createElement("span"); empty.className = "note"; empty.textContent = "Nessuna stazione METAR/TAF trovata nell'area."; container.appendChild(empty); return;
+  }
+  stations.slice(0,12).forEach(station=>{
+    const button = document.createElement("button");
+    button.type = "button"; button.dataset.airportCode = station.icaoId;
+    button.textContent = station.icaoId + " · " + (station.site || station.icaoId) + " · " + distanceKm(lat,lon,Number(station.lat),Number(station.lon)).toFixed(0) + " km";
+    container.appendChild(button);
+  });
+}
+
+async function loadNearbyAirports(autoSelect){
+  const lat = state.position.lat, lon = state.position.lon;
+  if(lat === null || lon === null){ setAirportState("Posizione GeoFS non disponibile: attendi la connessione o inserisci un codice ICAO."); return; }
+  const button = $("airportNearest"); button.disabled = true;
+  setAirportState("Ricerca stazioni METAR/TAF vicino alla posizione GeoFS…");
+  try{
+    const south = Math.max(-90,lat-2), north = Math.min(90,lat+2);
+    const west = Math.max(-180,lon-2), east = Math.min(180,lon+2);
+    const data = await fetchAwc("stationinfo", {bbox:[south,west,north,east].join(",")});
+    const stations = (Array.isArray(data) ? data : []).filter(station=>station.icaoId && station.lat !== null && station.lat !== undefined && station.lon !== null && station.lon !== undefined && Number.isFinite(Number(station.lat)) && Number.isFinite(Number(station.lon)) &&
+      Array.isArray(station.siteType) && station.siteType.some(type=>type === "METAR" || type === "TAF") && distanceKm(lat,lon,Number(station.lat),Number(station.lon)) <= 220)
+      .sort((a,b)=>distanceKm(lat,lon,Number(a.lat),Number(a.lon))-distanceKm(lat,lon,Number(b.lat),Number(b.lon)));
+    renderNearbyStations(stations,lat,lon);
+    nearbyLoaded = true;
+    if(stations.length){
+      setAirportState("Trovate " + stations.length + " stazioni meteo entro circa 220 km; seleziona un codice per i dettagli.");
+      if(autoSelect && !airportSelectedCode) await loadAirport(stations[0].icaoId);
+    }else setAirportState("Nessuna stazione METAR/TAF trovata entro circa 220 km.");
+  }catch(error){
+    setAirportState("Ricerca AWC non riuscita: " + error.message + ". Verifica la connessione Internet.");
+  }finally{ button.disabled = false; }
+}
+
+$("airportSearchForm").addEventListener("submit", event=>{
+  event.preventDefault();
+  loadAirport($("airportCodeInput").value);
+});
+$("airportNearest").addEventListener("click", ()=>loadNearbyAirports(false));
+$("airportNearby").addEventListener("click", event=>{
+  const button = event.target.closest("[data-airport-code]");
+  if(button) loadAirport(button.dataset.airportCode);
+});
+$("airportRefresh").addEventListener("click", ()=>{
+  if(airportSelectedCode) loadAirport(airportSelectedCode);
+  else loadNearbyAirports(false);
+});
+
 /* ============================ INTERFACCIA ============================== */
 function showPage(id){
   currentPage = id;
@@ -1325,6 +1815,7 @@ function showPage(id){
   if(id === "map"){
     setTimeout(()=>{ if(useLeaflet && map) map.invalidateSize(); else drawFallback(); }, 60);
   }
+  if(id === "airport" && !nearbyLoaded && state.position.lat !== null) loadNearbyAirports(true);
   render();
 }
 document.querySelectorAll(".navbtn").forEach(b => b.addEventListener("click", ()=>showPage(b.dataset.page)));
@@ -1352,6 +1843,12 @@ $("layerPick").addEventListener("click", e=>{
   const b = e.target.closest("button"); if(!b || !useLeaflet) return;
   const key = b.dataset.layer;
   if(key === activeLayer) return;
+  if(key === "openaip" && !CFG.openaipKey.trim()){
+    $("cfgSaved").textContent = "Inserisci e salva la chiave API OpenAIP per attivare VFR.";
+    showPage("set");
+    $("cfgOpenAipKey").focus();
+    return;
+  }
   map.removeLayer(tileLayers[activeLayer]);
   tileLayers[key].addTo(map);
   activeLayer = key;
@@ -1361,12 +1858,12 @@ $("layerPick").addEventListener("click", e=>{
 /* --------------------------- SETUP (form) ------------------------------ */
 const CFGMAP = [
   ["cfgUrl","url","str"], ["cfgInterval","interval","int"], ["cfgTimeout","staleMs","int"],
-  ["cfgAltSrc","altSrc","str"], ["cfgAltUnit","altUnit","str"],
+  ["cfgAltUnit","altUnit","str"],
   ["cfgSpdSrc","spdSrc","str"], ["cfgSpdUnit","spdUnit","str"], ["cfgSpdFactor","spdFactor","float"],
   ["cfgMachSrc","machSrc","str"], ["cfgMachFactor","machFactor","float"],
   ["cfgHtrH","htrH","int"], ["cfgHtrP","htrP","int"], ["cfgHtrR","htrR","int"],
-  ["cfgInvP","invP","bool"], ["cfgInvR","invR","bool"],
-  ["cfgHdgSrc","hdgSrc","str"], ["cfgTrackMax","trackMax","int"], ["cfgZoom","zoom","int"]
+  ["cfgHdgSrc","hdgSrc","str"], ["cfgZoom","zoom","int"],
+  ["cfgOpenAipKey","openaipKey","str"]
 ];
 function cfgToForm(){
   CFGMAP.forEach(([id,key,type])=>{
@@ -1385,7 +1882,6 @@ function formToCfg(){
   });
   CFG.interval = Math.max(50, Math.min(5000, CFG.interval));
   CFG.staleMs  = Math.max(500, CFG.staleMs);
-  CFG.trackMax = Math.max(50, Math.min(5000, CFG.trackMax));
 }
 cfgToForm();
 
@@ -1393,6 +1889,7 @@ $("saveCfg").addEventListener("click", ()=>{
   formToCfg();
   const ok = saveCfg();
   restartPolling();
+  if(useLeaflet && tileLayers.openaip) tileLayers.openaip.setUrl(openAipTileUrl());
   $("cfgSaved").textContent = ok
     ? "Impostazioni salvate su questo dispositivo."
     : "Impostazioni applicate. Questo browser non permette il salvataggio: andranno reinserite alla prossima apertura.";
@@ -1418,7 +1915,6 @@ $("calGo").addEventListener("click", ()=>{
   $("cfgSpdSrc").value = "factor";
   $("calOut").innerHTML = "Fattore calcolato: <b>" + f.toPrecision(8) + "</b> — premi Salva per applicarlo.";
 });
-
 /* --------------------------- LOOP PRINCIPALE --------------------------- */
 let pollTimer = null;
 function restartPolling(){
@@ -1442,7 +1938,8 @@ window.addEventListener("resize", ()=>{
 });
 
 buildAdi();
-updateAttitude();
+buildInstrumentDials();
+updateInstruments();
 initMap();
 fetchData();
 restartPolling();

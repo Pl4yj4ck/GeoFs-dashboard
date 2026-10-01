@@ -3,3 +3,16 @@ __pycache__/
 *.py[cod]
 build/
 dist/
+
+# Local credentials and private keys
+.env
+.env.*
+!.env.example
+secrets/
+credentials/
+credentials*.json
+secrets.*
+*.key
+*.pem
+*.p12
+*.pfx

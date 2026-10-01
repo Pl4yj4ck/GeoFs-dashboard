@@ -19,8 +19,13 @@
   );
 
   const SERVER = "http://127.0.0.1:8080/data";
+  const COMMANDS = "http://127.0.0.1:8080/command";
   let bridgeStarted = false;
   let lastSentData = {};
+  let sendingData = false;
+  let serverErrorLogged = false;
+  let commandPollInFlight = false;
+  let commandErrorLogged = false;
   let lastWeatherFetch = 0;
 
   function startBridge() {
@@ -74,6 +79,37 @@
     }
 
     setInterval(fetchWeather, 5000);
+
+    async function pollCommands() {
+      if (commandPollInFlight) return;
+      commandPollInFlight = true;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 1500);
+      try {
+        const response = await fetch(COMMANDS, { cache: "no-store", signal: controller.signal });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const payload = await response.json();
+        if (Array.isArray(payload.commands)) {
+          payload.commands.forEach(command => {
+            if (command !== "toggle_autopilot") return;
+            const key = { key: "a", code: "KeyA", keyCode: 65, which: 65, bubbles: true, cancelable: true };
+            document.dispatchEvent(new KeyboardEvent("keydown", key));
+            document.dispatchEvent(new KeyboardEvent("keyup", key));
+          });
+        }
+        commandErrorLogged = false;
+      } catch (error) {
+        if (!commandErrorLogged) {
+          console.error("[GeoFS Tablet] Lettura comandi non riuscita:", error);
+          commandErrorLogged = true;
+        }
+      } finally {
+        clearTimeout(timeout);
+        commandPollInFlight = false;
+      }
+    }
+
+    setInterval(pollCommands, 250);
 
     setInterval(() => {
       try {
@@ -206,17 +242,30 @@
 
         // === INVIA SOLO SE CI SONO CAMBIAMENTI ===
         const dataStr = JSON.stringify(data);
-        if (dataStr === JSON.stringify(lastSentData)) {
+        if (dataStr === JSON.stringify(lastSentData) || sendingData) {
           return; // Nessun cambio, non inviare
         }
-        lastSentData = data;
+        sendingData = true;
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 3000);
 
         fetch(SERVER, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: dataStr
-        }).catch(() => {
-          // Server non disponibile, ignora silenziosamente
+          body: dataStr,
+          signal: controller.signal
+        }).then(response => {
+          if (!response.ok) throw new Error("HTTP " + response.status);
+          lastSentData = data;
+          serverErrorLogged = false;
+        }).catch(error => {
+          if (!serverErrorLogged) {
+            console.error("[GeoFS Tablet] Invio al server non riuscito:", error);
+            serverErrorLogged = true;
+          }
+        }).finally(() => {
+          clearTimeout(timeout);
+          sendingData = false;
         });
 
       } catch (error) {
