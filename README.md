@@ -9,7 +9,7 @@ A local flight dashboard for GeoFS. The project includes a small Python HTTP ser
 - A six-pack-style instruments page with an airspeed indicator, attitude indicator, altimeter, turn coordinator, heading indicator, and vertical-speed indicator.
 - Optional weather data retrieved from the GeoFS weather service.
 - An airports page with live METAR/TAF, airport elevation, runway and radio-frequency data, nearby weather stations, and links to official NOTAM sources.
-- A setup page for the data URL, display units, and dashboard settings.
+- A setup page for the data URL, display units, dashboard settings, light/dark theme, Italian/English interface language, and customizable accent color.
 - A Windows GUI and an optional one-file Windows executable.
 
 The instruments page uses analog aircraft-style gauges. The autopilot toggle is not part of the dashboard.
@@ -17,9 +17,9 @@ The instruments page uses analog aircraft-style gauges. The autopilot toggle is 
 ## Requirements
 
 - Windows 10 or later is recommended for the included `.bat` scripts and executable build.
-- Python 3.10 or later with Tkinter for running the Python GUI. The standard Windows Python installer normally includes Tkinter. Normally you don't need to download python if you want to use the program using GeoFs_Server.exe which is in the releases, but if you want to start it automatically, edit files or simply There is an error related to python so it needs to be installed 
+- Python 3.10 or later with Tkinter for running the Python GUI. The standard Windows Python installer normally includes Tkinter.
 - A supported browser with the Tampermonkey extension to run the GeoFS bridge userscript.
-- An internet connection for GeoFS, the weather service, Leaflet, and online map tiles. The dashboard has a canvas map fallback if Leaflet cannot be loaded.
+- An internet connection for GeoFS, the weather service, Leaflet, and online map tiles. Leaflet loads asynchronously so the dashboard remains usable while it loads; a canvas map fallback is available if Leaflet cannot be loaded.
 
 Running the server from Python uses only the Python standard library. Building the executable also requires PyInstaller and Pillow; `crea_exe.bat` installs them.
 
@@ -66,14 +66,15 @@ You can view the dashboard on a tablet or another device on the same trusted loc
 4. If the dashboard cannot connect, open **SETUP** and set **Indirizzo dei dati** to `http://<computer-ip>:8080/data`, then save the settings. Allow Python through Windows Firewall on a **private** network if Windows asks.
 
 Dashboard settings are saved in the browser's local storage on that device. Use **SETUP** to adjust units, map options, or the data URL.
+The **PERSONALIZZAZIONE** settings let you select the light or dark theme, switch the interface between Italian and English, and choose its accent color. Save the settings to keep your choices on the current device.
 
 ### OpenAIP aeronautical map
 
-The map's **VFR** layer uses OpenAIP's worldwide aeronautical-data PNG tiles. To enable it:
+The map's **VFR** layer displays OpenAIP's worldwide aeronautical-data PNG tiles over the OpenStreetMap basemap. To enable it:
 
 1. Create an OpenAIP account and request an API client/key from your profile. See the [OpenAIP developer documentation](https://www.openaip.net/docs).
 2. Open **SETUP**, enter the key under **MAPPA**, and save the settings.
-3. Select **VFR** in the map layer controls.
+3. Select **VFR** in the map layer controls, then choose **SAT**, **OSM**, or **NESSUNA** as the background beneath OpenAIP.
 
 The key is stored in this browser's local storage and sent to OpenAIP with tile requests over HTTPS. It is not stored in the project files, but local storage is not encrypted; do not configure the key in a shared browser profile. Never paste a real key into source code or commit it. If a key has already been published, revoke it and create a replacement.
 

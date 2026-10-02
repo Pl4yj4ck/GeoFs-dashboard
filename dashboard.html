@@ -8,10 +8,6 @@
 <link rel="icon" type="image/svg+xml" href="/icon/planefavicon.svg">
 <title>GeoFS Dashboard</title>
 
-<!-- Leaflet (opzionale: se non raggiungibile, la dashboard usa una mappa di fallback su canvas) -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <style>
 :root{
   --bg:#080d12;
@@ -23,7 +19,7 @@
   --danger:#ff4057;
   --text:#e8f1f5;
   --muted:#6f8694;
-  --line:rgba(0,217,255,.14);
+  --line:color-mix(in srgb,var(--primary) 18%,transparent);
   --line-soft:rgba(232,241,245,.07);
   --glass:rgba(17,26,34,.72);
   --shadow:0 8px 28px rgba(0,0,0,.45);
@@ -32,20 +28,55 @@
   --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --navw:96px;
 }
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f1f5f7;
+  --panel:#ffffff;
+  --panel-2:#e7eef2;
+  --green:#008b55;
+  --warning:#946200;
+  --danger:#c62843;
+  --text:#182832;
+  --muted:#607681;
+  --line:color-mix(in srgb,var(--primary) 24%,transparent);
+  --line-soft:rgba(24,40,50,.13);
+  --glass:rgba(255,255,255,.9);
+  --shadow:0 8px 24px rgba(27,49,62,.14);
+}
+:root[data-theme="dark"]{color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none}
 body{
   background:var(--bg);color:var(--text);font-family:var(--sans);
   font-size:15px;line-height:1.4;
   background-image:
-    radial-gradient(1200px 600px at 12% -10%, rgba(0,217,255,.07), transparent 60%),
+    radial-gradient(1200px 600px at 12% -10%, color-mix(in srgb,var(--primary) 7%,transparent), transparent 60%),
     radial-gradient(900px 500px at 110% 110%, rgba(0,255,136,.05), transparent 60%);
 }
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
 input,select{font-family:inherit;font-size:14px;color:var(--text);background:var(--panel-2);
   border:1px solid var(--line-soft);border-radius:10px;padding:9px 11px;outline:none;width:100%}
-input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,217,255,.12)}
+input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent)}
 :focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+input[type="color"]{height:42px;padding:4px;cursor:pointer}
+:root[data-theme="light"] body{
+  background-image:
+    radial-gradient(1200px 600px at 12% -10%,color-mix(in srgb,var(--primary) 8%,transparent),transparent 60%),
+    radial-gradient(900px 500px at 110% 110%,rgba(0,139,85,.05),transparent 60%);
+}
+:root[data-theme="light"] #topbar{
+  background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(241,245,247,.94));
+}
+:root[data-theme="light"] #nav{background:rgba(255,255,255,.82)}
+:root[data-theme="light"] .navbtn:hover{background:color-mix(in srgb,var(--primary) 7%,transparent)}
+:root[data-theme="light"] .navbtn.active{
+  background:color-mix(in srgb,var(--primary) 12%,white);
+  box-shadow:inset 0 0 18px color-mix(in srgb,var(--primary) 8%,transparent);
+}
+:root[data-theme="light"] .setup-grid>.panel{background:rgba(255,255,255,.92);box-shadow:0 6px 20px rgba(27,49,62,.1)}
+:root[data-theme="light"] .airport-table th{background:#e7eef2}
+:root[data-theme="light"] .airport-table tr:nth-child(even){background:rgba(24,40,50,.035)}
+:root[data-theme="light"] .multi-frame-open{background:rgba(255,255,255,.92)}
 
 #app{height:100vh;height:100dvh;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr;min-width:0}
 
@@ -87,9 +118,9 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
   color:var(--muted);font-size:10px;letter-spacing:.1em;transition:.18s;border:1px solid transparent
 }
 .navbtn svg{width:24px;height:24px}
-.navbtn:hover{color:var(--text);background:rgba(0,217,255,.05)}
-.navbtn.active{color:var(--primary);background:rgba(0,217,255,.1);border-color:var(--line);
-  box-shadow:inset 0 0 20px rgba(0,217,255,.07)}
+.navbtn:hover{color:var(--text);background:color-mix(in srgb,var(--primary) 7%,transparent)}
+.navbtn.active{color:var(--primary);background:color-mix(in srgb,var(--primary) 13%,transparent);border-color:var(--line);
+  box-shadow:inset 0 0 20px color-mix(in srgb,var(--primary) 8%,transparent)}
 #nav .navspacer{flex:1}
 
 #pages{position:relative;min-height:0;min-width:0;overflow:hidden}
@@ -100,7 +131,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
 #page-multi.active{display:block;padding:0;overflow:hidden;background:#0a1117}
 #multiMapFrame{display:block;width:100%;height:100%;border:0;background:#0a1117}
 .multi-frame-open{position:absolute;z-index:2;top:12px;right:12px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(8,13,18,.88);color:var(--primary);font-size:11px;letter-spacing:.06em;text-decoration:none;backdrop-filter:blur(8px)}
-.multi-frame-open:hover{background:rgba(0,217,255,.14)}
+.multi-frame-open:hover{background:color-mix(in srgb,var(--primary) 15%,transparent)}
 
 /* ---------- COMPONENTI ---------- */
 .panel{
@@ -127,7 +158,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
   padding:2px 5px;border-radius:5px;background:rgba(255,193,7,.12);color:var(--warning);
   border:1px solid rgba(255,193,7,.25)
 }
-.badge.calc{background:rgba(0,217,255,.1);color:var(--primary);border-color:rgba(0,217,255,.25)}
+.badge.calc{background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);border-color:var(--line)}
 .tiles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
 
 .status{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel-2);
@@ -166,7 +197,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
   backdrop-filter:blur(10px);box-shadow:var(--shadow);font-size:20px;font-family:var(--mono);transition:.15s
 }
 .mbtn:active{transform:scale(.94)}
-.mbtn.on{color:var(--primary);border-color:var(--line);background:rgba(0,217,255,.13)}
+.mbtn.on{color:var(--primary);border-color:var(--line);background:color-mix(in srgb,var(--primary) 15%,transparent)}
 .mbtn svg{width:22px;height:22px}
 .mcard{
   background:var(--glass);border:1px solid var(--line-soft);border-radius:13px;padding:9px 12px;
@@ -176,11 +207,12 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
 .mcard .l{font-size:9px;letter-spacing:.14em;color:var(--muted);font-family:var(--sans)}
 .layerpick{display:flex;gap:4px;background:var(--glass);border:1px solid var(--line-soft);
   border-radius:13px;padding:4px;backdrop-filter:blur(10px)}
+.layerpick[hidden]{display:none}
 .layerpick button{font-size:10px;letter-spacing:.1em;padding:7px 10px;border-radius:9px;color:var(--muted)}
-.layerpick button.on{background:rgba(0,217,255,.14);color:var(--primary)}
+.layerpick button.on{background:color-mix(in srgb,var(--primary) 15%,transparent);color:var(--primary)}
 
 #planeicon{transition:transform .18s linear}
-.acft-dot{filter:drop-shadow(0 0 6px rgba(0,217,255,.7))}
+.acft-dot{filter:drop-shadow(0 0 6px color-mix(in srgb,var(--primary) 70%,transparent))}
 
 /* striscia dati sotto la mappa */
 #mapstrip{
@@ -243,9 +275,9 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
 .setup-head h1{font-size:22px;font-weight:600;line-height:1.2;margin:0;color:var(--text)}
 .setup-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;align-items:start;max-width:1240px;margin:0 auto}
 .setup-grid>.panel{min-width:0;padding:16px;border-radius:12px;background:rgba(17,26,34,.84);box-shadow:0 6px 20px rgba(0,0,0,.28);transition:border-color .18s}
-.setup-grid>.panel:hover{border-color:rgba(0,217,255,.2)}
+.setup-grid>.panel:hover{border-color:var(--line)}
 .setup-connection,.setup-speed{grid-column:span 7}
-.setup-altitude,.setup-attitude,.setup-map{grid-column:span 5}
+.setup-altitude,.setup-attitude,.setup-map,.setup-preferences{grid-column:span 5}
 .setup-actions{grid-column:1 / -1;display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 18px}
 .setup-actions h2{grid-column:1;grid-row:1;margin-bottom:0}
 .setup-actions .act{grid-column:2;grid-row:1 / span 2;margin:0}
@@ -253,15 +285,15 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
 .factor-calculator{margin-top:10px;padding-top:12px;border-top:1px solid var(--line-soft)}
 .factor-calculator .row3{align-items:end}
 .factor-calculator .field{margin-bottom:8px}
-.factor-calculator .cal-button{width:100%;min-height:40px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(0,217,255,.1);color:var(--primary);font-size:11px;letter-spacing:.08em;transition:background .15s,border-color .15s}
-.factor-calculator .cal-button:hover{background:rgba(0,217,255,.17);border-color:rgba(0,217,255,.35)}
+.factor-calculator .cal-button{width:100%;min-height:40px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);font-size:11px;letter-spacing:.08em;transition:background .15s,border-color .15s}
+.factor-calculator .cal-button:hover{background:color-mix(in srgb,var(--primary) 20%,transparent);border-color:var(--line)}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:10px;letter-spacing:.12em;color:var(--muted);margin-bottom:6px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .act{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
 .act button{
-  padding:11px 16px;border-radius:11px;border:1px solid var(--line);background:rgba(0,217,255,.1);
+  padding:11px 16px;border-radius:11px;border:1px solid var(--line);background:color-mix(in srgb,var(--primary) 12%,transparent);
   color:var(--primary);font-size:12px;letter-spacing:.08em;transition:.15s
 }
 .act button:active{transform:scale(.97)}
@@ -275,7 +307,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
 .airport-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .airport-head h1{font-size:18px;letter-spacing:.08em;margin:0;color:var(--text)}
 .airport-search{display:grid;grid-template-columns:minmax(180px,1fr) auto auto;gap:8px;flex:1 1 540px;max-width:720px}
-.airport-search button,.airport-actions a{padding:9px 12px;border:1px solid var(--line);background:rgba(0,217,255,.1);color:var(--primary);border-radius:9px;font-size:11px;letter-spacing:.06em;text-decoration:none;white-space:nowrap}
+.airport-search button,.airport-actions a{padding:9px 12px;border:1px solid var(--line);background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);border-radius:9px;font-size:11px;letter-spacing:.06em;text-decoration:none;white-space:nowrap}
 .airport-actions{display:flex;gap:8px;flex-wrap:wrap}
 .airport-actions button,.airport-actions a{padding:8px 10px}
 .airport-search button:disabled{opacity:.5;cursor:wait}
@@ -347,7 +379,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
   .setup-page{padding:16px 14px 22px}
   .setup-grid{gap:10px}
   .setup-grid>.panel{padding:14px}
-  .setup-connection,.setup-altitude,.setup-speed,.setup-attitude,.setup-map,.setup-actions{grid-column:1 / -1}
+  .setup-connection,.setup-altitude,.setup-speed,.setup-attitude,.setup-map,.setup-preferences,.setup-actions{grid-column:1 / -1}
 }
 @media (max-width:520px){
   #mapstrip{grid-template-columns:repeat(2,1fr)}
@@ -389,9 +421,9 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
       <button class="navbtn" data-page="data">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 15l3-4 3 3 4-6"/></svg>DATI</button>
       <button class="navbtn" data-page="instruments">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3.5 13.5c3-2 6-2 8.5 0s5.5 0 8.5 0"/><path d="M8 12h8"/></svg>STRUMENTI</button>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4L3.5 17.5a2.1 2.1 0 0 0 3 3l4.8-4.8a5 5 0 0 0 6.4-6.4l-3 3-3.4-3.4z"/><path d="m14.5 4.5 5 5"/><circle cx="5" cy="19" r=".6" fill="currentColor"/></svg>STRUMENTI</button>
       <button class="navbtn" data-page="airport">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 20h18M5 17 19 7M7 15l3 3M14 10l3 3M4 5l15 14"/><path d="m4 5 4 1-3 3z"/></svg>AEROPORTI</button>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v3M4 8l2-3h12l2 3-2 6H6L4 8Z"/><path d="M6 8h12M8 8l1 4m3-4v4m3-4-1 4M10 14l-2 7m6-7 2 7m-8 0h8"/></svg>AEROPORTI</button>
       <button class="navbtn" data-page="multi" title="Mappa multiplayer" aria-label="Mappa multiplayer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.4 2.5 3.5 5.5 3.5 9S14.4 18.5 12 21M12 3C9.6 5.5 8.5 8.5 8.5 12S9.6 18.5 12 21"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="18" cy="16" r="1" fill="currentColor"/></svg>MULTI</button>
       <div class="navspacer"></div>
@@ -418,6 +450,11 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
               <button data-layer="osm">OSM</button>
               <button data-layer="openaip" title="Layer aeronautico globale OpenAIP: copertura variabile, non ufficiale e non certificato">VFR</button>
             </div>
+            <div class="layerpick" id="vfrBasePick" role="group" aria-label="Sfondo della mappa VFR" hidden>
+              <button data-vfr-base="sat">SAT</button>
+              <button data-vfr-base="osm" class="on">OSM</button>
+              <button data-vfr-base="none">NESSUNA</button>
+            </div>
           </div>
 
           <div class="mapui tr">
@@ -432,9 +469,8 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
           </div>
 
           <div class="mapui bl">
-            <div class="mcard" id="mTrackInfo">TRACCIA <b id="mTrackN">0</b> PT</div>
             <button class="mbtn" id="clearTrackMap" aria-label="Cancella la traccia">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><polyline points="3 6 5 4 21 4 23 6 23 20a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V6z"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/><line x1="5" y1="7" x2="19" y2="7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 13h12l1-13M9 7V4h6v3"/></svg>
             </button>
           </div>
         </div>
@@ -548,7 +584,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
                 </g></g>
                 <g id="rollScale" stroke="#e8f1f5" stroke-width="2" fill="#e8f1f5" font-family="ui-monospace,monospace" font-size="11"></g>
               </g>
-              <g id="rollPointer"><polygon points="200,58 191,76 209,76" fill="#00d9ff"/></g>
+              <g id="rollPointer"><polygon points="200,58 191,76 209,76" fill="var(--primary)"/></g>
               <polygon points="200,44 192,30 208,30" fill="#e8f1f5" opacity=".85"/>
               <g stroke="#00ff88" stroke-width="4" fill="none" stroke-linecap="round"><path d="M110 200 h55 l14 14"/><path d="M290 200 h-55 l-14 14"/></g>
               <circle cx="200" cy="200" r="4" fill="#00ff88"/>
@@ -809,6 +845,29 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0
             </div>
           </div>
 
+          <div class="panel setup-preferences">
+            <h2>PERSONALIZZAZIONE</h2>
+            <div class="field">
+              <label for="cfgTheme">Tema</label>
+              <select id="cfgTheme">
+                <option value="dark">Scuro</option>
+                <option value="light">Chiaro</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="cfgLanguage">Lingua</label>
+              <select id="cfgLanguage">
+                <option value="it">Italiano</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="cfgAccent">Colore secondario</label>
+              <input id="cfgAccent" type="color" value="#00d9ff">
+            </div>
+            <div class="note">Il colore selezionato viene usato come colore d'accento dell'interfaccia.</div>
+          </div>
+
           <div class="panel setup-actions">
             <h2>IMPOSTAZIONI</h2>
             <div class="act">
@@ -843,7 +902,10 @@ const DEFAULTS = {
   htrH: 0, htrP: 1, htrR: 2,
   hdgSrc: "auto",
   zoom: 11,
-  openaipKey: ""
+  openaipKey: "",
+  theme: "dark",
+  language: "it",
+  accentColor: "#00d9ff"
 };
 let CFG = Object.assign({}, DEFAULTS);
 
@@ -877,6 +939,209 @@ let lastTurnSample = null;
 /* ------------------------------- HELPERS ------------------------------- */
 const $ = id => document.getElementById(id);
 const NA = "N/A";
+
+const EN_TEXT = {
+  "MAPPA":"MAP","DATI":"DATA","STRUMENTI":"INSTRUMENTS","AEROPORTI":"AIRPORTS",
+  "MULTI":"MULTI","POSIZIONE":"POSITION","VELOCITÀ":"SPEED","MOTORI":"ENGINES",
+  "SISTEMI":"SYSTEMS","METEO":"WEATHER","ASSETTO":"ATTITUDE","VENTO":"WIND",
+  "NESSUNA":"NONE","TRACCIA":"TRACK","PT":"PTS","ALTITUDINE":"ALTITUDE",
+  "AERODINAMICA":"AERODYNAMICS","CONNESSIONE":"CONNECTION","ALT":"ALT",
+  "Heading da htr[ ]":"Heading from htr[ ]","Pitch da htr[ ]":"Pitch from htr[ ]",
+  "Roll da htr[ ]":"Roll from htr[ ]","ORIZZONTE ARTIFICIALE":"ARTIFICIAL HORIZON",
+  "ANEMOMETRO · TAS":"AIRSPEED · TAS","ALTIMETRO":"ALTIMETER",
+  "VIROSBANDOMETRO":"TURN COORDINATOR","GIRODIREZIONALE":"HEADING INDICATOR",
+  "VARIOMETRO":"VERTICAL SPEED INDICATOR","ATTESA DATI":"WAITING FOR DATA",
+  "pitch e roll":"pitch and roll","RATEO DA PRUA":"RATE FROM HEADING",
+  "PRUA · GRADI":"HEADING · DEGREES","DATI AEROPORTUALI":"AIRPORT DATA",
+  "CERCA":"SEARCH","VICINO A ME":"NEAR ME","AEROPORTO SELEZIONATO":"SELECTED AIRPORT",
+  "STAZIONI VICINE":"NEARBY STATIONS","PISTE":"RUNWAYS","FREQUENZE RADIO":"RADIO FREQUENCIES",
+  "METAR · OSSERVAZIONE":"METAR · OBSERVATION","TAF · PREVISIONE":"TAF · FORECAST",
+  "NOTAM · AVVISI AERONAUTICI":"NOTAM · AERONAUTICAL NOTICES","FONTE E AGGIORNAMENTO":"SOURCE AND UPDATE",
+  "RICERCA FAA NOTAM":"FAA NOTAM SEARCH","AGGIORNA DATI":"REFRESH DATA",
+  "Codice ICAO, es. LIMC":"ICAO code, e.g. LIMC","Codice ICAO aeroporto":"Airport ICAO code",
+  "Inserisci un codice ICAO oppure cerca gli aeroporti vicino alla posizione GeoFS.":"Enter an ICAO code or search for airports near the GeoFS position.",
+  "Nessun aeroporto selezionato":"No airport selected","Servizi aeroportuali: N/A":"Airport services: N/A",
+  "Stazioni METAR/TAF trovate nell'area della posizione GeoFS.":"METAR/TAF stations found near the GeoFS position.",
+  "Nessuna ricerca eseguita.":"No search performed.","ORIENTAMENTO":"BEARING",
+  "LUNGHEZZA × LARGHEZZA":"LENGTH × WIDTH","SUPERFICIE":"SURFACE","STATO":"STATUS",
+  "SERVIZIO":"SERVICE","FREQUENZA":"FREQUENCY","OSSERVATO (UTC)":"OBSERVED (UTC)",
+  "VENTO":"WIND","TEMPERATURA / RUGIADA":"TEMPERATURE / DEW POINT","VISIBILITÀ":"VISIBILITY",
+  "CATEGORIA VOLO":"FLIGHT CATEGORY","METAR non disponibile.":"METAR unavailable.",
+  "TAF non disponibile.":"TAF unavailable.",
+  "I NOTAM non sono forniti dall'API meteo AWC. Consulta la fonte ufficiale per il Paese interessato; questa dashboard non sostituisce la pianificazione pre-volo o i briefing AIS.":"NOTAMs are not provided by the AWC weather API. Consult the official source for the relevant country; this dashboard does not replace pre-flight planning or AIS briefings.",
+  "METAR, TAF e stazioni: AviationWeather.gov (NOAA). Anagrafica, piste e frequenze: AWC con fallback OurAirports. I dati possono essere incompleti o non aggiornati; confermali sulle pubblicazioni aeronautiche ufficiali.":"METAR, TAF and stations: AviationWeather.gov (NOAA). Airport details, runways and frequencies: AWC with OurAirports fallback. Data may be incomplete or out of date; verify against official aeronautical publications.",
+  "APRI IN UNA NUOVA SCHEDA":"OPEN IN NEW TAB","GEOFS DASHBOARD / CONFIGURAZIONE":"GEOFS DASHBOARD / SETTINGS",
+  "Mappa multiplayer":"Multiplayer map","Mappa multiplayer GeoFS":"GeoFS multiplayer map",
+  "CONNESSIONE":"CONNECTION","Indirizzo dei dati":"Data URL",
+  "Intervallo di richiesta (ms)":"Request interval (ms)","Dati scaduti dopo (ms)":"Data expires after (ms)",
+  "Se apri la dashboard da un dominio diverso da quello del server, server.py deve inviare l'header":"If you open the dashboard from a different domain than the server, server.py must send the header",
+  ". Il modo più semplice resta servire questo file dallo stesso server.py.":". The simplest option is to serve this file from the same server.py.",
+  "ALTITUDINE":"ALTITUDE","Unità di visualizzazione":"Display units",
+  "L'altitudine ricevuta da GeoFS è in metri. Qui puoi scegliere come visualizzarla.":"GeoFS sends altitude in meters. Choose how to display it here.",
+  "VELOCITÀ":"SPEED","Unità del valore ricevuto":"Input value units",
+  "Non verificata — mostra il valore grezzo":"Unverified — show raw value","Già in nodi":"Already in knots",
+  "Metri al secondo":"Meters per second","Chilometri orari":"Kilometers per hour",
+  "Fattore personalizzato":"Custom factor","Unità di visualizzazione":"Display units",
+  "Fattore: valore ricevuto × fattore = nodi":"Factor: received value × factor = knots",
+  "Calcolo del fattore: leggi la velocità sull'anemometro di GeoFS e confrontala con il valore grezzo mostrato qui.":"Factor calculation: read the speed on the GeoFS airspeed indicator and compare it with the raw value shown here.",
+  "Valore grezzo":"Raw value","Nodi reali":"Actual knots","CALCOLA":"CALCULATE",
+  "Groundspeed grezzo attuale:":"Current raw groundspeed:","Mach":"Mach",
+  "Non verificato — mostra il valore grezzo":"Unverified — show raw value","Già numero di Mach":"Already a Mach number",
+  "Fattore Mach":"Mach factor","ASSETTO · CORRISPONDENZA htr":"ATTITUDE · htr MAPPING",
+  "non usato":"unused","Sorgente della prua":"Heading source",
+  "Automatica: campo heading, poi htr, poi rotta GPS":"Automatic: heading field, then htr, then GPS track",
+  "Solo campo heading o HDG":"Heading or HDG field only","Solo htr":"htr only",
+  "Solo rotta calcolata dalle posizioni":"Track calculated from positions only",
+  "La corrispondenza proposta è un'ipotesi, non un dato verificato. Mettila alla prova: rulla dritto per controllare la prua, inclina di 20° a sinistra per controllare il segno del rollio, cabra per controllare il pitch. La rotta GPS è una rotta al suolo, non la prua.":"The proposed mapping is a hypothesis, not verified. Test it: taxi straight to check heading, bank 20° left to check roll sign, then pitch up to check pitch. GPS track is ground track, not heading.",
+  "MAPPA":"MAP","Zoom iniziale":"Initial zoom","Chiave API OpenAIP":"OpenAIP API key",
+  "Per usare VFR, crea una chiave API nel":"To use VFR, create an API key in your",
+  "profilo OpenAIP":"OpenAIP profile",
+  ". La chiave resta nelle impostazioni di questo browser e viene inviata nelle richieste tile. Dati globali a copertura variabile, non ufficiali e non certificati per la navigazione; licenza CC BY-NC 4.0.":". The key stays in this browser's settings and is sent with tile requests. Global data coverage varies; data is unofficial and not certified for navigation. CC BY-NC 4.0 license.",
+  "Cancella la traccia":"Clear track","PERSONALIZZAZIONE":"CUSTOMIZATION",
+  "Tema":"Theme","Scuro":"Dark","Chiaro":"Light","Lingua":"Language","Italiano":"Italian",
+  "Colore secondario":"Accent color","Il colore selezionato viene usato come colore d'accento dell'interfaccia.":"The selected color is used as the interface accent.",
+  "IMPOSTAZIONI":"SETTINGS","Salva le impostazioni":"Save settings",
+  "Ripristina i valori iniziali":"Restore defaults",
+  "Le impostazioni restano su questo dispositivo.":"Settings are stored on this device.",
+  "Impostazioni salvate su questo dispositivo.":"Settings saved on this device.",
+  "Impostazioni applicate. Questo browser non permette il salvataggio: andranno reinserite alla prossima apertura.":"Settings applied. This browser cannot save them; they must be entered again next time.",
+  "Valori iniziali ripristinati.":"Default settings restored.",
+  "ATTESA DATI":"WAITING FOR DATA","CONNECTING":"CONNECTING","CONNECTED":"CONNECTED",
+  "DISCONNECTED":"DISCONNECTED","IN ATTESA DELLA POSIZIONE":"WAITING FOR POSITION",
+  "Zoom avanti":"Zoom in","Zoom indietro":"Zoom out","Centra sull'aereo":"Center on aircraft",
+  "Mostra o nascondi la traccia":"Show or hide track","Sfondo della mappa VFR":"VFR map background",
+  "Layer aeronautico globale OpenAIP: copertura variabile, non ufficiale e non certificato":"OpenAIP global aeronautical layer: variable coverage, unofficial and not certified",
+  "Seleziona":"Select","NESSUNA":"NONE","GROUND SPEED":"GROUND SPEED",
+  "Le velocità sono mostrate nel valore grezzo inviato da GeoFS. Apri Setup per definire la conversione dopo averla verificata in volo.":"Speeds are shown as raw values sent by GeoFS. Open Settings to configure a conversion after verifying it in flight.",
+  "Il bridge non invia":"The bridge does not send",". Aggiungi":". Add",
+  "al JSON per attivare questo pannello.":"to the JSON to enable this panel.",
+  "RAW":"RAW","CALC":"CALC","TRK":"TRK","AIRBORNE":"AIRBORNE","STALL":"STALL",
+  "ENGINE RPM":"ENGINE RPM","THRUST":"THRUST","ENGINE STATUS":"ENGINE STATUS",
+  "CRASHED":"CRASHED","GROUND CONTACT":"GROUND CONTACT","WATER CONTACT":"WATER CONTACT",
+  "BRAKES":"BRAKES","ANGLE OF ATTACK":"ANGLE OF ATTACK","HEADING":"HEADING",
+  "TRUE AIR SPEED":"TRUE AIR SPEED","GROUND SPEED":"GROUND SPEED","VELOCITY SCALAR":"VELOCITY SCALAR",
+  "VERTICAL SPEED":"VERTICAL SPEED","LONGITUDE":"LONGITUDE","LATITUDE":"LATITUDE",
+  "ATTENDI DATI":"WAITING FOR DATA",  "Codici AWC:":"AWC codes:",
+  "Codici dei servizi aeroportuali non disponibili nella fonte.":"Airport service codes are not available from the source.",
+  "Nessuna stazione METAR/TAF trovata nell'area.":"No METAR/TAF stations found nearby.",
+  "Nome non disponibile":"Name unavailable","Validità:":"Validity:",
+  "Caricamento METAR…":"Loading METAR…","Caricamento TAF…":"Loading TAF…",
+  "METAR non disponibile per questa stazione.":"METAR unavailable for this station.",
+  "TAF non disponibile per questa stazione.":"TAF unavailable for this station.",
+  "Inserisci e salva la chiave API OpenAIP per attivare VFR.":"Enter and save the OpenAIP API key to enable VFR.",
+  "Inserisci il valore grezzo e i nodi reali per calcolare il fattore.":"Enter the raw value and actual knots to calculate the factor.",
+  "Fattore calcolato:":"Calculated factor:","— premi Salva per applicarlo.":"— click Save to apply.",
+  "Asfalto":"Asphalt","Calcestruzzo":"Concrete","Erba":"Grass","Ghiaia":"Gravel",
+  "Acqua":"Water","Terra":"Dirt","Sconosciuta":"Unknown","Non indicata":"Not specified",
+  "CHIUSA":"CLOSED","APERTA":"OPEN","NON VERIFICATO":"UNVERIFIED","Servizio":"Service",
+  "Torre":"Tower","Faro":"Beacon","OPS":"OPS","NESSUNA":"NONE"
+};
+let activeLanguage = "it";
+const ORIGINAL_TEXT = new WeakMap();
+const ORIGINAL_ATTRIBUTES = new WeakMap();
+function translateTextNode(node, refreshSource = false, force = false){
+  let state = ORIGINAL_TEXT.get(node);
+  if(!state){
+    state = {source:node.nodeValue, translated:null};
+    ORIGINAL_TEXT.set(node, state);
+  }else if(refreshSource && node.nodeValue !== state.translated){
+    state.source = node.nodeValue;
+  }else if(!force && node.nodeValue === state.translated){
+    return;
+  }
+  const trimmed = state.source.trim();
+  if(!trimmed) return;
+  const translated = activeLanguage === "en" ? translateDynamicText(trimmed) : trimmed;
+  state.translated = state.source.replace(trimmed, translated);
+  if(node.nodeValue !== state.translated) node.nodeValue = state.translated;
+}
+function translateAddedNode(root){
+  if(root.nodeType === Node.TEXT_NODE){
+    translateTextNode(root);
+    return;
+  }
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let node;
+  while((node = walker.nextNode())) translateTextNode(node);
+}
+function translateText(language){
+  activeLanguage = language;
+  document.documentElement.lang = language;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  let node;
+  while((node = walker.nextNode())) translateTextNode(node, false, true);
+  document.querySelectorAll("[title],[aria-label],[placeholder]").forEach(el=>{
+    let originals = ORIGINAL_ATTRIBUTES.get(el);
+    if(!originals){ originals = {}; ORIGINAL_ATTRIBUTES.set(el, originals); }
+    ["title","aria-label","placeholder"].forEach(attribute=>{
+      if(!el.hasAttribute(attribute)) return;
+      if(originals[attribute] === undefined) originals[attribute] = el.getAttribute(attribute);
+      const source = originals[attribute];
+      const translated = language === "en" ? EN_TEXT[source] : source;
+      if(translated !== undefined && el.getAttribute(attribute) !== translated){
+        el.setAttribute(attribute, translated);
+      }
+    });
+  });
+  document.title = language === "en" ? "GeoFS Dashboard" : "GeoFS Dashboard";
+}
+function applyPreferences(theme = CFG.theme, language = CFG.language, accentColor = CFG.accentColor){
+  const safeTheme = theme === "light" ? "light" : "dark";
+  const safeLanguage = language === "en" ? "en" : "it";
+  const safeAccent = /^#[0-9a-f]{6}$/i.test(accentColor) ? accentColor : DEFAULTS.accentColor;
+  document.documentElement.dataset.theme = safeTheme;
+  document.documentElement.style.setProperty("--primary", safeAccent);
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  if(themeColor) themeColor.content = safeTheme === "light" ? "#f1f5f7" : "#080d12";
+  if(useLeaflet && trackLine) trackLine.setStyle({color:safeAccent});
+  const planePath = document.querySelector("#planeicon path");
+  if(planePath) planePath.setAttribute("fill", safeAccent);
+  translateText(safeLanguage);
+  if(!useLeaflet && mapReady) drawFallback();
+}
+function translateDynamicText(text){
+  if(activeLanguage !== "en") return text;
+  const exact = EN_TEXT[text];
+  if(exact !== undefined) return exact;
+  const received = /^Dati ricevuti per (.+)\. Anagrafica: (.+); meteo: AviationWeather\.gov\.(.*)$/.exec(text);
+  if(received){
+    const note = received[3] ? " Some products did not respond; check sections without data." : "";
+    return "Data received for " + received[1] + ". Airport info: " + received[2] + "; weather: AviationWeather.gov." + note;
+  }
+  const services = /^Codici AWC: (.+)$/.exec(text);
+  if(services){
+    const translatedServices = services[1].replace(/\bTorre\b/g,"Tower").replace(/\bServizi\b/g,"Services").replace(/\bFaro\b/g,"Beacon");
+    return "AWC codes: " + translatedServices;
+  }
+  const patterns = [
+    [/^Caricamento dati per (.+)…$/, "Loading data for $1…"],
+    [/^Nessun dato trovato per (.+)\. Verifica il codice o prova una stazione vicina\.$/, "No data found for $1. Check the code or try a nearby station."],
+    [/^Inserisci un codice ICAO valido \(3 o 4 caratteri\)\.$/, "Enter a valid ICAO code (3 or 4 characters)."],
+    [/^Posizione GeoFS non disponibile: attendi la connessione o inserisci un codice ICAO\.$/, "GeoFS position unavailable: wait for a connection or enter an ICAO code."],
+    [/^Ricerca stazioni METAR\/TAF vicino alla posizione GeoFS…$/, "Searching for METAR/TAF stations near the GeoFS position…"],
+    [/^Trovate (.+) stazioni meteo entro circa 220 km; seleziona un codice per i dettagli\.$/, "Found $1 weather stations within about 220 km; select a code for details."],
+    [/^Nessuna stazione METAR\/TAF trovata entro circa 220 km\.$/, "No METAR/TAF stations found within about 220 km."],
+    [/^Validità: (.+) → (.+)$/, "Validity: $1 → $2"],
+    [/^Codici dei servizi aeroportuali non disponibili nella fonte\.$/, "Airport service codes are not available from the source."],
+    [/^Piste non presenti nella fonte per questo aeroporto\.$/, "No runway data available from the source for this airport."],
+    [/^Frequenze non disponibili nella fonte\.$/, "Frequencies are not available from the source."],
+    [/^Ricerca AWC non riuscita: (.+)\. Verifica la connessione Internet\.$/, "AWC search failed: $1. Check your internet connection."]
+  ];
+  for(const [pattern,replacement] of patterns){
+    if(pattern.test(text)) return text.replace(pattern,replacement);
+  }
+  return text;
+}
+const languageObserver = new MutationObserver(mutations=>{
+  mutations.forEach(mutation=>{
+    if(mutation.type === "characterData"){
+      translateTextNode(mutation.target, true);
+    }else{
+      mutation.addedNodes.forEach(translateAddedNode);
+    }
+  });
+});
+languageObserver.observe(document.body, {subtree:true,childList:true,characterData:true});
 
 function num(v){ return (typeof v === "number" && isFinite(v)) ? v : null; }
 function bool(v){ return (typeof v === "boolean") ? v : (v===0||v===1 ? !!v : null); }
@@ -1464,25 +1729,30 @@ function updateWind(){
 /* ============================== MAPPA ================================== */
 let map = null, marker = null, trackLine = null, useLeaflet = false;
 let follow = true, showTrack = true, trackDirty = false, mapReady = false;
-  let tileLayers = {}, activeLayer = "sat";
+let tileLayers = {}, activeLayer = "sat", vfrBaseLayer = "osm";
 
 const PLANE_SVG =
   '<svg viewBox="0 0 24 24" width="42" height="42" id="planeicon" class="acft-dot">' +
-  '<path fill="#00d9ff" stroke="#080d12" stroke-width=".7" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5L21 16z"/></svg>';
+  '<path fill="var(--primary)" stroke="#080d12" stroke-width=".7" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5L21 16z"/></svg>';
 
 function initMap(){
-  if(typeof L === "undefined"){ initFallbackMap(); return; }
+  if(typeof L === "undefined"){ if(!mapReady) initFallbackMap(); return; }
   useLeaflet = true;
+  $("mapfallback").style.display = "none";
+  $("map").style.display = "block";
   map = L.map("map", {zoomControl:false, attributionControl:true, preferCanvas:true})
          .setView([45.42, 10.32], CFG.zoom);
 
   tileLayers.osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {maxZoom:19, attribution:"© OpenStreetMap"});
+    {maxZoom:19, attribution:'<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>'});
   tileLayers.sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    {maxZoom:18, attribution:"© Esri"});
+    {maxZoom:18, attribution:'Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community'});
+  map.createPane("openaipPane");
+  map.getPane("openaipPane").style.zIndex = 350;
+  map.getPane("openaipPane").style.pointerEvents = "none";
   tileLayers.openaip = L.tileLayer(
     openAipTileUrl(),
-    {minZoom:2, maxZoom:18, attribution:'<a href="https://www.openaip.net/" target="_blank" rel="noopener noreferrer">© OpenAIP</a> · CC BY-NC 4.0 · copertura variabile, non certificata'}
+    {minZoom:2, maxZoom:18, pane:"openaipPane", attribution:'<a href="https://www.openaip.net/" target="_blank" rel="noopener noreferrer">© OpenAIP</a> · CC BY-NC 4.0 · copertura variabile, non certificata'}
   );
   tileLayers.sat.addTo(map);
 
@@ -1493,15 +1763,68 @@ function initMap(){
     interactive:false, keyboard:false
   }).addTo(map);
 
-  trackLine = L.polyline([], {color:"#00d9ff", weight:2.5, opacity:.65}).addTo(map);
+  trackLine = L.polyline([], {color:getComputedStyle(document.documentElement).getPropertyValue("--primary").trim(), weight:2.5, opacity:.65}).addTo(map);
   map.on("dragstart", ()=>setFollow(false));
   mapReady = true;
+  requestAnimationFrame(()=>{
+    if(map){ map.invalidateSize(); updateMap(); }
+  });
+}
+
+function loadLeaflet(){
+  let scriptReady = false, styleReady = false;
+  const initializeWhenReady = ()=>{
+    if(scriptReady && styleReady && !useLeaflet) initMap();
+  };
+  const stylesheet = document.createElement("link");
+  stylesheet.rel = "stylesheet";
+  stylesheet.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+  stylesheet.onload = ()=>{ styleReady = true; initializeWhenReady(); };
+  stylesheet.onerror = ()=>console.warn("Leaflet CSS could not be loaded; keeping the fallback map.");
+  document.head.appendChild(stylesheet);
+
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+  script.onload = ()=>{ scriptReady = true; initializeWhenReady(); };
+  script.onerror = ()=>console.warn("Leaflet JavaScript could not be loaded; keeping the fallback map.");
+  document.head.appendChild(script);
 }
 
 function openAipTileUrl(){
   const key = String(CFG.openaipKey || "").trim();
   return "https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.png" +
     (key ? "?apiKey=" + encodeURIComponent(key) : "");
+}
+
+function setBaseLayer(layer){
+  ["sat", "osm"].forEach(name=>{
+    if(map.hasLayer(tileLayers[name])) map.removeLayer(tileLayers[name]);
+  });
+  if(layer !== "none") tileLayers[layer].addTo(map);
+}
+
+function setMapLayer(layer){
+  if(layer === "openaip"){
+    setBaseLayer(vfrBaseLayer);
+    tileLayers.openaip.addTo(map);
+  }else{
+    if(map.hasLayer(tileLayers.openaip)) map.removeLayer(tileLayers.openaip);
+    setBaseLayer(layer);
+  }
+  activeLayer = layer;
+  $("vfrBasePick").hidden = layer !== "openaip";
+  document.querySelectorAll("#layerPick button").forEach(button=>
+    button.classList.toggle("on", button.dataset.layer === layer)
+  );
+}
+
+function setVfrBaseLayer(layer){
+  vfrBaseLayer = layer;
+  setBaseLayer(layer);
+  document.querySelectorAll("#vfrBasePick button").forEach(button=>
+    button.classList.toggle("on", button.dataset.vfrBase === layer)
+  );
 }
 
 /* --- mappa di riserva su canvas, se Leaflet non è raggiungibile --- */
@@ -1522,7 +1845,9 @@ function drawFallback(){
   if(!W || !H) return;
   cv.width = W*dpr; cv.height = H*dpr;
   const g = cv.getContext("2d"); g.setTransform(dpr,0,0,dpr,0,0);
-  g.fillStyle = "#0a1117"; g.fillRect(0,0,W,H);
+  const styles = getComputedStyle(document.documentElement);
+  const accent = styles.getPropertyValue("--primary").trim();
+  g.fillStyle = styles.getPropertyValue("--bg").trim(); g.fillRect(0,0,W,H);
 
   const lat = state.position.lat, lon = state.position.lon;
   const scale = Math.pow(2, fbZoom) * 256 / 360;          // px per grado di longitudine
@@ -1533,8 +1858,8 @@ function drawFallback(){
   if(lat !== null){
     // reticolo
     const step = fbZoom > 12 ? 0.01 : fbZoom > 9 ? 0.05 : 0.5;
-    g.strokeStyle = "rgba(0,217,255,.12)"; g.lineWidth = 1;
-    g.fillStyle = "#3d5866"; g.font = "10px ui-monospace,monospace";
+    g.strokeStyle = accent; g.globalAlpha = .12; g.lineWidth = 1;
+    g.fillStyle = styles.getPropertyValue("--muted").trim(); g.font = "10px ui-monospace,monospace";
     const spanLat = (H/2)/scale + step, spanLon = (W/2)/(scale*cosLat) + step;
     for(let la = Math.ceil((lat-spanLat)/step)*step; la <= lat+spanLat; la += step){
       const y = px(la,lon)[1];
@@ -1546,25 +1871,27 @@ function drawFallback(){
       g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke();
       g.fillText(lo.toFixed(3)+"°", x+4, 14);
     }
+    g.globalAlpha = 1;
     // traccia
     if(showTrack && state.track.length > 1){
-      g.strokeStyle = "rgba(0,217,255,.6)"; g.lineWidth = 2; g.beginPath();
+      g.strokeStyle = accent; g.globalAlpha = .6; g.lineWidth = 2; g.beginPath();
       state.track.forEach((p,i)=>{ const q = px(p[0],p[1]); i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]); });
       g.stroke();
+      g.globalAlpha = 1;
     }
     // aereo
     const hdg = state.attitude.heading;
     g.save(); g.translate(cx,cy); if(hdg !== null) g.rotate(hdg*Math.PI/180);
-    g.fillStyle = "#00d9ff"; g.shadowColor = "#00d9ff"; g.shadowBlur = 10;
+    g.fillStyle = accent; g.shadowColor = accent; g.shadowBlur = 10;
     g.beginPath(); g.moveTo(0,-16); g.lineTo(12,12); g.lineTo(0,6); g.lineTo(-12,12); g.closePath(); g.fill();
     g.restore();
   }else{
-    g.fillStyle = "#6f8694"; g.font = "13px ui-monospace,monospace"; g.textAlign = "center";
-    g.fillText("IN ATTESA DELLA POSIZIONE", W/2, H/2);
+    g.fillStyle = styles.getPropertyValue("--muted").trim(); g.font = "13px ui-monospace,monospace"; g.textAlign = "center";
+    g.fillText(activeLanguage === "en" ? "WAITING FOR POSITION" : "IN ATTESA DELLA POSIZIONE", W/2, H/2);
     g.textAlign = "start";
   }
-  g.fillStyle = "#3d5866"; g.font = "10px ui-monospace,monospace";
-  g.fillText("MAPPA DI RISERVA · Leaflet non raggiungibile · zoom " + fbZoom, 8, H-10);
+  g.fillStyle = styles.getPropertyValue("--muted").trim(); g.font = "10px ui-monospace,monospace";
+  g.fillText((activeLanguage === "en" ? "FALLBACK MAP · Leaflet unavailable · zoom " : "MAPPA DI RISERVA · Leaflet non raggiungibile · zoom ") + fbZoom, 8, H-10);
 }
 
 let lastMarkerRot = null;
@@ -1572,8 +1899,6 @@ function updateMap(){
   const lat = state.position.lat, lon = state.position.lon;
   setVal($("mLat"), lat === null ? "--.------" : lat.toFixed(6) + (lat>=0?" N":" S"));
   setVal($("mLon"), lon === null ? "--.------" : lon.toFixed(6) + (lon>=0?" E":" W"));
-  const n = String(state.track.length);
-  if($("mTrackN").textContent !== n) $("mTrackN").textContent = n;
   if(!mapReady || lat === null) { if(!useLeaflet) drawFallback(); return; }
 
   if(useLeaflet){
@@ -1836,7 +2161,6 @@ $("clearTrackMap").addEventListener("click", ()=>{
   trackDirty = true;
   if(useLeaflet && trackLine) trackLine.setLatLngs([]);
   else drawFallback();
-  $("mTrackN").textContent = "0";
 });
 
 $("layerPick").addEventListener("click", e=>{
@@ -1849,10 +2173,13 @@ $("layerPick").addEventListener("click", e=>{
     $("cfgOpenAipKey").focus();
     return;
   }
-  map.removeLayer(tileLayers[activeLayer]);
-  tileLayers[key].addTo(map);
-  activeLayer = key;
-  document.querySelectorAll("#layerPick button").forEach(x=>x.classList.toggle("on", x === b));
+  setMapLayer(key);
+});
+
+$("vfrBasePick").addEventListener("click", e=>{
+  const b = e.target.closest("button");
+  if(!b || activeLayer !== "openaip") return;
+  setVfrBaseLayer(b.dataset.vfrBase);
 });
 
 /* --------------------------- SETUP (form) ------------------------------ */
@@ -1863,7 +2190,8 @@ const CFGMAP = [
   ["cfgMachSrc","machSrc","str"], ["cfgMachFactor","machFactor","float"],
   ["cfgHtrH","htrH","int"], ["cfgHtrP","htrP","int"], ["cfgHtrR","htrR","int"],
   ["cfgHdgSrc","hdgSrc","str"], ["cfgZoom","zoom","int"],
-  ["cfgOpenAipKey","openaipKey","str"]
+  ["cfgOpenAipKey","openaipKey","str"],
+  ["cfgTheme","theme","str"], ["cfgLanguage","language","str"], ["cfgAccent","accentColor","str"]
 ];
 function cfgToForm(){
   CFGMAP.forEach(([id,key,type])=>{
@@ -1884,9 +2212,20 @@ function formToCfg(){
   CFG.staleMs  = Math.max(500, CFG.staleMs);
 }
 cfgToForm();
+applyPreferences();
+
+["cfgTheme","cfgLanguage","cfgAccent"].forEach(id=>{
+  $(id).addEventListener("input", ()=>{
+    applyPreferences($("cfgTheme").value,$("cfgLanguage").value,$("cfgAccent").value);
+  });
+  $(id).addEventListener("change", ()=>{
+    applyPreferences($("cfgTheme").value,$("cfgLanguage").value,$("cfgAccent").value);
+  });
+});
 
 $("saveCfg").addEventListener("click", ()=>{
   formToCfg();
+  applyPreferences();
   const ok = saveCfg();
   restartPolling();
   if(useLeaflet && tileLayers.openaip) tileLayers.openaip.setUrl(openAipTileUrl());
@@ -1897,7 +2236,7 @@ $("saveCfg").addEventListener("click", ()=>{
 });
 $("resetCfg").addEventListener("click", ()=>{
   CFG = Object.assign({}, DEFAULTS);
-  saveCfg(); cfgToForm(); restartPolling();
+  saveCfg(); cfgToForm(); restartPolling(); applyPreferences();
   $("cfgSaved").textContent = "Valori iniziali ripristinati.";
 });
 $("clearTrack").addEventListener("click", ()=>{
@@ -1941,6 +2280,7 @@ buildAdi();
 buildInstrumentDials();
 updateInstruments();
 initMap();
+loadLeaflet();
 fetchData();
 restartPolling();
 </script>
