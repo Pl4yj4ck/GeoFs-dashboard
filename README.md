@@ -1,6 +1,19 @@
-# GeoFS Dashboard
+<h1 align="center">GeoFS Dashboard</h1>
 
-A local flight dashboard for GeoFS. The project includes a small Python HTTP server, a browser userscript that forwards simulator telemetry to the server, and a web dashboard with a live map and flight data.
+<p align="center">
+  A local flight dashboard for GeoFS, with live telemetry, maps, and aircraft instruments.
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/GeoFS-3.9%20%2F%204.0-blue" alt="GeoFS 3.9 and 4.0">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python 3.10 or later">
+  <img src="https://img.shields.io/badge/Platform-Windows-blue" alt="Windows">
+</p>
+
+<p align="center">
+  <img src="screenshots/mockup.png" alt="GeoFS Dashboard mockup" width="100%">
+</p>
 
 ## Features
 
