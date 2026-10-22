@@ -6,7 +6,7 @@ Serve la dashboard HTML e raccoglie dati da GeoFS Bridge via POST /data
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import csv
-from collections import defaultdict, deque
+from collections import defaultdict
 import io
 import json
 import os
@@ -33,8 +33,6 @@ latest_data = {
     "roll": 0
 }
 latest_data_lock = Lock()
-autopilot_commands = deque(maxlen=8)
-autopilot_commands_lock = Lock()
 ourairports_cache = {"expires": 0, "airport_codes": {}, "runways": {}, "frequencies": {}}
 ourairports_cache_lock = Lock()
 OURAIRPORTS_BASE = "https://davidmegginson.github.io/ourairports-data/"
@@ -148,19 +146,6 @@ class Handler(BaseHTTPRequestHandler):
         """Gestisci GET: serve HTML e JSON"""
 
         parsed_path = urlparse(self.path)
-
-        if parsed_path.path == "/command":
-            with autopilot_commands_lock:
-                commands = list(autopilot_commands)
-                autopilot_commands.clear()
-
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
-            self.send_cors()
-            self.end_headers()
-            self.wfile.write(json.dumps({"commands": commands}).encode("utf-8"))
-            return
 
         if parsed_path.path == "/aviation":
             self.serve_aviation_data(parsed_path.query)
@@ -326,30 +311,6 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         """Gestisci POST: ricevi dati da GeoFS Bridge"""
         global latest_data
-
-        if self.path == "/command":
-            try:
-                content_length = int(self.headers.get("Content-Length", 0))
-                body = self.rfile.read(content_length)
-                payload = json.loads(body.decode("utf-8"))
-                if not isinstance(payload, dict) or payload.get("command") != "toggle_autopilot":
-                    self.send_error(400, "Comando non supportato")
-                    return
-
-                with autopilot_commands_lock:
-                    autopilot_commands.append(payload["command"])
-
-                self.send_response(202)
-                self.send_header("Content-Type", "application/json; charset=utf-8")
-                self.send_cors()
-                self.end_headers()
-                self.wfile.write(b'{"ok":true}')
-            except (json.JSONDecodeError, UnicodeDecodeError) as e:
-                self.send_error(400, f"JSON non valido: {str(e)}")
-            except Exception as e:
-                self.send_error(500, str(e))
-                self.log_message(f"Errore /command POST: {str(e)}")
-            return
 
         if self.path != "/data":
             self.send_error(404)

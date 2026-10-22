@@ -9,49 +9,13 @@
 <title>GeoFS Dashboard</title>
 
 <style>
-:root{
-  --bg:#080d12;
-  --panel:#111a22;
-  --panel-2:#0d151c;
-  --primary:#00d9ff;
-  --green:#00ff88;
-  --warning:#ffc107;
-  --danger:#ff4057;
-  --text:#e8f1f5;
-  --muted:#6f8694;
-  --line:color-mix(in srgb,var(--primary) 18%,transparent);
-  --line-soft:rgba(232,241,245,.07);
-  --glass:rgba(17,26,34,.72);
-  --shadow:0 8px 28px rgba(0,0,0,.45);
-  --r:16px;
-  --mono:ui-monospace,"SF Mono","JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
-  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --navw:96px;
-}
-:root[data-theme="light"]{
-  color-scheme:light;
-  --bg:#f1f5f7;
-  --panel:#ffffff;
-  --panel-2:#e7eef2;
-  --green:#008b55;
-  --warning:#946200;
-  --danger:#c62843;
-  --text:#182832;
-  --muted:#607681;
-  --line:color-mix(in srgb,var(--primary) 24%,transparent);
-  --line-soft:rgba(24,40,50,.13);
-  --glass:rgba(255,255,255,.9);
-  --shadow:0 8px 24px rgba(27,49,62,.14);
-}
+:root[data-theme="light"]{color-scheme:light}
 :root[data-theme="dark"]{color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none}
 body{
   background:var(--bg);color:var(--text);font-family:var(--sans);
-  font-size:15px;line-height:1.4;
-  background-image:
-    radial-gradient(1200px 600px at 12% -10%, color-mix(in srgb,var(--primary) 7%,transparent), transparent 60%),
-    radial-gradient(900px 500px at 110% 110%, rgba(0,255,136,.05), transparent 60%);
+  font-size:15px;line-height:1.4
 }
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
 input,select{font-family:inherit;font-size:14px;color:var(--text);background:var(--panel-2);
@@ -59,32 +23,12 @@ input,select{font-family:inherit;font-size:14px;color:var(--text);background:var
 input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent)}
 :focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 input[type="color"]{height:42px;padding:4px;cursor:pointer}
-:root[data-theme="light"] body{
-  background-image:
-    radial-gradient(1200px 600px at 12% -10%,color-mix(in srgb,var(--primary) 8%,transparent),transparent 60%),
-    radial-gradient(900px 500px at 110% 110%,rgba(0,139,85,.05),transparent 60%);
-}
-:root[data-theme="light"] #topbar{
-  background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(241,245,247,.94));
-}
-:root[data-theme="light"] #nav{background:rgba(255,255,255,.82)}
-:root[data-theme="light"] .navbtn:hover{background:color-mix(in srgb,var(--primary) 7%,transparent)}
-:root[data-theme="light"] .navbtn.active{
-  background:color-mix(in srgb,var(--primary) 12%,white);
-  box-shadow:inset 0 0 18px color-mix(in srgb,var(--primary) 8%,transparent);
-}
-:root[data-theme="light"] .setup-grid>.panel{background:rgba(255,255,255,.92);box-shadow:0 6px 20px rgba(27,49,62,.1)}
-:root[data-theme="light"] .airport-table th{background:#e7eef2}
-:root[data-theme="light"] .airport-table tr:nth-child(even){background:rgba(24,40,50,.035)}
-:root[data-theme="light"] .multi-frame-open{background:rgba(255,255,255,.92)}
 
 #app{height:100vh;height:100dvh;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr;min-width:0}
 
 /* ---------- TOP BAR ---------- */
 #topbar{
   display:flex;align-items:center;gap:14px;padding:9px 16px;
-  background:linear-gradient(180deg,rgba(17,26,34,.95),rgba(8,13,18,.85));
-  border-bottom:1px solid var(--line);backdrop-filter:blur(12px);
   padding-top:max(9px,env(safe-area-inset-top))
 }
 .brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:.06em;font-size:14px}
@@ -111,16 +55,13 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
 #main{display:grid;grid-template-columns:var(--navw) minmax(0,1fr);min-height:0;min-width:0}
 #nav{
   display:flex;flex-direction:column;gap:6px;padding:12px 8px;
-  border-right:1px solid var(--line-soft);background:rgba(13,21,28,.6)
+  border-right:1px solid var(--line-soft)
 }
 .navbtn{
   display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:14px;
   color:var(--muted);font-size:10px;letter-spacing:.1em;transition:.18s;border:1px solid transparent
 }
 .navbtn svg{width:24px;height:24px}
-.navbtn:hover{color:var(--text);background:color-mix(in srgb,var(--primary) 7%,transparent)}
-.navbtn.active{color:var(--primary);background:color-mix(in srgb,var(--primary) 13%,transparent);border-color:var(--line);
-  box-shadow:inset 0 0 20px color-mix(in srgb,var(--primary) 8%,transparent)}
 #nav .navspacer{flex:1}
 
 #pages{position:relative;min-height:0;min-width:0;overflow:hidden}
@@ -132,12 +73,57 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
 #multiMapFrame{display:block;width:100%;height:100%;border:0;background:#0a1117}
 .multi-frame-open{position:absolute;z-index:2;top:12px;right:12px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(8,13,18,.88);color:var(--primary);font-size:11px;letter-spacing:.06em;text-decoration:none;backdrop-filter:blur(8px)}
 .multi-frame-open:hover{background:color-mix(in srgb,var(--primary) 15%,transparent)}
+.page-heading{max-width:1100px;margin:4px auto 20px}
+.page-heading .setup-eyebrow{margin-bottom:8px;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.page-heading h1{margin:0;color:var(--text);font-size:clamp(26px,3vw,34px);font-weight:600;letter-spacing:-.03em}
+#page-data>.page-heading,#page-flight>.page-heading{margin-bottom:20px}
+#page-data>.cols{max-width:1100px;margin-inline:auto}
+.flight-page{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);align-items:start;max-width:1100px;margin:0 auto}
+.flight-page>.panel{min-width:0}
+.flight-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.flight-actions button,.flight-point button{
+  border:1px solid var(--line-soft);border-radius:10px;padding:9px 12px;background:var(--panel-2);
+  color:var(--text);font-size:12px;font-weight:600
+}
+.flight-actions button:hover,.flight-point button:hover{border-color:var(--primary);color:var(--primary)}
+.flight-file-input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;clip-path:inset(50%)}
+.flight-file-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;margin-top:12px;padding:10px 18px;border:0;border-radius:999px;background:var(--primary);color:#00363d;cursor:pointer;transition:.16s}
+.flight-file-button:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.flight-file-input:focus-visible+.flight-file-button{outline:2px solid var(--primary);outline-offset:3px}
+.flight-status{min-height:1.5em;margin-top:8px;color:var(--muted);font-size:12px}
+.flight-status.error{color:var(--danger)}
+.flight-status.success{color:var(--green)}
+.flight-point-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:8px;margin-top:12px}
+.flight-point{min-width:0;padding:8px;border:1px solid var(--line-soft);border-radius:12px;background:var(--panel-2);transition:border-color .15s,opacity .15s}
+.flight-point.dragging{opacity:.45}
+.flight-point.drop-target{border-color:var(--primary)}
+.flight-point-head{display:flex;align-items:center;gap:5px;margin-bottom:7px}
+.flight-point-head strong{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--mono);font-size:11px;color:var(--primary)}
+.flight-point button{padding:5px 7px;font-size:10px}
+.flight-point button:disabled{opacity:.4;cursor:default}
+.flight-point .flight-drag-handle{padding:3px 6px;cursor:grab;font-size:15px;line-height:1}
+.flight-point .flight-drag-handle:active{cursor:grabbing}
+.flight-point-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.flight-point-fields label{display:grid;gap:3px;min-width:0;color:var(--muted);font-size:9px;letter-spacing:.04em}
+.flight-point-fields input{min-width:0;padding:6px 7px;font-size:12px}
+.flight-empty{grid-column:1/-1;padding:14px;border:1px dashed var(--line-soft);border-radius:12px;color:var(--muted);font-size:13px}
+@media(max-width:760px){.flight-page{grid-template-columns:1fr}.flight-point-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.flight-point-list{grid-template-columns:1fr}.flight-point-fields{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.waypoint-dialog{width:min(520px,calc(100% - 28px));max-height:min(90dvh,720px);padding:0;border:1px solid var(--line-soft);border-radius:24px;background:var(--panel);color:var(--text);box-shadow:var(--shadow)}
+.waypoint-dialog::backdrop{background:rgba(0,0,0,.58);backdrop-filter:blur(4px)}
+.waypoint-dialog form{padding:24px}
+.waypoint-dialog h2{margin:0 0 6px;font-size:20px}
+.waypoint-dialog .note{margin-bottom:18px}
+.waypoint-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.waypoint-fields label{display:grid;gap:6px;color:var(--muted);font-size:12px}
+.waypoint-fields input{min-width:0;min-height:44px;border-radius:14px}
+.waypoint-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.waypoint-dialog-actions button{min-height:42px;padding:10px 18px;border:1px solid var(--line-soft);border-radius:999px;background:var(--panel-2);font-weight:600}
+.waypoint-dialog-actions button[type="submit"]{border-color:transparent;background:var(--primary);color:#00363d}
+@media(max-width:520px){.waypoint-dialog form{padding:20px}.waypoint-fields{gap:9px}}
 
 /* ---------- COMPONENTI ---------- */
-.panel{
-  background:var(--glass);border:1px solid var(--line-soft);border-radius:var(--r);
-  box-shadow:var(--shadow);backdrop-filter:blur(10px);padding:14px
-}
+.panel{padding:14px}
 .panel h2{
   margin:0 0 12px;font-size:11px;letter-spacing:.16em;color:var(--primary);font-weight:600;
   display:flex;align-items:center;gap:8px
@@ -146,7 +132,7 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
 .grid{display:grid;gap:12px}
 .cols{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
 
-.tile{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:12px;padding:11px 13px;position:relative}
+.tile{position:relative}
 .tile .k{font-size:10px;letter-spacing:.12em;color:var(--muted);margin-bottom:5px}
 .tile .v{font-family:var(--mono);font-size:24px;font-weight:600;letter-spacing:-.01em;
   line-height:1.1;font-variant-numeric:tabular-nums;word-break:break-all}
@@ -235,7 +221,6 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
 .instrument-shell{fill:#202124;stroke:#050506;stroke-width:4}
 .instrument-rim{fill:none;stroke:#77787c;stroke-width:2.5}
 .instrument-face{fill:#090a0c;stroke:#3e4044;stroke-width:3}
-.instrument-track{fill:none;stroke:rgba(232,241,245,.25);stroke-width:2}
 .instrument-ticks{stroke:#e6e3d8;stroke-width:1.8;fill:#eeeade;font:9px var(--mono)}
 .instrument-ticks .major{stroke:#fffdf3;stroke-width:2.5}
 .instrument-needle{fill:#eeeade;stroke:#242529;stroke-width:1.5}
@@ -244,7 +229,6 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
 .instrument-unit{text-align:center;color:#a8a59d;font-size:9px;letter-spacing:.08em;min-height:13px}
 .instrument-label{fill:#eeeade;font:600 8px var(--mono);letter-spacing:.08em;text-anchor:middle}
 .instrument-horizon #adi{width:100%;height:auto;display:block;max-height:none;margin:0;filter:drop-shadow(0 4px 3px rgba(0,0,0,.55))}
-.instrument-horizon .adi-off{font-size:12px}
 .instrument-horizon .adi-off{border-radius:50%;flex-direction:column;font-size:9px;letter-spacing:.06em;line-height:1.4;padding:18px}
 .adi-off{
   position:absolute;inset:0;display:none;align-items:center;justify-content:center;
@@ -257,31 +241,7 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
 .instrument-small-values div{display:flex;gap:6px;align-items:center}
 .instrument-small-values b{color:var(--text);font-size:11px}
 
-/* ---------- WIND ---------- */
-.windwrap{display:grid;gap:12px;grid-template-columns:minmax(300px,1.2fr) minmax(260px,1fr);align-items:start}
-#windsock{width:100%;height:auto;display:block;max-height:50vh}
-.nowind{
-  position:absolute;inset:0;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;
-  background:rgba(8,13,18,.8);border-radius:var(--r);text-align:center;padding:24px
-}
-.nowind strong{font-family:var(--mono);font-size:14px;letter-spacing:.14em;color:var(--warning)}
-.nowind span{font-size:12px;color:var(--muted);max-width:340px}
-.nowind.hide{display:none}
-
-/* ---------- SETUP ---------- */
-.setup-page{padding:22px clamp(14px,3vw,34px) 30px}
-.setup-head{max-width:1240px;margin:0 auto 18px;padding:0 2px 15px;border-bottom:1px solid var(--line-soft)}
-.setup-eyebrow{font:10px var(--mono);color:var(--primary);margin-bottom:5px}
-.setup-head h1{font-size:22px;font-weight:600;line-height:1.2;margin:0;color:var(--text)}
-.setup-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;align-items:start;max-width:1240px;margin:0 auto}
-.setup-grid>.panel{min-width:0;padding:16px;border-radius:12px;background:rgba(17,26,34,.84);box-shadow:0 6px 20px rgba(0,0,0,.28);transition:border-color .18s}
-.setup-grid>.panel:hover{border-color:var(--line)}
-.setup-connection,.setup-speed{grid-column:span 7}
-.setup-altitude,.setup-attitude,.setup-map,.setup-preferences{grid-column:span 5}
-.setup-actions{grid-column:1 / -1;display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 18px}
-.setup-actions h2{grid-column:1;grid-row:1;margin-bottom:0}
-.setup-actions .act{grid-column:2;grid-row:1 / span 2;margin:0}
-.setup-actions .note{grid-column:1;grid-row:2;margin:0}
+/* ---------- FORM CONTROLS ---------- */
 .factor-calculator{margin-top:10px;padding-top:12px;border-top:1px solid var(--line-soft)}
 .factor-calculator .row3{align-items:end}
 .factor-calculator .field{margin-bottom:8px}
@@ -298,35 +258,35 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
 }
 .act button:active{transform:scale(.97)}
 .act button.ghost{background:var(--panel-2);border-color:var(--line-soft);color:var(--muted)}
-.toggle{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel-2);
-  border:1px solid var(--line-soft);border-radius:11px;font-size:13px;cursor:pointer;margin-bottom:8px}
-.toggle input{width:auto;accent-color:var(--primary);transform:scale(1.25);margin-right:2px}
 
 /* ---------- AEROPORTI ---------- */
-.airport-page{padding:20px 24px}
-.airport-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.airport-page{padding:clamp(20px,4vw,48px) clamp(16px,5vw,64px) 48px}
+.airport-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:1040px;margin:0 auto 12px}
 .airport-head h1{font-size:18px;letter-spacing:.08em;margin:0;color:var(--text)}
+.airport-head>.page-heading{flex:0 0 100%;max-width:none;margin:0 auto 8px;padding:0}
+.airport-head .page-heading h1{font-size:clamp(26px,3vw,34px);letter-spacing:-.03em}
 .airport-search{display:grid;grid-template-columns:minmax(180px,1fr) auto auto;gap:8px;flex:1 1 540px;max-width:720px}
 .airport-search button,.airport-actions a{padding:9px 12px;border:1px solid var(--line);background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);border-radius:9px;font-size:11px;letter-spacing:.06em;text-decoration:none;white-space:nowrap}
 .airport-actions{display:flex;gap:8px;flex-wrap:wrap}
 .airport-actions button,.airport-actions a{padding:8px 10px}
 .airport-search button:disabled{opacity:.5;cursor:wait}
-.airport-state{font-size:12px;color:var(--muted);margin:8px 0 14px;min-height:18px}
+.airport-state{max-width:1040px;font-size:12px;color:var(--muted);margin:8px auto 14px;min-height:18px}
 .airport-summary{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .airport-code{font:600 26px var(--mono);color:var(--primary)}
 .airport-name{font-size:16px;font-weight:600}
 .airport-meta{font:12px var(--mono);color:var(--muted);margin-top:4px}
 .airport-pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.65 var(--mono);color:var(--text);margin:0}
 .airport-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;align-content:start}
+.airport-grid{max-width:1040px;margin-inline:auto}
 .airport-grid>.panel{min-width:0;padding:16px;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.25)}
 .airport-overview{grid-column:span 7}
 .airport-nearby-panel{grid-column:span 5}
 .airport-runways-panel{grid-column:span 8}
 .airport-frequencies-panel{grid-column:span 4}
-.airport-metar-panel,.airport-taf-panel{grid-column:span 6}
-.airport-notam-panel{grid-column:span 7}
-.airport-source-panel{grid-column:span 5}
+.airport-grid>.airport-metar-panel,.airport-grid>.airport-taf-panel{grid-column:1 / -1}
 .airport-grid>.panel h2{margin-bottom:14px}
+.airport-metar-panel .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+.airport-taf-panel{max-height:220px;overflow:auto}
 .airport-overview .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
 .airport-table-wrap{overflow-x:auto;overscroll-behavior-inline:contain}
 .airport-table{width:100%;border-collapse:collapse;font-size:12px}
@@ -338,12 +298,7 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
 .airport-nearby{display:flex;flex-wrap:wrap;gap:6px}
 .airport-nearby button{padding:6px 8px;border:1px solid var(--line-soft);border-radius:7px;background:var(--panel-2);font:11px var(--mono);color:var(--text)}
 .airport-nearby button:hover{border-color:var(--primary);color:var(--primary)}
-.airport-notice{border-left:2px solid var(--warning);padding-left:10px}
-@media (min-width:1101px){
-  .airport-page{padding:22px 28px}
-}
 @media (max-width:1100px){
-  .airport-page{padding:16px}
   .airport-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .airport-grid>.panel{grid-column:span 1}
   .airport-grid>.airport-overview,.airport-grid>.airport-nearby-panel,
@@ -364,38 +319,276 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
   #nav .navspacer{display:none}
   #pages{order:1}
   .instrument-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  .windwrap{grid-template-columns:1fr}
   .tile.wide{grid-column:span 1}
-  .airport-page{padding:12px}
+  .airport-page{padding:22px 14px 32px}
   .airport-head{align-items:stretch}
   .airport-head h1{align-self:center}
   .airport-search{grid-template-columns:minmax(0,1fr) auto}
   .airport-search #airportNearest{grid-column:1 / -1}
   .airport-overview .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .airport-metar-panel .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .airport-table th,.airport-table td{padding:8px 6px}
   #mapstrip{padding-bottom:0}
   #mapstrip .cell{padding:8px 11px}
   .mapui.tl{max-width:62%}
-  .setup-page{padding:16px 14px 22px}
-  .setup-grid{gap:10px}
-  .setup-grid>.panel{padding:14px}
-  .setup-connection,.setup-altitude,.setup-speed,.setup-attitude,.setup-map,.setup-preferences,.setup-actions{grid-column:1 / -1}
 }
 @media (max-width:520px){
   #mapstrip{grid-template-columns:repeat(2,1fr)}
   .brand small{display:none}
   .row3{grid-template-columns:1fr}
   .conn{padding:6px 9px;font-size:11px}
-  .setup-head{margin-bottom:12px}
-  .setup-head h1{font-size:20px}
-  .setup-connection,.setup-altitude,.setup-speed,.setup-attitude,.setup-map,.setup-actions{grid-column:1 / -1}
-  .setup-actions{grid-template-columns:1fr;gap:8px}
-  .setup-actions h2,.setup-actions .act,.setup-actions .note{grid-column:1;grid-row:auto}
-  .setup-actions .act{flex-direction:column}
-  .setup-actions .act button{width:100%}
+  #page-data>.cols>.panel:last-child .status{gap:7px;padding:10px}
+  #page-data>.cols>.panel:last-child .status .k{font-size:9px}
+}
+#page-data>.cols>.panel:last-child{grid-column:1/-1}
+#page-data>.cols>.panel:last-child .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){#page-data>.cols>.panel:last-child .grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:360px){#page-data>.cols>.panel:last-child .grid{grid-template-columns:1fr}}
+@media (max-width:760px){
+  #nav .nav-label{display:none}
+  #nav .navbtn{justify-content:center;min-height:44px;padding-inline:0}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+
+/* ---------- MATERIAL-INSPIRED VISUAL THEME ---------- */
+:root{
+  --bg:#101414;
+  --panel:#1b2020;
+  --panel-2:#202727;
+  --primary:#4dd0e1;
+  --green:#80cbc4;
+  --warning:#ffcc80;
+  --danger:#ff8a80;
+  --text:#e1e8e8;
+  --muted:#a8b5b7;
+  --line:rgba(77,208,225,.22);
+  --line-soft:rgba(225,232,232,.07);
+  --glass:#1b2020;
+  --shadow:0 2px 8px rgba(0,0,0,.16);
+  --r:22px;
+  --sans:Roboto,"Segoe UI",system-ui,-apple-system,sans-serif;
+  --navw:92px;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+}
+:root[data-theme="light"]{
+  --bg:#f4f7f7;
+  --panel:#ffffff;
+  --panel-2:#e8eeee;
+  --primary:#006874;
+  --green:#176b61;
+  --warning:#805600;
+  --danger:#ba1a1a;
+  --text:#191d1e;
+  --muted:#596466;
+  --line:rgba(0,104,116,.2);
+  --line-soft:rgba(25,29,30,.1);
+  --glass:#ffffff;
+  --shadow:0 2px 8px rgba(25,39,40,.08);
+}
+button,input,select{transition:background-color .18s,border-color .18s,box-shadow .18s,color .18s,transform .18s}
+body{background-image:none}
+#topbar{
+  background:var(--panel);border-bottom:1px solid var(--line-soft);
+  backdrop-filter:none
+}
+#nav{background:var(--panel);border-right:1px solid var(--line-soft)}
+.navbtn{border:0;border-radius:18px;letter-spacing:.02em;font-size:11px;transition:background-color .18s,color .18s,transform .18s}
+.navbtn svg{width:22px;height:22px}
+.navbtn:hover{color:var(--text);background:var(--panel-2)}
+.navbtn.active{
+  color:var(--primary);background:color-mix(in srgb,var(--primary) 20%,var(--panel));
+  border-color:transparent;box-shadow:none
+}
+.panel:not(.instrument-card){
+  background:var(--panel);border:0;border-radius:var(--r);box-shadow:var(--shadow);
+  backdrop-filter:none
+}
+.panel:not(.instrument-card)::before{display:none}
+.panel h2{letter-spacing:.06em}
+.cols>.panel{padding:0;background:transparent;border:0;box-shadow:none}
+.cols>.panel::before{display:none}
+.cols>.panel h2{padding:0 2px;color:var(--muted)}
+.tile{
+  background:var(--panel);border:0;border-radius:20px;padding:16px;
+  transition:background-color .18s
+}
+.tile:hover{border-color:transparent;transform:none;background:color-mix(in srgb,var(--panel) 90%,var(--primary) 10%)}
+.tile .k{font-size:12px;letter-spacing:.01em;color:var(--muted)}
+.tile .v{font-size:22px}
+.tile .v.na{font-size:20px}
+.status{background:var(--panel);border:0;border-radius:18px;padding:13px 15px}
+#page-data .hint{display:none}
+#page-data>.cols>.panel:last-child .status{min-width:0;padding:11px 12px}
+#page-data>.cols>.panel:last-child .status .k{font-size:10px;letter-spacing:.04em}
+input,select{
+  background:var(--panel-2);border:1px solid transparent;border-radius:16px;
+  padding:12px 15px
+}
+input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 20%,transparent)}
+.field label{font-size:12px;letter-spacing:.02em}
+.setup-head h1,.airport-head h1{font-size:24px;letter-spacing:0}
+.setup-grid>.panel,.airport-grid>.panel{border-radius:var(--r);box-shadow:var(--shadow)}
+.act button,.factor-calculator .cal-button,.airport-search button,.airport-actions button,.airport-actions a{
+  border:0;border-radius:999px;padding:11px 18px;
+  background:var(--primary);color:#00363d;font-weight:600;letter-spacing:.01em
+}
+:root[data-theme="light"] .act button,
+:root[data-theme="light"] .factor-calculator .cal-button,
+:root[data-theme="light"] .airport-search button,
+:root[data-theme="light"] .airport-actions button,
+:root[data-theme="light"] .airport-actions a{color:#ffffff}
+.act button.ghost{background:var(--panel-2);color:var(--text)}
+.airport-search button:hover,.airport-actions button:hover,.airport-actions a:hover,.act button:hover,.factor-calculator .cal-button:hover{
+  background:color-mix(in srgb,var(--primary) 86%,white);border-color:transparent;
+  box-shadow:none
+}
+.airport-search button:disabled{opacity:.55}
+.airport-state{color:var(--muted)}
+.airport-grid>.panel{border-radius:var(--r)}
+.airport-grid>.airport-metar-panel{grid-column:1 / -1;padding:22px!important}
+.airport-grid>.airport-taf-panel{grid-column:1 / -1;max-height:190px}
+.airport-table th,.airport-table td{border-color:var(--line-soft)}
+.airport-table th{font-size:11px;letter-spacing:.02em}
+:root[data-theme="light"] .airport-table th{background:#e7eef2}
+:root[data-theme="light"] .airport-table tr:nth-child(even){background:rgba(24,40,50,.035)}
+.airport-metar-panel .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+.airport-taf-panel{max-height:190px;overflow:auto}
+.airport-table tbody tr:hover{background:color-mix(in srgb,var(--primary) 7%,transparent)}
+.airport-nearby button{border:1px solid var(--line-soft);border-radius:999px;background:var(--panel-2)}
+.conn{background:var(--panel-2);border-color:var(--line-soft);font-family:var(--sans);letter-spacing:.03em}
+.conn.ok,.conn.warn,.conn.bad{border-color:var(--line-soft)}
+.conn.ok .led{box-shadow:none}
+.conn.warn .led,.conn.bad .led{box-shadow:none}
+.mapui .mcard,.layerpick,.mbtn{
+  background:rgba(27,32,32,.94);border:0;border-radius:18px;box-shadow:var(--shadow);
+  backdrop-filter:blur(12px)
+}
+:root[data-theme="light"] .mapui .mcard,
+:root[data-theme="light"] .layerpick,
+:root[data-theme="light"] .mbtn{background:rgba(255,255,255,.94)}
+.mbtn{width:44px;height:44px}
+.mbtn.on,.layerpick button.on{
+  color:#00363d;background:var(--primary);border-color:transparent
+}
+.mbtn:hover{transform:scale(1.03)}
+.mbtn:hover:not(#followBtn):not(#trackBtn){color:var(--primary)}
+.layerpick button{border-radius:999px;letter-spacing:.02em}
+#mapstrip{
+  position:absolute;z-index:600;left:16px;bottom:16px;width:min(620px,calc(100% - 32px));
+  gap:0;padding:0;border:0;border-radius:24px;overflow:hidden;
+  background:var(--panel);box-shadow:var(--shadow)
+}
+#mapstrip .cell{background:transparent;padding:16px 20px}
+#mapstrip .k{font-size:12px;letter-spacing:.02em}
+#mapstrip .v{font-size:clamp(20px,3vw,28px)}
+.instrument-card{background:var(--panel);border-radius:var(--r);padding:12px}
+.instrument-card h2{color:var(--muted)}
+.multi-frame-open{border:0;border-radius:999px;background:var(--primary);color:#00363d}
+.multi-frame-open:hover{background:color-mix(in srgb,var(--primary) 86%,white)}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--muted) 45%,transparent);border:2px solid transparent;border-radius:999px;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--primary) 55%,transparent);background-clip:padding-box}
+@media (orientation:portrait),(max-width:760px){
+  #nav{background:var(--panel)}
+  .navbtn{border-radius:16px}
+  #mapstrip{left:10px;bottom:10px;width:calc(100% - 20px);border-radius:20px}
+  #mapstrip .cell{padding:11px 13px}
+}
+
+/* ---------- SETTINGS PAGE ---------- */
+#page-set.setup-page{
+  padding:clamp(20px,4vw,48px) clamp(16px,5vw,64px) 48px;
+  background:var(--bg)
+}
+#page-set .setup-head{
+  max-width:1040px;margin:0 auto 24px;padding:0 4px 4px;border:0
+}
+#page-set .setup-eyebrow{
+  margin-bottom:8px;color:var(--muted);font:500 11px var(--sans);
+  letter-spacing:.12em;text-transform:uppercase
+}
+#page-set .setup-head h1{
+  color:var(--text);font-size:clamp(28px,3vw,36px);font-weight:600;letter-spacing:-.03em
+}
+#page-set .setup-grid{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:14px;
+  max-width:1040px;margin:0 auto
+}
+#page-set .setup-grid>.panel{
+  display:grid;grid-template-columns:minmax(150px, .28fr) minmax(0,1fr);
+  align-items:start;column-gap:clamp(20px,4vw,48px);row-gap:0;
+  min-width:0;padding:24px 28px;border:1px solid var(--line-soft);
+  border-radius:24px;background:var(--panel);box-shadow:none;grid-column:1
+}
+#page-set .setup-grid>.panel:hover{border-color:var(--line-soft)}
+#page-set .setup-grid>.panel h2{
+  grid-column:1;grid-row:1;margin:2px 0 0;padding:0;
+  color:var(--text);font-size:14px;font-weight:600;letter-spacing:.01em;
+  line-height:1.4
+}
+#page-set .setup-grid>.panel h2::after{display:none}
+#page-set .setup-grid>.panel> :not(h2){grid-column:2;min-width:0}
+#page-set .setup-grid .field{margin-bottom:14px}
+#page-set .setup-grid .field:last-child{margin-bottom:0}
+#page-set .setup-grid .field label{
+  margin-bottom:7px;color:var(--muted);font-size:12px;letter-spacing:.01em
+}
+#page-set .setup-grid input,
+#page-set .setup-grid select{
+  min-height:46px;border:1px solid var(--line-soft);border-radius:14px;
+  background:var(--panel-2);padding:11px 14px
+}
+#page-set .setup-grid input:hover,
+#page-set .setup-grid select:hover{border-color:var(--line)}
+#page-set .setup-grid .note{font-size:12px;line-height:1.6}
+#page-set .setup-connection>.row2{gap:14px}
+#page-set .setup-map .act{margin-top:14px}
+#page-set .setup-actions{
+  grid-template-columns:minmax(150px,.28fr) minmax(0,1fr);
+  align-items:start;column-gap:clamp(20px,4vw,48px)
+}
+#page-set .setup-actions h2{grid-column:1;grid-row:1}
+#page-set .setup-actions .note{grid-column:2;grid-row:2;margin:0}
+#page-set .setup-actions .act{
+  grid-column:2;grid-row:1;justify-content:flex-start;gap:10px;margin:0
+}
+#page-set .setup-actions .act button{
+  min-height:44px;padding:11px 20px;border-radius:999px
+}
+#page-set .setup-actions .act button.ghost{
+  border:1px solid var(--line-soft);background:var(--panel-2);color:var(--text)
+}
+#page-set .setup-actions .act button.ghost:hover{
+  border-color:var(--line);background:color-mix(in srgb,var(--primary) 8%,var(--panel-2))
+}
+#page-set #cfgSaved{margin-top:2px!important}
+#page-set input[type="color"]{width:64px;height:46px;padding:5px}
+@media (max-width:760px){
+  #page-set.setup-page{padding:22px 14px 32px}
+  #page-set .setup-head{margin-bottom:18px}
+  #page-set .setup-grid>.panel,
+  #page-set .setup-actions{
+    grid-template-columns:minmax(0,1fr);gap:12px;padding:20px
+  }
+  #page-set .setup-grid>.panel h2,
+  #page-set .setup-grid>.panel> :not(h2),
+  #page-set .setup-actions h2,
+  #page-set .setup-actions .act,
+  #page-set .setup-actions .note{
+    grid-column:1;grid-row:auto
+  }
+  #page-set .setup-grid>.panel h2{margin:0 0 2px}
+  #page-set .setup-actions .act{flex-direction:row}
+}
+@media (max-width:520px){
+  #page-set .setup-connection>.row2,
+  #page-set .setup-actions .act{flex-direction:column}
+  #page-set .setup-actions .act button{width:100%}
+}
+@media (max-width:760px){
+  .airport-metar-panel .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 </style>
 </head>
@@ -416,19 +609,19 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
   <div id="main">
     <!-- ===================== NAV ===================== -->
     <nav id="nav">
-      <button class="navbtn active" data-page="map">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>MAPPA</button>
-      <button class="navbtn" data-page="data">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 15l3-4 3 3 4-6"/></svg>DATI</button>
-      <button class="navbtn" data-page="instruments">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4L3.5 17.5a2.1 2.1 0 0 0 3 3l4.8-4.8a5 5 0 0 0 6.4-6.4l-3 3-3.4-3.4z"/><path d="m14.5 4.5 5 5"/><circle cx="5" cy="19" r=".6" fill="currentColor"/></svg>STRUMENTI</button>
-      <button class="navbtn" data-page="airport">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v3M4 8l2-3h12l2 3-2 6H6L4 8Z"/><path d="M6 8h12M8 8l1 4m3-4v4m3-4-1 4M10 14l-2 7m6-7 2 7m-8 0h8"/></svg>AEROPORTI</button>
+      <button class="navbtn active" data-page="map" aria-label="MAPPA">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span class="nav-label">MAPPA</span></button>
+      <button class="navbtn" data-page="data" aria-label="DATI">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 15l3-4 3 3 4-6"/></svg><span class="nav-label">DATI</span></button>
+      <button class="navbtn" data-page="flight" aria-label="VOLO">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18.5 8.5 13l3.5 3.5L21 7.5"/><circle cx="3" cy="18.5" r="1.5"/><circle cx="8.5" cy="13" r="1.5"/><circle cx="12" cy="16.5" r="1.5"/><circle cx="21" cy="7.5" r="1.5"/></svg><span class="nav-label">VOLO</span></button>
+      <button class="navbtn" data-page="airport" aria-label="AEROPORTI">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v3M4 8l2-3h12l2 3-2 6H6L4 8Z"/><path d="M6 8h12M8 8l1 4m3-4v4m3-4-1 4M10 14l-2 7m6-7 2 7m-8 0h8"/></svg><span class="nav-label">AEROPORTI</span></button>
       <button class="navbtn" data-page="multi" title="Mappa multiplayer" aria-label="Mappa multiplayer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.4 2.5 3.5 5.5 3.5 9S14.4 18.5 12 21M12 3C9.6 5.5 8.5 8.5 8.5 12S9.6 18.5 12 21"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="18" cy="16" r="1" fill="currentColor"/></svg>MULTI</button>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.4 2.5 3.5 5.5 3.5 9S14.4 18.5 12 21M12 3C9.6 5.5 8.5 8.5 8.5 12S9.6 18.5 12 21"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="18" cy="16" r="1" fill="currentColor"/></svg><span class="nav-label">MULTI</span></button>
       <div class="navspacer"></div>
-      <button class="navbtn" data-page="set">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V20a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 18.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4 13.9H4a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 5.6 7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 11 4.1V4a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.6 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7H22a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.3z"/></svg>SETUP</button>
+      <button class="navbtn" data-page="set" aria-label="SETUP">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V20a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 18.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4 13.9H4a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 5.6 7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 11 4.1V4a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.6 1.1l.1-.1a2 2 0 1 1 2.8 2.8l.1.1a1.6 1.6 0 0 0 1.1 2.7H22a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.3z"/></svg><span class="nav-label">SETUP</span></button>
     </nav>
 
     <div id="pages">
@@ -466,9 +659,6 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
             <button class="mbtn" id="trackBtn" aria-label="Mostra o nascondi la traccia">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 19c4 0 3-6 7-6s3-8 8-8"/><circle cx="4" cy="19" r="1.6" fill="currentColor"/><circle cx="19" cy="5" r="1.6" fill="currentColor"/></svg>
             </button>
-          </div>
-
-          <div class="mapui bl">
             <button class="mbtn" id="clearTrackMap" aria-label="Cancella la traccia">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 13h12l1-13M9 7V4h6v3"/></svg>
             </button>
@@ -485,6 +675,10 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
 
       <!-- ===================== PAGINA 2 · FLIGHT DATA ===================== -->
       <section class="page" id="page-data">
+        <header class="page-heading">
+          <div class="setup-eyebrow">GEOFS DASHBOARD / DATI</div>
+          <h1>Dati di volo</h1>
+        </header>
         <div class="cols">
           <div class="panel">
             <h2>POSIZIONE</h2>
@@ -534,12 +728,10 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
           <div class="panel">
             <h2>STATO</h2>
             <div class="grid">
-              <div class="status" id="stAirborne"><span class="led"></span><span class="k">AIRBORNE</span><span class="s">N/A</span></div>
               <div class="status" id="stCrashed"><span class="led"></span><span class="k">CRASHED</span><span class="s">N/A</span></div>
               <div class="status" id="stGround"><span class="led"></span><span class="k">GROUND CONTACT</span><span class="s">N/A</span></div>
               <div class="status" id="stWater"><span class="led"></span><span class="k">WATER CONTACT</span><span class="s">N/A</span></div>
               <div class="status" id="stBrakes"><span class="led"></span><span class="k">BRAKES</span><span class="s">N/A</span></div>
-              <div class="status" id="stStall"><span class="led"></span><span class="k">STALL</span><span class="s">N/A</span></div>
             </div>
           </div>
 
@@ -644,15 +836,62 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
         </div>
       </section>
 
+      <!-- ===================== PAGINA 3 · VOLO ===================== -->
+      <section class="page" id="page-flight">
+        <header class="page-heading">
+          <div class="setup-eyebrow">GEOFS DASHBOARD / VOLO</div>
+          <h1>Volo</h1>
+        </header>
+        <div class="flight-page">
+          <div class="panel">
+            <h2>PIANO DI VOLO</h2>
+            <div class="note">Carica un piano GeoFS in formato JSON e modifica i punti qui sotto. La rotta viene disegnata sulla mappa.</div>
+            <input class="flight-file-input" id="flightFile" type="file" accept=".json,application/json" aria-label="Carica piano di volo JSON">
+            <label class="flight-file-button" for="flightFile">CARICA PIANO JSON</label>
+            <div class="flight-actions">
+              <button type="button" id="flightAddPoint">AGGIUNGI PUNTO</button>
+              <button type="button" id="flightExport" disabled>ESPORTA JSON</button>
+              <button type="button" id="flightShowMap" disabled>MOSTRA SULLA MAPPA</button>
+            </div>
+            <div class="flight-status" id="flightPlanStatus" role="status" aria-live="polite">Nessun piano caricato.</div>
+            <div class="flight-point-list" id="flightPointList"><div class="flight-empty">Carica un file JSON o aggiungi un punto.</div></div>
+          </div>
+        </div>
+        <dialog class="waypoint-dialog" id="waypointDialog" aria-labelledby="waypointDialogTitle">
+          <form id="waypointForm">
+            <h2 id="waypointDialogTitle">Nuovo punto rotta</h2>
+            <div class="note">Inserisci identificativo, coordinate e gli eventuali dati aggiuntivi.</div>
+            <div class="waypoint-fields">
+              <label>Identificativo<input name="ident" type="text" maxlength="32" required></label>
+              <label>Tipo<input name="type" type="text" maxlength="32" value="WPT" required></label>
+              <label>Latitudine<input name="lat" type="number" min="-90" max="90" step="any" required></label>
+              <label>Longitudine<input name="lon" type="number" min="-180" max="180" step="any" required></label>
+              <label>Quota · FT<input name="alt" type="number" min="0" step="1"></label>
+              <label>Heading · °<input name="heading" type="number" min="0" max="359.9" step="0.1"></label>
+            </div>
+            <div class="waypoint-dialog-actions">
+              <button type="button" id="waypointCancel">ANNULLA</button>
+              <button type="submit">AGGIUNGI PUNTO</button>
+            </div>
+          </form>
+        </dialog>
+      </section>
+
       <!-- ===================== PAGINA 4 · AEROPORTI ===================== -->
       <section class="page airport-page" id="page-airport">
         <div class="airport-head">
-          <h1>DATI AEROPORTUALI</h1>
+          <header class="page-heading">
+            <div class="setup-eyebrow">GEOFS DASHBOARD / AEROPORTI</div>
+            <h1>Dati aeroportuali</h1>
+          </header>
           <form class="airport-search" id="airportSearchForm">
             <input id="airportCodeInput" type="text" maxlength="4" minlength="3" pattern="[A-Za-z0-9]{3,4}" autocomplete="off" spellcheck="false" placeholder="Codice ICAO, es. LIMC" aria-label="Codice ICAO aeroporto">
             <button type="submit">CERCA</button>
             <button type="button" id="airportNearest">VICINO A ME</button>
           </form>
+          <div class="airport-actions">
+            <button id="airportRefresh" type="button">AGGIORNA DATI</button>
+          </div>
         </div>
         <div class="airport-state" id="airportState" role="status" aria-live="polite">Inserisci un codice ICAO oppure cerca gli aeroporti vicino alla posizione GeoFS.</div>
         <div class="airport-grid">
@@ -704,19 +943,6 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
             <pre class="airport-pre" id="tafRaw">TAF non disponibile.</pre>
             <div class="note" id="tafValidity" style="margin-top:8px"></div>
           </div>
-          <div class="panel airport-notam-panel">
-            <h2>NOTAM · AVVISI AERONAUTICI</h2>
-            <div class="note airport-notice">I NOTAM non sono forniti dall'API meteo AWC. Consulta la fonte ufficiale per il Paese interessato; questa dashboard non sostituisce la pianificazione pre-volo o i briefing AIS.</div>
-            <div class="airport-actions" style="margin-top:12px">
-              <a href="https://notams.aim.faa.gov/notamSearch/" target="_blank" rel="noopener noreferrer">RICERCA FAA NOTAM</a>
-              <a href="https://www.ead.eurocontrol.int/" target="_blank" rel="noopener noreferrer">EUROCONTROL EAD</a>
-            </div>
-          </div>
-          <div class="panel airport-source-panel">
-            <h2>FONTE E AGGIORNAMENTO</h2>
-            <div class="note">METAR, TAF e stazioni: AviationWeather.gov (NOAA). Anagrafica, piste e frequenze: AWC con fallback OurAirports. I dati possono essere incompleti o non aggiornati; confermali sulle pubblicazioni aeronautiche ufficiali.</div>
-            <div class="airport-actions" style="margin-top:12px"><button id="airportRefresh" type="button">AGGIORNA DATI</button></div>
-          </div>
         </div>
       </section>
 
@@ -762,73 +988,6 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
             <div class="note">L'altitudine ricevuta da GeoFS è in metri. Qui puoi scegliere come visualizzarla.</div>
           </div>
 
-          <div class="panel setup-speed">
-            <h2>VELOCITÀ</h2>
-            <div class="row2">
-              <div class="field">
-                <label for="cfgSpdSrc">Unità del valore ricevuto</label>
-                <select id="cfgSpdSrc">
-                  <option value="raw">Non verificata — mostra il valore grezzo</option>
-                  <option value="kt">Già in nodi</option>
-                  <option value="ms">Metri al secondo</option>
-                  <option value="kmh">Chilometri orari</option>
-                  <option value="factor">Fattore personalizzato</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="cfgSpdUnit">Unità di visualizzazione</label>
-                <select id="cfgSpdUnit"><option value="kt">kt</option><option value="kmh">km/h</option><option value="mph">mph</option></select>
-              </div>
-            </div>
-            <div class="field">
-              <label for="cfgSpdFactor">Fattore: valore ricevuto × fattore = nodi</label>
-              <input id="cfgSpdFactor" type="number" step="any">
-            </div>
-            <div class="factor-calculator">
-              <div class="note" style="margin-bottom:10px">Calcolo del fattore: leggi la velocità sull'anemometro di GeoFS e confrontala con il valore grezzo mostrato qui.</div>
-              <div class="row3">
-                <div class="field"><label for="calRaw">Valore grezzo</label><input id="calRaw" type="number" step="any"></div>
-                <div class="field"><label for="calKt">Nodi reali</label><input id="calKt" type="number" step="any"></div>
-                <div class="field"><label>&nbsp;</label><button class="cal-button" id="calGo">CALCOLA</button></div>
-              </div>
-              <div class="note" id="calOut">Groundspeed grezzo attuale: <b id="calNow">N/A</b></div>
-            </div>
-            <div class="field" style="margin-top:12px">
-              <label for="cfgMachSrc">Mach</label>
-              <select id="cfgMachSrc">
-                <option value="raw">Non verificato — mostra il valore grezzo</option>
-                <option value="mach">Già numero di Mach</option>
-                <option value="factor">Fattore personalizzato</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="cfgMachFactor">Fattore Mach</label>
-              <input id="cfgMachFactor" type="number" step="any">
-            </div>
-          </div>
-
-          <div class="panel setup-attitude">
-            <h2>ASSETTO · CORRISPONDENZA htr</h2>
-            <div class="row3">
-              <div class="field"><label for="cfgHtrH">Heading da htr[ ]</label>
-                <select id="cfgHtrH"><option value="-1">non usato</option><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
-              <div class="field"><label for="cfgHtrP">Pitch da htr[ ]</label>
-                <select id="cfgHtrP"><option value="-1">non usato</option><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
-              <div class="field"><label for="cfgHtrR">Roll da htr[ ]</label>
-                <select id="cfgHtrR"><option value="-1">non usato</option><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
-            </div>
-            <div class="field">
-              <label for="cfgHdgSrc">Sorgente della prua</label>
-              <select id="cfgHdgSrc">
-                <option value="auto">Automatica: campo heading, poi htr, poi rotta GPS</option>
-                <option value="field">Solo campo heading o HDG</option>
-                <option value="htr">Solo htr</option>
-                <option value="track">Solo rotta calcolata dalle posizioni</option>
-              </select>
-            </div>
-            <div class="note hint">La corrispondenza proposta è un'ipotesi, non un dato verificato. Mettila alla prova: rulla dritto per controllare la prua, inclina di 20° a sinistra per controllare il segno del rollio, cabra per controllare il pitch. La rotta GPS è una rotta al suolo, non la prua.</div>
-          </div>
-
           <div class="panel setup-map">
             <h2>MAPPA</h2>
             <div class="field">
@@ -859,13 +1018,26 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
               <select id="cfgLanguage">
                 <option value="it">Italiano</option>
                 <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="de-CH">Deutsch (Schweiz)</option>
+                <option value="es">Español</option>
+                <option value="pt-BR">Português (Brasil)</option>
+                <option value="hi">हिन्दी</option>
               </select>
             </div>
             <div class="field">
-              <label for="cfgAccent">Colore secondario</label>
-              <input id="cfgAccent" type="color" value="#00d9ff">
+              <label for="cfgAccent">Palette colori</label>
+              <select id="cfgAccent">
+                <option value="#00d9ff">Azzurro (predefinita)</option>
+                <option value="#b69cff">Viola</option>
+                <option value="#ff8a80">Corallo</option>
+                <option value="#80cbc4">Verde acqua</option>
+                <option value="#ffb74d">Ambra</option>
+                <option value="#64b5f6">Blu</option>
+              </select>
             </div>
-            <div class="note">Il colore selezionato viene usato come colore d'accento dell'interfaccia.</div>
+            <div class="note">Scegli una palette per il colore d'accento dell'interfaccia.</div>
           </div>
 
           <div class="panel setup-actions">
@@ -892,15 +1064,18 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
    ========================================================================= */
 
 /* ------------------------------- CONFIG -------------------------------- */
+const ACCENT_PALETTES = ["#00d9ff","#b69cff","#ff8a80","#80cbc4","#ffb74d","#64b5f6"];
+const FIXED_SETTINGS = {
+  spdSrc:"factor", spdUnit:"kt", spdFactor:1.7231476163124642,
+  machSrc:"mach", machFactor:1,
+  htrH:0, htrP:1, htrR:2, hdgSrc:"auto"
+};
 const DEFAULTS = {
   url: "/data",
   interval: 200,
   staleMs: 2000,
   altUnit: "ft",
-  spdSrc: "raw", spdUnit: "kt", spdFactor: 1,
-  machSrc: "raw", machFactor: 1,
-  htrH: 0, htrP: 1, htrR: 2,
-  hdgSrc: "auto",
+  ...FIXED_SETTINGS,
   zoom: 11,
   openaipKey: "",
   theme: "dark",
@@ -914,6 +1089,8 @@ function loadCfg(){
     const s = localStorage.getItem("geofs-dash-cfg");
     if(s) CFG = Object.assign({}, DEFAULTS, JSON.parse(s));
   }catch(e){ /* storage non disponibile: si resta sui valori iniziali */ }
+  Object.assign(CFG, FIXED_SETTINGS);
+  if(!ACCENT_PALETTES.includes(CFG.accentColor)) CFG.accentColor = DEFAULTS.accentColor;
 }
 function saveCfg(){
   try{ localStorage.setItem("geofs-dash-cfg", JSON.stringify(CFG)); return true; }
@@ -942,6 +1119,23 @@ const NA = "N/A";
 
 const EN_TEXT = {
   "MAPPA":"MAP","DATI":"DATA","STRUMENTI":"INSTRUMENTS","AEROPORTI":"AIRPORTS",
+  "GEOFS DASHBOARD / DATI":"GEOFS DASHBOARD / DATA","GEOFS DASHBOARD / VOLO":"GEOFS DASHBOARD / FLIGHT",
+  "GEOFS DASHBOARD / AEROPORTI":"GEOFS DASHBOARD / AIRPORTS","Dati di volo":"Flight data","Volo":"Flight",
+  "Dati aeroportuali":"Airport data","CARICA PIANO JSON":"LOAD JSON PLAN",
+  "Nuovo punto rotta":"New route waypoint","Inserisci identificativo, coordinate e gli eventuali dati aggiuntivi.":"Enter an identifier, coordinates and any additional data.",
+  "Identificativo":"Identifier","Latitudine":"Latitude","Longitudine":"Longitude",
+  "Quota · FT":"Altitude · FT","Heading · °":"Heading · °","ANNULLA":"CANCEL",
+  "RIORDINA":"REORDER","SPOSTA IN ALTO":"MOVE UP","SPOSTA IN BASSO":"MOVE DOWN",
+  "VOLO":"FLIGHT","PIANO DI VOLO":"FLIGHT PLAN",
+  "AGGIUNGI PUNTO":"ADD WAYPOINT","ESPORTA JSON":"EXPORT JSON","MOSTRA SULLA MAPPA":"SHOW ON MAP",
+  "RIMUOVI":"REMOVE","IDENT":"IDENT","TIPO":"TYPE","LAT":"LAT",
+  "LON":"LON","ALT · FT":"ALT · FT","HDG · °":"HDG · °",
+  "ELEV. SLM (FT)":"ELEVATION (FT ASL)","VARIAZIONE MAG.":"MAG. VARIATION",
+  "TIPO / OPERAZIONI":"TYPE / OPERATIONS",
+  "Carica un piano GeoFS in formato JSON e modifica i punti qui sotto. La rotta viene disegnata sulla mappa.":"Load a GeoFS flight plan in JSON format and edit the waypoints below. The route is drawn on the map.",
+  "Nessun piano caricato.":"No flight plan loaded.",
+  "Carica un file JSON o aggiungi un punto.":"Load a JSON file or add a waypoint.",
+  "Connetti il bridge GeoFS per inviare un comando.":"Connect the GeoFS bridge to send a command.",
   "MULTI":"MULTI","POSIZIONE":"POSITION","VELOCITÀ":"SPEED","MOTORI":"ENGINES",
   "SISTEMI":"SYSTEMS","METEO":"WEATHER","ASSETTO":"ATTITUDE","VENTO":"WIND",
   "NESSUNA":"NONE","TRACCIA":"TRACK","PT":"PTS","ALTITUDINE":"ALTITUDE",
@@ -999,7 +1193,12 @@ const EN_TEXT = {
   ". La chiave resta nelle impostazioni di questo browser e viene inviata nelle richieste tile. Dati globali a copertura variabile, non ufficiali e non certificati per la navigazione; licenza CC BY-NC 4.0.":". The key stays in this browser's settings and is sent with tile requests. Global data coverage varies; data is unofficial and not certified for navigation. CC BY-NC 4.0 license.",
   "Cancella la traccia":"Clear track","PERSONALIZZAZIONE":"CUSTOMIZATION",
   "Tema":"Theme","Scuro":"Dark","Chiaro":"Light","Lingua":"Language","Italiano":"Italian",
-  "Colore secondario":"Accent color","Il colore selezionato viene usato come colore d'accento dell'interfaccia.":"The selected color is used as the interface accent.",
+  "Colore secondario":"Accent color","Palette colori":"Color palette",
+  "Azzurro (predefinita)":"Cyan (default)","Viola":"Purple","Corallo":"Coral",
+  "Verde acqua":"Teal","Ambra":"Amber","Blu":"Blue",
+  "Scegli una palette per il colore d'accento dell'interfaccia.":"Choose a palette for the interface accent color.",
+  "Conversione velocità":"Speed conversion","Fattore personalizzato · kt · 1,7231476163124642":"Custom factor · kt · 1.7231476163124642",
+  "Già numero di Mach · fattore 1":"Already a Mach number · factor 1",
   "IMPOSTAZIONI":"SETTINGS","Salva le impostazioni":"Save settings",
   "Ripristina i valori iniziali":"Restore defaults",
   "Le impostazioni restano su questo dispositivo.":"Settings are stored on this device.",
@@ -1034,7 +1233,286 @@ const EN_TEXT = {
   "Asfalto":"Asphalt","Calcestruzzo":"Concrete","Erba":"Grass","Ghiaia":"Gravel",
   "Acqua":"Water","Terra":"Dirt","Sconosciuta":"Unknown","Non indicata":"Not specified",
   "CHIUSA":"CLOSED","APERTA":"OPEN","NON VERIFICATO":"UNVERIFIED","Servizio":"Service",
-  "Torre":"Tower","Faro":"Beacon","OPS":"OPS","NESSUNA":"NONE"
+  "Torre":"Tower","Faro":"Beacon","OPS":"OPS","NESSUNA":"NONE",
+  "Setup":"Settings","SETUP":"SETUP"
+};
+const LOCALE_TEXT = {
+  fr:{
+    "MAP":"Carte","DATA":"Données","INSTRUMENTS":"Instruments","AIRPORTS":"Aéroports","MULTI":"Multi",
+    "POSITION":"Position","SPEED":"Vitesse","ENGINES":"Moteurs","SYSTEMS":"Systèmes","WEATHER":"Météo",
+    "ATTITUDE":"Assiette","WIND":"Vent","NONE":"Aucun","TRACK":"Trace","PTS":"Pts","ALTITUDE":"Altitude",
+    "AERODYNAMICS":"Aérodynamique","CONNECTION":"Connexion","ALT":"Alt","ALTIMETER":"Altimètre",
+    "AIRPORT DATA":"Données aéroportuaires","SEARCH":"Rechercher","NEAR ME":"À proximité",
+    "SELECTED AIRPORT":"Aéroport sélectionné","NEARBY STATIONS":"Stations proches","RUNWAYS":"Pistes",
+    "RADIO FREQUENCIES":"Fréquences radio","METAR · OBSERVATION":"METAR · Observation",
+    "TAF · FORECAST":"TAF · Prévisions","NOTAM · AERONAUTICAL NOTICES":"NOTAM · Avis aéronautiques",
+    "SOURCE AND UPDATE":"Source et mise à jour","REFRESH DATA":"Actualiser les données",
+    "ICAO code, e.g. LIMC":"Code OACI, ex. LIMC","Airport ICAO code":"Code OACI de l’aéroport",
+    "No airport selected":"Aucun aéroport sélectionné","STATUS":"État","SERVICE":"Service",
+    "FREQUENCY":"Fréquence","OBSERVED (UTC)":"Observé (UTC)","WIND":"Vent",
+    "TEMPERATURE / DEW POINT":"Température / point de rosée","VISIBILITY":"Visibilité",
+    "FLIGHT CATEGORY":"Catégorie de vol","METAR unavailable.":"METAR indisponible.",
+    "TAF unavailable.":"TAF indisponible.","OPEN IN NEW TAB":"Ouvrir dans un nouvel onglet",
+    "GEOFS DASHBOARD / SETTINGS":"GEOFS DASHBOARD / PARAMÈTRES","CONNECTION":"Connexion",
+    "Data URL":"URL des données","Request interval (ms)":"Intervalle de requête (ms)",
+    "Data expires after (ms)":"Expiration des données après (ms)","ALTITUDE":"Altitude",
+    "Display units":"Unités d’affichage","SPEED":"Vitesse","Input value units":"Unités de la valeur reçue",
+    "Unverified — show raw value":"Non vérifiée — afficher la valeur brute","Already in knots":"Déjà en nœuds",
+    "Meters per second":"Mètres par seconde","Kilometers per hour":"Kilomètres par heure",
+    "Custom factor":"Facteur personnalisé","Factor: received value × factor = knots":"Facteur : valeur reçue × facteur = nœuds",
+    "Factor calculation: read the speed on the GeoFS airspeed indicator and compare it with the raw value shown here.":"Pour calculer le facteur, comparez l’indicateur de vitesse GeoFS à la valeur brute affichée ici.",
+    "Raw value":"Valeur brute","Actual knots":"Nœuds réels","CALCULATE":"CALCULER",
+    "Current raw groundspeed:":"Vitesse sol brute actuelle :","Mach":"Mach",
+    "Already a Mach number":"Déjà un nombre de Mach","Mach factor":"Facteur Mach",
+    "ATTITUDE · htr MAPPING":"ASSIETTE · MAPPING htr","unused":"inutilisé",
+    "Heading source":"Source du cap","Select":"Sélectionner","Initial zoom":"Zoom initial",
+    "OpenAIP API key":"Clé API OpenAIP","Clear track":"Effacer la trace","CUSTOMIZATION":"PERSONNALISATION",
+    "Theme":"Thème","Dark":"Sombre","Light":"Clair","Language":"Langue","Italian":"Italien",
+    "Accent color":"Couleur d’accent","Color palette":"Palette de couleurs","Cyan (default)":"Cyan (par défaut)",
+    "Purple":"Violet","Coral":"Corail","Teal":"Turquoise","Amber":"Ambre","Blue":"Bleu",
+    "Choose a palette for the interface accent color.":"Choisissez une palette pour la couleur d’accent de l’interface.",
+    "SETTINGS":"PARAMÈTRES","Save settings":"Enregistrer les paramètres",
+    "Restore defaults":"Rétablir les valeurs par défaut","Settings are stored on this device.":"Les paramètres sont enregistrés sur cet appareil.",
+    "Settings saved on this device.":"Paramètres enregistrés sur cet appareil.",
+    "Settings applied. This browser cannot save them; they must be entered again next time.":"Paramètres appliqués. Ce navigateur ne peut pas les enregistrer ; ils devront être saisis à nouveau.",
+    "Default settings restored.":"Paramètres par défaut rétablis.","WAITING FOR DATA":"EN ATTENTE DES DONNÉES",
+    "CONNECTING":"CONNEXION","CONNECTED":"CONNECTÉ","DISCONNECTED":"DÉCONNECTÉ",
+    "WAITING FOR POSITION":"EN ATTENTE DE LA POSITION","Zoom in":"Zoom avant","Zoom out":"Zoom arrière",
+    "Center on aircraft":"Centrer sur l’avion","Show or hide track":"Afficher ou masquer la trace",
+    "GROUND SPEED":"VITESSE SOL","RAW":"BRUT","CALC":"CALC","TRK":"TRK","AIRBORNE":"EN VOL",
+    "STALL":"DÉCROCHAGE","ENGINE RPM":"RÉGIME MOTEUR","THRUST":"POUSSÉE",
+    "ENGINE STATUS":"ÉTAT MOTEUR","CRASHED":"ACCIDENTÉ","GROUND CONTACT":"CONTACT AU SOL",
+    "WATER CONTACT":"CONTACT AVEC L’EAU","BRAKES":"FREINS","ANGLE OF ATTACK":"ANGLE D’ATTAQUE",
+    "HEADING":"CAP","TRUE AIR SPEED":"VITESSE AIR VRAIE","VELOCITY SCALAR":"SCALAIRE DE VITESSE",
+    "VERTICAL SPEED":"VITESSE VERTICALE","LONGITUDE":"LONGITUDE","LATITUDE":"LATITUDE",
+    "Validity:":"Validité :","Loading METAR…":"Chargement du METAR…","Loading TAF…":"Chargement du TAF…",
+    "Name unavailable":"Nom indisponible","Asphalt":"Asphalte","Concrete":"Béton","Grass":"Herbe",
+    "Gravel":"Gravier","Water":"Eau","Dirt":"Terre","Unknown":"Inconnu","Not specified":"Non spécifié",
+    "CLOSED":"FERMÉ","OPEN":"OUVERT","UNVERIFIED":"NON VÉRIFIÉ","Tower":"Tour","Beacon":"Balise",
+    "SETUP":"Configuration","Settings":"Paramètres","Multiplayer map":"Carte multijoueur",
+    "Airport service codes are not available from the source.":"Les codes de service de l’aéroport ne sont pas disponibles dans la source.",
+    "No runway data available from the source for this airport.":"Aucune donnée de piste n’est disponible pour cet aéroport dans la source.",
+    "Frequencies are not available from the source.":"Les fréquences ne sont pas disponibles dans la source."
+  },
+  de:{
+    "MAP":"Karte","DATA":"Daten","INSTRUMENTS":"Instrumente","AIRPORTS":"Flughäfen","MULTI":"Multi",
+    "POSITION":"Position","SPEED":"Geschwindigkeit","ENGINES":"Triebwerke","SYSTEMS":"Systeme",
+    "WEATHER":"Wetter","ATTITUDE":"Fluglage","WIND":"Wind","NONE":"Keine","TRACK":"Flugspur",
+    "PTS":"Pkt.","ALTITUDE":"Höhe","AERODYNAMICS":"Aerodynamik","CONNECTION":"Verbindung","ALT":"Höhe",
+    "ALTIMETER":"Höhenmesser","AIRPORT DATA":"Flughafendaten","SEARCH":"Suchen","NEAR ME":"In meiner Nähe",
+    "SELECTED AIRPORT":"Ausgewählter Flughafen","NEARBY STATIONS":"Nahegelegene Stationen",
+    "RUNWAYS":"Start- und Landebahnen","RADIO FREQUENCIES":"Funkfrequenzen",
+    "METAR · OBSERVATION":"METAR · Beobachtung","TAF · FORECAST":"TAF · Vorhersage",
+    "NOTAM · AERONAUTICAL NOTICES":"NOTAM · Luftfahrthinweise","SOURCE AND UPDATE":"Quelle und Aktualisierung",
+    "REFRESH DATA":"Daten aktualisieren","ICAO code, e.g. LIMC":"ICAO-Code, z. B. LIMC",
+    "Airport ICAO code":"ICAO-Code des Flughafens","No airport selected":"Kein Flughafen ausgewählt",
+    "STATUS":"Status","SERVICE":"Dienst","FREQUENCY":"Frequenz","OBSERVED (UTC)":"Beobachtet (UTC)",
+    "TEMPERATURE / DEW POINT":"Temperatur / Taupunkt","VISIBILITY":"Sichtweite",
+    "FLIGHT CATEGORY":"Flugkategorie","METAR unavailable.":"METAR nicht verfügbar.",
+    "TAF unavailable.":"TAF nicht verfügbar.","OPEN IN NEW TAB":"In neuem Tab öffnen",
+    "GEOFS DASHBOARD / SETTINGS":"GEOFS DASHBOARD / EINSTELLUNGEN","Data URL":"Daten-URL",
+    "Request interval (ms)":"Abfrageintervall (ms)","Data expires after (ms)":"Datenablauf nach (ms)",
+    "Display units":"Anzeigeeinheiten","Input value units":"Einheiten des Eingangswerts",
+    "Unverified — show raw value":"Nicht geprüft — Rohwert anzeigen","Already in knots":"Bereits in Knoten",
+    "Meters per second":"Meter pro Sekunde","Kilometers per hour":"Kilometer pro Stunde",
+    "Custom factor":"Benutzerdefinierter Faktor","Factor: received value × factor = knots":"Faktor: Eingangswert × Faktor = Knoten",
+    "Raw value":"Rohwert","Actual knots":"Tatsächliche Knoten","CALCULATE":"BERECHNEN",
+    "Current raw groundspeed:":"Aktuelle Roh-Bodengeschwindigkeit:","Mach factor":"Mach-Faktor",
+    "ATTITUDE · htr MAPPING":"FLUGLAGE · htr-ZUORDNUNG","unused":"ungenutzt",
+    "Heading source":"Kursquelle","Select":"Auswählen","Initial zoom":"Start-Zoom",
+    "OpenAIP API key":"OpenAIP-API-Schlüssel","Clear track":"Flugspur löschen",
+    "CUSTOMIZATION":"ANPASSUNG","Theme":"Design","Dark":"Dunkel","Light":"Hell","Language":"Sprache",
+    "Italian":"Italienisch","Accent color":"Akzentfarbe","Color palette":"Farbpalette",
+    "Cyan (default)":"Cyan (Standard)","Purple":"Violett","Coral":"Koralle","Teal":"Türkis",
+    "Amber":"Bernstein","Blue":"Blau","Choose a palette for the interface accent color.":"Wählen Sie eine Palette für die Akzentfarbe der Oberfläche.",
+    "SETTINGS":"EINSTELLUNGEN",
+    "Save settings":"Einstellungen speichern","Restore defaults":"Standardeinstellungen wiederherstellen",
+    "Settings are stored on this device.":"Einstellungen werden auf diesem Gerät gespeichert.",
+    "Settings saved on this device.":"Einstellungen auf diesem Gerät gespeichert.",
+    "Default settings restored.":"Standardeinstellungen wiederhergestellt.",
+    "WAITING FOR DATA":"WARTEN AUF DATEN","CONNECTING":"VERBINDEN","CONNECTED":"VERBUNDEN",
+    "DISCONNECTED":"GETRENNT","WAITING FOR POSITION":"WARTEN AUF POSITION","Zoom in":"Vergrößern",
+    "Zoom out":"Verkleinern","Center on aircraft":"Flugzeug zentrieren","Show or hide track":"Flugspur ein-/ausblenden",
+    "GROUND SPEED":"BODENGESCHWINDIGKEIT","RAW":"ROH","CALC":"BERECHNET","TRK":"SPUR",
+    "AIRBORNE":"IN DER LUFT","STALL":"STRÖMUNGSABRISS","ENGINE RPM":"TRIEBWERKDREHZAHL",
+    "THRUST":"SCHUB","ENGINE STATUS":"TRIEBWERKSSTATUS","CRASHED":"ABGESTÜRZT",
+    "GROUND CONTACT":"BODENKONTAKT","WATER CONTACT":"WASSERKONTAKT","BRAKES":"BREMSEN",
+    "ANGLE OF ATTACK":"ANSTELLWINKEL","HEADING":"KURS","TRUE AIR SPEED":"WAHRE LUFTGESCHWINDIGKEIT",
+    "VELOCITY SCALAR":"GESCHWINDIGKEITSFAKTOR","VERTICAL SPEED":"VERTIKALGESCHWINDIGKEIT",
+    "LONGITUDE":"LÄNGENGRAD","LATITUDE":"BREITENGRAD","Validity:":"Gültigkeit:",
+    "Loading METAR…":"METAR wird geladen…","Loading TAF…":"TAF wird geladen…",
+    "Name unavailable":"Name nicht verfügbar","Asphalt":"Asphalt","Concrete":"Beton","Grass":"Gras",
+    "Gravel":"Kies","Water":"Wasser","Dirt":"Erde","Unknown":"Unbekannt","Not specified":"Nicht angegeben",
+    "CLOSED":"GESCHLOSSEN","OPEN":"OFFEN","UNVERIFIED":"NICHT GEPRÜFT","Tower":"Tower","Beacon":"Leuchtfeuer",
+    "SETUP":"EINSTELLUNGEN","Settings":"Einstellungen","Multiplayer map":"Mehrspielerkarte",
+    "Airport service codes are not available from the source.":"Flughafendienstcodes sind in der Quelle nicht verfügbar.",
+    "No runway data available from the source for this airport.":"Für diesen Flughafen sind in der Quelle keine Bahndaten verfügbar.",
+    "Frequencies are not available from the source.":"Frequenzen sind in der Quelle nicht verfügbar."
+  },
+  es:{
+    "MAP":"Mapa","DATA":"Datos","INSTRUMENTS":"Instrumentos","AIRPORTS":"Aeropuertos","MULTI":"Multi",
+    "POSITION":"Posición","SPEED":"Velocidad","ENGINES":"Motores","SYSTEMS":"Sistemas","WEATHER":"Meteorología",
+    "ATTITUDE":"Actitud","WIND":"Viento","NONE":"Ninguna","TRACK":"Trayectoria","PTS":"Pts","ALTITUDE":"Altitud",
+    "AERODYNAMICS":"Aerodinámica","CONNECTION":"Conexión","ALT":"Alt","ALTIMETER":"Altímetro",
+    "AIRPORT DATA":"Datos del aeropuerto","SEARCH":"Buscar","NEAR ME":"Cerca de mí",
+    "SELECTED AIRPORT":"Aeropuerto seleccionado","NEARBY STATIONS":"Estaciones cercanas","RUNWAYS":"Pistas",
+    "RADIO FREQUENCIES":"Frecuencias de radio","METAR · OBSERVATION":"METAR · Observación",
+    "TAF · FORECAST":"TAF · Pronóstico","NOTAM · AERONAUTICAL NOTICES":"NOTAM · Avisos aeronáuticos",
+    "SOURCE AND UPDATE":"Fuente y actualización","REFRESH DATA":"Actualizar datos",
+    "ICAO code, e.g. LIMC":"Código OACI, p. ej. LIMC","Airport ICAO code":"Código OACI del aeropuerto",
+    "No airport selected":"Ningún aeropuerto seleccionado","STATUS":"Estado","SERVICE":"Servicio",
+    "FREQUENCY":"Frecuencia","OBSERVED (UTC)":"Observado (UTC)","TEMPERATURE / DEW POINT":"Temperatura / punto de rocío",
+    "VISIBILITY":"Visibilidad","FLIGHT CATEGORY":"Categoría de vuelo","METAR unavailable.":"METAR no disponible.",
+    "TAF unavailable.":"TAF no disponible.","OPEN IN NEW TAB":"Abrir en una pestaña nueva",
+    "GEOFS DASHBOARD / SETTINGS":"GEOFS DASHBOARD / AJUSTES","Data URL":"URL de datos",
+    "Request interval (ms)":"Intervalo de consulta (ms)","Data expires after (ms)":"Caducidad de datos (ms)",
+    "Display units":"Unidades de visualización","Input value units":"Unidades del valor recibido",
+    "Unverified — show raw value":"Sin verificar — mostrar valor bruto","Already in knots":"Ya está en nudos",
+    "Meters per second":"Metros por segundo","Kilometers per hour":"Kilómetros por hora",
+    "Custom factor":"Factor personalizado","Factor: received value × factor = knots":"Factor: valor recibido × factor = nudos",
+    "Raw value":"Valor bruto","Actual knots":"Nudos reales","CALCULATE":"CALCULAR",
+    "Current raw groundspeed:":"Velocidad respecto al suelo bruta actual:","Mach factor":"Factor Mach",
+    "ATTITUDE · htr MAPPING":"ACTITUD · ASIGNACIÓN htr","unused":"sin usar",
+    "Heading source":"Fuente del rumbo","Select":"Seleccionar","Initial zoom":"Zoom inicial",
+    "OpenAIP API key":"Clave API de OpenAIP","Clear track":"Borrar trayectoria",
+    "CUSTOMIZATION":"PERSONALIZACIÓN","Theme":"Tema","Dark":"Oscuro","Light":"Claro",
+    "Language":"Idioma","Italian":"Italiano","Accent color":"Color de acento","Color palette":"Paleta de colores",
+    "Cyan (default)":"Cian (predeterminado)","Purple":"Morado","Coral":"Coral","Teal":"Verde azulado",
+    "Amber":"Ámbar","Blue":"Azul","Choose a palette for the interface accent color.":"Elija una paleta para el color de acento de la interfaz.",
+    "SETTINGS":"AJUSTES",
+    "Save settings":"Guardar ajustes","Restore defaults":"Restaurar valores predeterminados",
+    "Settings are stored on this device.":"Los ajustes se guardan en este dispositivo.",
+    "Settings saved on this device.":"Ajustes guardados en este dispositivo.",
+    "Default settings restored.":"Valores predeterminados restaurados.","WAITING FOR DATA":"ESPERANDO DATOS",
+    "CONNECTING":"CONECTANDO","CONNECTED":"CONECTADO","DISCONNECTED":"DESCONECTADO",
+    "WAITING FOR POSITION":"ESPERANDO POSICIÓN","Zoom in":"Acercar","Zoom out":"Alejar",
+    "Center on aircraft":"Centrar en el avión","Show or hide track":"Mostrar u ocultar trayectoria",
+    "GROUND SPEED":"VELOCIDAD SOBRE EL SUELO","RAW":"BRUTO","CALC":"CÁLCULO","TRK":"TRAY",
+    "AIRBORNE":"EN VUELO","STALL":"PÉRDIDA","ENGINE RPM":"RPM DEL MOTOR","THRUST":"EMPUJE",
+    "ENGINE STATUS":"ESTADO DEL MOTOR","CRASHED":"ACCIDENTADO","GROUND CONTACT":"CONTACTO CON EL SUELO",
+    "WATER CONTACT":"CONTACTO CON EL AGUA","BRAKES":"FRENOS","ANGLE OF ATTACK":"ÁNGULO DE ATAQUE",
+    "HEADING":"RUMBO","TRUE AIR SPEED":"VELOCIDAD AÉREA VERDADERA","VELOCITY SCALAR":"ESCALAR DE VELOCIDAD",
+    "VERTICAL SPEED":"VELOCIDAD VERTICAL","LONGITUDE":"LONGITUD","LATITUDE":"LATITUD",
+    "Validity:":"Validez:","Loading METAR…":"Cargando METAR…","Loading TAF…":"Cargando TAF…",
+    "Name unavailable":"Nombre no disponible","Asphalt":"Asfalto","Concrete":"Hormigón","Grass":"Hierba",
+    "Gravel":"Grava","Water":"Agua","Dirt":"Tierra","Unknown":"Desconocido","Not specified":"No especificado",
+    "CLOSED":"CERRADO","OPEN":"ABIERTO","UNVERIFIED":"SIN VERIFICAR","Tower":"Torre","Beacon":"Baliza",
+    "SETUP":"CONFIGURACIÓN","Settings":"Ajustes","Multiplayer map":"Mapa multijugador",
+    "Airport service codes are not available from the source.":"La fuente no proporciona los códigos de servicios del aeropuerto.",
+    "No runway data available from the source for this airport.":"La fuente no proporciona datos de pistas para este aeropuerto.",
+    "Frequencies are not available from the source.":"La fuente no proporciona frecuencias."
+  },
+  "pt-BR":{
+    "MAP":"Mapa","DATA":"Dados","INSTRUMENTS":"Instrumentos","AIRPORTS":"Aeroportos","MULTI":"Multi",
+    "POSITION":"Posição","SPEED":"Velocidade","ENGINES":"Motores","SYSTEMS":"Sistemas","WEATHER":"Clima",
+    "ATTITUDE":"Atitude","WIND":"Vento","NONE":"Nenhuma","TRACK":"Rastro","PTS":"Pts","ALTITUDE":"Altitude",
+    "AERODYNAMICS":"Aerodinâmica","CONNECTION":"Conexão","ALT":"Alt","ALTIMETER":"Altímetro",
+    "AIRPORT DATA":"Dados do aeroporto","SEARCH":"Buscar","NEAR ME":"Perto de mim",
+    "SELECTED AIRPORT":"Aeroporto selecionado","NEARBY STATIONS":"Estações próximas","RUNWAYS":"Pistas",
+    "RADIO FREQUENCIES":"Frequências de rádio","METAR · OBSERVATION":"METAR · Observação",
+    "TAF · FORECAST":"TAF · Previsão","NOTAM · AERONAUTICAL NOTICES":"NOTAM · Avisos aeronáuticos",
+    "SOURCE AND UPDATE":"Fonte e atualização","REFRESH DATA":"Atualizar dados",
+    "ICAO code, e.g. LIMC":"Código ICAO, ex.: LIMC","Airport ICAO code":"Código ICAO do aeroporto",
+    "No airport selected":"Nenhum aeroporto selecionado","STATUS":"Status","SERVICE":"Serviço",
+    "FREQUENCY":"Frequência","OBSERVED (UTC)":"Observado (UTC)","TEMPERATURE / DEW POINT":"Temperatura / ponto de orvalho",
+    "VISIBILITY":"Visibilidade","FLIGHT CATEGORY":"Categoria de voo","METAR unavailable.":"METAR indisponível.",
+    "TAF unavailable.":"TAF indisponível.","OPEN IN NEW TAB":"Abrir em nova aba",
+    "GEOFS DASHBOARD / SETTINGS":"GEOFS DASHBOARD / CONFIGURAÇÕES","Data URL":"URL dos dados",
+    "Request interval (ms)":"Intervalo de solicitação (ms)","Data expires after (ms)":"Expiração dos dados após (ms)",
+    "Display units":"Unidades de exibição","Input value units":"Unidades do valor recebido",
+    "Unverified — show raw value":"Não verificado — mostrar valor bruto","Already in knots":"Já está em nós",
+    "Meters per second":"Metros por segundo","Kilometers per hour":"Quilômetros por hora",
+    "Custom factor":"Fator personalizado","Factor: received value × factor = knots":"Fator: valor recebido × fator = nós",
+    "Raw value":"Valor bruto","Actual knots":"Nós reais","CALCULATE":"CALCULAR",
+    "Current raw groundspeed:":"Velocidade no solo bruta atual:","Mach factor":"Fator Mach",
+    "ATTITUDE · htr MAPPING":"ATITUDE · MAPEAMENTO htr","unused":"não utilizado",
+    "Heading source":"Fonte do rumo","Select":"Selecionar","Initial zoom":"Zoom inicial",
+    "OpenAIP API key":"Chave de API OpenAIP","Clear track":"Apagar rastro",
+    "CUSTOMIZATION":"PERSONALIZAÇÃO","Theme":"Tema","Dark":"Escuro","Light":"Claro",
+    "Language":"Idioma","Italian":"Italiano","Accent color":"Cor de destaque","Color palette":"Paleta de cores",
+    "Cyan (default)":"Ciano (padrão)","Purple":"Roxo","Coral":"Coral","Teal":"Verde-água",
+    "Amber":"Âmbar","Blue":"Azul","Choose a palette for the interface accent color.":"Escolha uma paleta para a cor de destaque da interface.",
+    "SETTINGS":"CONFIGURAÇÕES",
+    "Save settings":"Salvar configurações","Restore defaults":"Restaurar padrões",
+    "Settings are stored on this device.":"As configurações ficam salvas neste dispositivo.",
+    "Settings saved on this device.":"Configurações salvas neste dispositivo.",
+    "Default settings restored.":"Configurações padrão restauradas.","WAITING FOR DATA":"AGUARDANDO DADOS",
+    "CONNECTING":"CONECTANDO","CONNECTED":"CONECTADO","DISCONNECTED":"DESCONECTADO",
+    "WAITING FOR POSITION":"AGUARDANDO POSIÇÃO","Zoom in":"Aumentar zoom","Zoom out":"Diminuir zoom",
+    "Center on aircraft":"Centralizar na aeronave","Show or hide track":"Mostrar ou ocultar rastro",
+    "GROUND SPEED":"VELOCIDADE NO SOLO","RAW":"BRUTO","CALC":"CALC","TRK":"RASTRO",
+    "AIRBORNE":"EM VOO","STALL":"ESTOL","ENGINE RPM":"RPM DO MOTOR","THRUST":"EMPUXO",
+    "ENGINE STATUS":"STATUS DO MOTOR","CRASHED":"ACIDENTADO","GROUND CONTACT":"CONTATO COM O SOLO",
+    "WATER CONTACT":"CONTATO COM A ÁGUA","BRAKES":"FREIOS","ANGLE OF ATTACK":"ÂNGULO DE ATAQUE",
+    "HEADING":"RUMO","TRUE AIR SPEED":"VELOCIDADE AÉREA VERDADEIRA","VELOCITY SCALAR":"ESCALAR DE VELOCIDADE",
+    "VERTICAL SPEED":"VELOCIDADE VERTICAL","LONGITUDE":"LONGITUDE","LATITUDE":"LATITUDE",
+    "Validity:":"Validade:","Loading METAR…":"Carregando METAR…","Loading TAF…":"Carregando TAF…",
+    "Name unavailable":"Nome indisponível","Asphalt":"Asfalto","Concrete":"Concreto","Grass":"Grama",
+    "Gravel":"Cascalho","Water":"Água","Dirt":"Terra","Unknown":"Desconhecido","Not specified":"Não especificado",
+    "CLOSED":"FECHADO","OPEN":"ABERTO","UNVERIFIED":"NÃO VERIFICADO","Tower":"Torre","Beacon":"Farol",
+    "SETUP":"CONFIGURAÇÕES","Settings":"Configurações","Multiplayer map":"Mapa multijogador",
+    "Airport service codes are not available from the source.":"Os códigos de serviços do aeroporto não estão disponíveis na fonte.",
+    "No runway data available from the source for this airport.":"Não há dados de pistas deste aeroporto na fonte.",
+    "Frequencies are not available from the source.":"As frequências não estão disponíveis na fonte."
+  },
+  hi:{
+    "MAP":"मानचित्र","DATA":"डेटा","INSTRUMENTS":"उपकरण","AIRPORTS":"हवाई अड्डे","MULTI":"मल्टी",
+    "POSITION":"स्थिति","SPEED":"गति","ENGINES":"इंजन","SYSTEMS":"सिस्टम","WEATHER":"मौसम",
+    "ATTITUDE":"विमान की स्थिति","WIND":"हवा","NONE":"कोई नहीं","TRACK":"मार्ग","PTS":"अंक",
+    "ALTITUDE":"ऊँचाई","AERODYNAMICS":"वायुगतिकी","CONNECTION":"कनेक्शन","ALT":"ऊँचाई",
+    "ALTIMETER":"अल्टीमीटर","AIRPORT DATA":"हवाई अड्डे का डेटा","SEARCH":"खोजें","NEAR ME":"मेरे पास",
+    "SELECTED AIRPORT":"चुना गया हवाई अड्डा","NEARBY STATIONS":"पास के स्टेशन","RUNWAYS":"रनवे",
+    "RADIO FREQUENCIES":"रेडियो आवृत्तियाँ","METAR · OBSERVATION":"METAR · अवलोकन",
+    "TAF · FORECAST":"TAF · पूर्वानुमान","NOTAM · AERONAUTICAL NOTICES":"NOTAM · विमानन सूचनाएँ",
+    "SOURCE AND UPDATE":"स्रोत और अपडेट","REFRESH DATA":"डेटा रीफ़्रेश करें",
+    "ICAO code, e.g. LIMC":"ICAO कोड, जैसे LIMC","Airport ICAO code":"हवाई अड्डे का ICAO कोड",
+    "No airport selected":"कोई हवाई अड्डा नहीं चुना गया","STATUS":"स्थिति","SERVICE":"सेवा",
+    "FREQUENCY":"आवृत्ति","OBSERVED (UTC)":"अवलोकन (UTC)","TEMPERATURE / DEW POINT":"तापमान / ओसांक",
+    "VISIBILITY":"दृश्यता","FLIGHT CATEGORY":"उड़ान श्रेणी","METAR unavailable.":"METAR उपलब्ध नहीं है।",
+    "TAF unavailable.":"TAF उपलब्ध नहीं है।","OPEN IN NEW TAB":"नए टैब में खोलें",
+    "GEOFS DASHBOARD / SETTINGS":"GEOFS डैशबोर्ड / सेटिंग्स","Data URL":"डेटा URL",
+    "Request interval (ms)":"अनुरोध अंतराल (ms)","Data expires after (ms)":"डेटा समाप्ति समय (ms)",
+    "Display units":"प्रदर्शन इकाइयाँ","Input value units":"इनपुट मान की इकाइयाँ",
+    "Unverified — show raw value":"असत्यापित — मूल मान दिखाएँ","Already in knots":"पहले से नॉट में",
+    "Meters per second":"मीटर प्रति सेकंड","Kilometers per hour":"किलोमीटर प्रति घंटा",
+    "Custom factor":"कस्टम गुणांक","Factor: received value × factor = knots":"गुणांक: प्राप्त मान × गुणांक = नॉट",
+    "Raw value":"मूल मान","Actual knots":"वास्तविक नॉट","CALCULATE":"गणना करें",
+    "Current raw groundspeed:":"वर्तमान मूल ग्राउंड स्पीड:","Mach factor":"मैक गुणांक",
+    "ATTITUDE · htr MAPPING":"स्थिति · htr मैपिंग","unused":"उपयोग नहीं",
+    "Heading source":"दिशा का स्रोत","Select":"चुनें","Initial zoom":"प्रारंभिक ज़ूम",
+    "OpenAIP API key":"OpenAIP API कुंजी","Clear track":"मार्ग मिटाएँ",
+    "CUSTOMIZATION":"अनुकूलन","Theme":"थीम","Dark":"गहरा","Light":"हल्का","Language":"भाषा",
+    "Italian":"इतालवी","Accent color":"एक्सेंट रंग","Color palette":"रंग पैलेट",
+    "Cyan (default)":"सियान (डिफ़ॉल्ट)","Purple":"बैंगनी","Coral":"कोरल","Teal":"टील",
+    "Amber":"अंबर","Blue":"नीला","Choose a palette for the interface accent color.":"इंटरफ़ेस के एक्सेंट रंग के लिए पैलेट चुनें।",
+    "SETTINGS":"सेटिंग्स",
+    "Save settings":"सेटिंग्स सहेजें","Restore defaults":"डिफ़ॉल्ट पुनर्स्थापित करें",
+    "Settings are stored on this device.":"सेटिंग्स इस डिवाइस पर सहेजी जाती हैं।",
+    "Settings saved on this device.":"सेटिंग्स इस डिवाइस पर सहेजी गईं।",
+    "Default settings restored.":"डिफ़ॉल्ट सेटिंग्स पुनर्स्थापित की गईं।",
+    "WAITING FOR DATA":"डेटा की प्रतीक्षा","CONNECTING":"कनेक्ट हो रहा है","CONNECTED":"कनेक्टेड",
+    "DISCONNECTED":"डिस्कनेक्टेड","WAITING FOR POSITION":"स्थिति की प्रतीक्षा",
+    "Zoom in":"ज़ूम बढ़ाएँ","Zoom out":"ज़ूम घटाएँ","Center on aircraft":"विमान पर केंद्रित करें",
+    "Show or hide track":"मार्ग दिखाएँ या छिपाएँ","GROUND SPEED":"ग्राउंड स्पीड","RAW":"मूल",
+    "CALC":"गणना","TRK":"मार्ग","AIRBORNE":"हवा में","STALL":"स्टॉल","ENGINE RPM":"इंजन RPM",
+    "THRUST":"थ्रस्ट","ENGINE STATUS":"इंजन स्थिति","CRASHED":"दुर्घटनाग्रस्त",
+    "GROUND CONTACT":"ज़मीन से संपर्क","WATER CONTACT":"पानी से संपर्क","BRAKES":"ब्रेक",
+    "ANGLE OF ATTACK":"आक्रमण कोण","HEADING":"दिशा","TRUE AIR SPEED":"वास्तविक वायु गति",
+    "VELOCITY SCALAR":"वेग स्केलर","VERTICAL SPEED":"ऊर्ध्वाधर गति","LONGITUDE":"देशांतर",
+    "LATITUDE":"अक्षांश","Validity:":"वैधता:","Loading METAR…":"METAR लोड हो रहा है…",
+    "Loading TAF…":"TAF लोड हो रहा है…","Name unavailable":"नाम उपलब्ध नहीं",
+    "Asphalt":"डामर","Concrete":"कंक्रीट","Grass":"घास","Gravel":"बजरी","Water":"पानी",
+    "Dirt":"मिट्टी","Unknown":"अज्ञात","Not specified":"निर्दिष्ट नहीं","CLOSED":"बंद","OPEN":"खुला",
+    "UNVERIFIED":"असत्यापित","Tower":"टावर","Beacon":"बीकन",
+    "SETUP":"सेटिंग्स","Settings":"सेटिंग्स","Multiplayer map":"मल्टीप्लेयर मानचित्र",
+    "Airport service codes are not available from the source.":"हवाई अड्डे की सेवा के कोड स्रोत में उपलब्ध नहीं हैं।",
+    "No runway data available from the source for this airport.":"इस हवाई अड्डे के रनवे का डेटा स्रोत में उपलब्ध नहीं है।",
+    "Frequencies are not available from the source.":"आवृत्तियाँ स्रोत में उपलब्ध नहीं हैं।"
+  }
+};
+LOCALE_TEXT["de-CH"] = {
+  ...LOCALE_TEXT.de,
+  "Dark":"Dunkel","Light":"Hell","CLOSED":"GESCHLOSSEN"
 };
 let activeLanguage = "it";
 const ORIGINAL_TEXT = new WeakMap();
@@ -1051,7 +1529,7 @@ function translateTextNode(node, refreshSource = false, force = false){
   }
   const trimmed = state.source.trim();
   if(!trimmed) return;
-  const translated = activeLanguage === "en" ? translateDynamicText(trimmed) : trimmed;
+  const translated = activeLanguage === "it" ? trimmed : translateDynamicText(trimmed);
   state.translated = state.source.replace(trimmed, translated);
   if(node.nodeValue !== state.translated) node.nodeValue = state.translated;
 }
@@ -1077,8 +1555,10 @@ function translateText(language){
       if(!el.hasAttribute(attribute)) return;
       if(originals[attribute] === undefined) originals[attribute] = el.getAttribute(attribute);
       const source = originals[attribute];
-      const translated = language === "en" ? EN_TEXT[source] : source;
-      if(translated !== undefined && el.getAttribute(attribute) !== translated){
+      const english = EN_TEXT[source] ?? source;
+      const translated = language === "it" ? source :
+        (language === "en" ? english : (LOCALE_TEXT[language]?.[english] ?? english));
+      if(el.getAttribute(attribute) !== translated){
         el.setAttribute(attribute, translated);
       }
     });
@@ -1087,8 +1567,8 @@ function translateText(language){
 }
 function applyPreferences(theme = CFG.theme, language = CFG.language, accentColor = CFG.accentColor){
   const safeTheme = theme === "light" ? "light" : "dark";
-  const safeLanguage = language === "en" ? "en" : "it";
-  const safeAccent = /^#[0-9a-f]{6}$/i.test(accentColor) ? accentColor : DEFAULTS.accentColor;
+  const safeLanguage = language === "it" || language === "en" || LOCALE_TEXT[language] ? language : "it";
+  const safeAccent = ACCENT_PALETTES.includes(accentColor) ? accentColor : DEFAULTS.accentColor;
   document.documentElement.dataset.theme = safeTheme;
   document.documentElement.style.setProperty("--primary", safeAccent);
   const themeColor = document.querySelector('meta[name="theme-color"]');
@@ -1096,13 +1576,122 @@ function applyPreferences(theme = CFG.theme, language = CFG.language, accentColo
   if(useLeaflet && trackLine) trackLine.setStyle({color:safeAccent});
   const planePath = document.querySelector("#planeicon path");
   if(planePath) planePath.setAttribute("fill", safeAccent);
+  if(flightPlan.length) updateFlightPlanLayer();
   translateText(safeLanguage);
   if(!useLeaflet && mapReady) drawFallback();
 }
 function translateDynamicText(text){
-  if(activeLanguage !== "en") return text;
+  if(activeLanguage === "it") return text;
+  const english = translateEnglishText(text);
+  if(activeLanguage === "en") return english;
+  return translateLocalizedDynamic(english, activeLanguage) ?? LOCALE_TEXT[activeLanguage]?.[english] ?? english;
+}
+function translateLocalizedDynamic(text, language){
+  const received = /^Data received for (.+)\. Airport info: (.+); weather: AviationWeather\.gov\.(.*)$/.exec(text);
+  if(received){
+    const templates = {
+      fr:(code,info,note)=>`Données reçues pour ${code}. Informations aéroport : ${info} ; météo : AviationWeather.gov.${note ? " Certains produits n’ont pas répondu ; vérifiez les sections sans données." : ""}`,
+      de:(code,info,note)=>`Daten für ${code} empfangen. Flughafeninfo: ${info}; Wetter: AviationWeather.gov.${note ? " Einige Produkte haben nicht geantwortet; prüfen Sie die Abschnitte ohne Daten." : ""}`,
+      es:(code,info,note)=>`Datos recibidos para ${code}. Información del aeropuerto: ${info}; meteorología: AviationWeather.gov.${note ? " Algunos productos no respondieron; compruebe las secciones sin datos." : ""}`,
+      "pt-BR":(code,info,note)=>`Dados recebidos para ${code}. Informações do aeroporto: ${info}; clima: AviationWeather.gov.${note ? " Alguns produtos não responderam; verifique as seções sem dados." : ""}`,
+      hi:(code,info,note)=>`${code} के लिए डेटा प्राप्त हुआ। हवाई अड्डे की जानकारी: ${info}; मौसम: AviationWeather.gov.${note ? " कुछ उत्पादों से उत्तर नहीं मिला; बिना डेटा वाले अनुभाग जाँचें।" : ""}`
+    };
+    if(templates[language]) return templates[language](received[1],received[2],received[3]);
+  }
+  const loading = /^Loading data for (.+)…$/.exec(text);
+  const found = /^Found (.+) weather stations within about 220 km; select a code for details\.$/.exec(text);
+  const valid = /^Validity: (.+) → (.+)$/.exec(text);
+  const messages = {
+    fr:{
+      loading:code=>`Chargement des données pour ${code}…`,
+      notFound:code=>`Aucune donnée trouvée pour ${code}. Vérifiez le code ou essayez une station proche.`,
+      invalid:()=>"Saisissez un code OACI valide (3 ou 4 caractères).",
+      position:()=>"Position GeoFS indisponible : attendez la connexion ou saisissez un code OACI.",
+      searching:()=>"Recherche de stations METAR/TAF à proximité de la position GeoFS…",
+      noStations:()=>"Aucune station METAR/TAF trouvée dans un rayon d’environ 220 km.",
+      found:count=>`${count} stations météo trouvées dans un rayon d’environ 220 km ; sélectionnez un code pour les détails.`,
+      valid:(from,to)=>`Validité : ${from} → ${to}`
+    },
+    de:{
+      loading:code=>`Daten für ${code} werden geladen…`,
+      notFound:code=>`Keine Daten für ${code} gefunden. Prüfen Sie den Code oder versuchen Sie eine nahegelegene Station.`,
+      invalid:()=>"Geben Sie einen gültigen ICAO-Code (3 oder 4 Zeichen) ein.",
+      position:()=>"GeoFS-Position nicht verfügbar: Warten Sie auf die Verbindung oder geben Sie einen ICAO-Code ein.",
+      searching:()=>"METAR/TAF-Stationen in der Nähe der GeoFS-Position werden gesucht…",
+      noStations:()=>"Keine METAR/TAF-Station im Umkreis von etwa 220 km gefunden.",
+      found:count=>`${count} Wetterstationen im Umkreis von etwa 220 km gefunden; wählen Sie einen Code für Details.`,
+      valid:(from,to)=>`Gültigkeit: ${from} → ${to}`
+    },
+    "de-CH":{
+      loading:code=>`Daten für ${code} werden geladen…`,
+      notFound:code=>`Keine Daten für ${code} gefunden. Prüfen Sie den Code oder versuchen Sie eine nahegelegene Station.`,
+      invalid:()=>"Geben Sie einen gültigen ICAO-Code (3 oder 4 Zeichen) ein.",
+      position:()=>"GeoFS-Position nicht verfügbar: Warten Sie auf die Verbindung oder geben Sie einen ICAO-Code ein.",
+      searching:()=>"METAR/TAF-Stationen in der Nähe der GeoFS-Position werden gesucht…",
+      noStations:()=>"Keine METAR/TAF-Station im Umkreis von etwa 220 km gefunden.",
+      found:count=>`${count} Wetterstationen im Umkreis von etwa 220 km gefunden; wählen Sie einen Code für Details.`,
+      valid:(from,to)=>`Gültigkeit: ${from} → ${to}`
+    },
+    es:{
+      loading:code=>`Cargando datos de ${code}…`,
+      notFound:code=>`No se encontraron datos para ${code}. Compruebe el código o pruebe una estación cercana.`,
+      invalid:()=>"Introduzca un código OACI válido (3 o 4 caracteres).",
+      position:()=>"Posición de GeoFS no disponible: espere a la conexión o introduzca un código OACI.",
+      searching:()=>"Buscando estaciones METAR/TAF cerca de la posición de GeoFS…",
+      noStations:()=>"No se encontraron estaciones METAR/TAF en un radio de unos 220 km.",
+      found:count=>`Se encontraron ${count} estaciones meteorológicas en un radio de unos 220 km; seleccione un código para ver los detalles.`,
+      valid:(from,to)=>`Validez: ${from} → ${to}`
+    },
+    "pt-BR":{
+      loading:code=>`Carregando dados de ${code}…`,
+      notFound:code=>`Nenhum dado encontrado para ${code}. Verifique o código ou tente uma estação próxima.`,
+      invalid:()=>"Digite um código ICAO válido (3 ou 4 caracteres).",
+      position:()=>"Posição do GeoFS indisponível: aguarde a conexão ou digite um código ICAO.",
+      searching:()=>"Buscando estações METAR/TAF perto da posição do GeoFS…",
+      noStations:()=>"Nenhuma estação METAR/TAF encontrada em um raio de aproximadamente 220 km.",
+      found:count=>`${count} estações meteorológicas encontradas em um raio de aproximadamente 220 km; selecione um código para ver os detalhes.`,
+      valid:(from,to)=>`Validade: ${from} → ${to}`
+    },
+    hi:{
+      loading:code=>`${code} का डेटा लोड हो रहा है…`,
+      notFound:code=>`${code} के लिए डेटा नहीं मिला। कोड जाँचें या पास का स्टेशन आज़माएँ।`,
+      invalid:()=>"मान्य ICAO कोड दर्ज करें (3 या 4 अक्षर)।",
+      position:()=>"GeoFS स्थिति उपलब्ध नहीं है: कनेक्शन की प्रतीक्षा करें या ICAO कोड दर्ज करें।",
+      searching:()=>"GeoFS स्थिति के पास METAR/TAF स्टेशन खोजे जा रहे हैं…",
+      noStations:()=>"लगभग 220 किमी के भीतर कोई METAR/TAF स्टेशन नहीं मिला।",
+      found:count=>`लगभग 220 किमी के भीतर ${count} मौसम स्टेशन मिले; विवरण के लिए कोड चुनें।`,
+      valid:(from,to)=>`वैधता: ${from} → ${to}`
+    }
+  };
+  const locale = messages[language];
+  if(!locale) return null;
+  const notFound = /^No data found for (.+)\. Check the code or try a nearby station\.$/.exec(text);
+  if(loading) return locale.loading(loading[1]);
+  if(notFound) return locale.notFound(notFound[1]);
+  if(text === "Enter a valid ICAO code (3 or 4 characters).") return locale.invalid();
+  if(text === "GeoFS position unavailable: wait for a connection or enter an ICAO code.") return locale.position();
+  if(text === "Searching for METAR/TAF stations near the GeoFS position…") return locale.searching();
+  if(text === "No METAR/TAF stations found within about 220 km.") return locale.noStations();
+  if(found) return locale.found(found[1]);
+  if(valid) return locale.valid(valid[1],valid[2]);
+  return null;
+}
+function translateEnglishText(text){
   const exact = EN_TEXT[text];
   if(exact !== undefined) return exact;
+  const flightPlanCount = /^(\d+) punti nel piano( · modifiche pronte per l'esportazione)?\.$/.exec(text);
+  if(flightPlanCount){
+    return flightPlanCount[1] + (flightPlanCount[1] === "1" ? " waypoint in flight plan" : " waypoints in flight plan") +
+      (flightPlanCount[2] ? " · changes ready to export" : "") + ".";
+  }
+  const loadedFlightPlan = /^(.+) · (\d+) punti caricati\.$/.exec(text);
+  if(loadedFlightPlan){
+    return loadedFlightPlan[1] + " · " + loadedFlightPlan[2] +
+      (loadedFlightPlan[2] === "1" ? " waypoint loaded." : " waypoints loaded.");
+  }
+  if(text === "Ordine dei punti aggiornato · modifiche pronte per l'esportazione."){
+    return "Waypoint order updated · changes ready to export.";
+  }
   const received = /^Dati ricevuti per (.+)\. Anagrafica: (.+); meteo: AviationWeather\.gov\.(.*)$/.exec(text);
   if(received){
     const note = received[3] ? " Some products did not respond; check sections without data." : "";
@@ -1503,14 +2092,12 @@ function updateFlightData(){
   statusRow("stEngine", state.engine.on, {on:"RUNNING", off:"OFF"});
   $("engHint").style.display = (state.engine.rpm === null && state.engine.on === null) ? "" : "none";
 
-  statusRow("stAirborne",  a.airborne, {on:"AIRBORNE", off:"ON GROUND"});
   statusRow("stAirborne2", a.airborne, {on:"AIRBORNE", off:"ON GROUND"});
   statusRow("stCrashed",   a.crashed,  {on:"CRASHED", off:"NORMAL", cls:"alert"});
   statusRow("stGround",    a.ground,   {on:"CONTACT", off:"CLEAR"});
   statusRow("stWater",     a.water,    {on:"CONTACT", off:"CLEAR", cls:"warn"});
   statusRow("stBrakes",    a.brakes,   {on:"ON", off:"OFF", cls:"warn"});
-  statusRow("stStall",     a.stall,    {on:"STALL", off:"OK", cls:"alert"});
-  statusRow("stStall2",    a.stall,    {on:"STALL", off:"OK", cls:"alert"});
+  statusRow("stStall2",    a.stall,   {on:"STALL", off:"OK", cls:"alert"});
 
 }
 
@@ -1726,6 +2313,330 @@ function updateWind(){
   $("windArrow").setAttribute("transform", "rotate(" + (blowTo).toFixed(1) + " 200 200)");
 }
 
+/* =========================== PIANO DI VOLO ============================ */
+const MAX_FLIGHT_POINTS = 500;
+const MAX_FLIGHT_FILE_BYTES = 2 * 1024 * 1024;
+let flightPlan = [];
+let flightPlanName = "geofs-flight-plan.json";
+let flightPlanLayer = null;
+let fallbackRouteCenter = null;
+
+function setFlightStatus(id, message, kind = ""){
+  const element = $(id);
+  element.textContent = translateDynamicText(message);
+  element.className = "flight-status" + (kind ? " " + kind : "");
+}
+
+function parseFlightPlan(value){
+  const points = Array.isArray(value) ? value : null;
+  if(!points || !points.length) throw new Error("Il file deve contenere almeno un punto del piano di volo.");
+  if(points.length > MAX_FLIGHT_POINTS) throw new Error("Il piano supera il limite di " + MAX_FLIGHT_POINTS + " punti.");
+
+  return points.map((point, index)=>{
+    if(!point || typeof point !== "object" || Array.isArray(point)){
+      throw new Error("Il punto " + (index + 1) + " non è un oggetto JSON valido.");
+    }
+    const lat = point.lat === null || point.lat === undefined || point.lat === "" ? NaN : Number(point.lat);
+    const lon = point.lon === null || point.lon === undefined || point.lon === "" ? NaN : Number(point.lon);
+    if(!Number.isFinite(lat) || lat < -90 || lat > 90) throw new Error("Latitudine non valida al punto " + (index + 1) + ".");
+    if(!Number.isFinite(lon) || lon < -180 || lon > 180) throw new Error("Longitudine non valida al punto " + (index + 1) + ".");
+    const normalized = {...point, ident:String(point.ident ?? "WP" + (index + 1)), type:String(point.type ?? "WPT"), lat, lon};
+    ["alt","heading"].forEach(field=>{
+      if(point[field] === undefined || point[field] === null || point[field] === "") return;
+      const number = Number(point[field]);
+      if(!Number.isFinite(number) || (field === "heading" && (number < 0 || number >= 360))){
+        throw new Error((field === "alt" ? "Quota" : "Heading") + " non valida al punto " + (index + 1) + ".");
+      }
+      normalized[field] = number;
+    });
+    return normalized;
+  });
+}
+
+function renderFlightPlanEditor(){
+  const list = $("flightPointList");
+  list.replaceChildren();
+  if(!flightPlan.length){
+    const empty = document.createElement("div");
+    empty.className = "flight-empty";
+    empty.textContent = "Carica un file JSON o aggiungi un punto.";
+    list.appendChild(empty);
+  }
+
+  flightPlan.forEach((point,index)=>{
+    const card = document.createElement("div");
+    card.className = "flight-point";
+    card.dataset.index = String(index);
+    const head = document.createElement("div");
+    head.className = "flight-point-head";
+    const drag = document.createElement("button");
+    drag.type = "button";
+    drag.className = "flight-drag-handle";
+    drag.draggable = true;
+    drag.textContent = "⠿";
+    drag.title = "Trascina per riordinare";
+    drag.setAttribute("aria-label","Riordina il punto " + (index + 1));
+    drag.addEventListener("keydown",event=>{
+      if(event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+      event.preventDefault();
+      const targetIndex = index + (event.key === "ArrowUp" ? -1 : 1);
+      if(targetIndex < 0 || targetIndex >= flightPlan.length) return;
+      moveFlightPoint(index,targetIndex);
+      $("flightPointList").querySelectorAll(".flight-drag-handle")[targetIndex]?.focus();
+    });
+    const title = document.createElement("strong");
+    title.textContent = String(index + 1).padStart(2,"0") + " · " + (point.ident || "WP");
+    const moveUp = document.createElement("button");
+    moveUp.type = "button";
+    moveUp.textContent = "↑";
+    moveUp.title = "Sposta in alto";
+    moveUp.setAttribute("aria-label","Sposta il punto " + (index + 1) + " in alto");
+    moveUp.disabled = index === 0;
+    moveUp.addEventListener("click",()=>moveFlightPoint(index,index - 1));
+    const moveDown = document.createElement("button");
+    moveDown.type = "button";
+    moveDown.textContent = "↓";
+    moveDown.title = "Sposta in basso";
+    moveDown.setAttribute("aria-label","Sposta il punto " + (index + 1) + " in basso");
+    moveDown.disabled = index === flightPlan.length - 1;
+    moveDown.addEventListener("click",()=>moveFlightPoint(index,index + 1));
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "RIMUOVI";
+    remove.setAttribute("aria-label","Rimuovi punto " + (index + 1));
+    remove.addEventListener("click",()=>{
+      flightPlan.splice(index,1);
+      renderFlightPlanEditor();
+      updateFlightPlanLayer();
+      setFlightStatus("flightPlanStatus", flightPlan.length + " punti nel piano.", "success");
+    });
+    head.append(drag,title,moveUp,moveDown,remove);
+
+    const fields = document.createElement("div");
+    fields.className = "flight-point-fields";
+    [["ident","IDENT","text"],["type","TIPO","text"],["lat","LAT","number"],["lon","LON","number"],["alt","ALT · FT","number"],["heading","HDG · °","number"]].forEach(([key,label,type])=>{
+      const fieldLabel = document.createElement("label");
+      fieldLabel.textContent = label;
+      const input = document.createElement("input");
+      input.type = type;
+      input.value = point[key] === undefined || point[key] === null ? "" : String(point[key]);
+      input.dataset.field = key;
+      if(key === "lat"){ input.min = "-90"; input.max = "90"; input.step = "any"; }
+      if(key === "lon"){ input.min = "-180"; input.max = "180"; input.step = "any"; }
+      if(key === "alt"){ input.min = "0"; input.step = "1"; }
+      if(key === "heading"){ input.min = "0"; input.max = "359.9"; input.step = "0.1"; }
+      input.addEventListener("change",()=>{
+        const next = input.value.trim();
+        if(key === "ident" || key === "type"){
+          point[key] = next;
+        }else if(next === "" && key !== "lat" && key !== "lon"){
+          delete point[key];
+        }else{
+          const number = Number(next);
+          const valid = Number.isFinite(number) &&
+            (key !== "lat" || (number >= -90 && number <= 90)) &&
+            (key !== "lon" || (number >= -180 && number <= 180)) &&
+            (key !== "alt" || number >= 0) &&
+            (key !== "heading" || (number >= 0 && number < 360));
+          if(!valid){
+            setFlightStatus("flightPlanStatus","Valore non valido per " + label + " al punto " + (index + 1) + ".","error");
+            input.value = point[key] === undefined ? "" : String(point[key]);
+            return;
+          }
+          point[key] = number;
+        }
+        title.textContent = String(index + 1).padStart(2,"0") + " · " + (point.ident || "WP");
+        updateFlightPlanLayer();
+        setFlightStatus("flightPlanStatus", flightPlan.length + " punti nel piano · modifiche pronte per l'esportazione.", "success");
+      });
+      fieldLabel.appendChild(input);
+      fields.appendChild(fieldLabel);
+    });
+    card.append(head,fields);
+    list.appendChild(card);
+  });
+  const hasPlan = flightPlan.length > 0;
+  $("flightExport").disabled = !hasPlan;
+  $("flightShowMap").disabled = !hasPlan;
+}
+
+function moveFlightPoint(fromIndex,toIndex){
+  if(fromIndex < 0 || fromIndex >= flightPlan.length || toIndex < 0 || toIndex >= flightPlan.length || fromIndex === toIndex) return;
+  const [point] = flightPlan.splice(fromIndex,1);
+  flightPlan.splice(toIndex,0,point);
+  renderFlightPlanEditor();
+  updateFlightPlanLayer();
+  setFlightStatus("flightPlanStatus","Ordine dei punti aggiornato · modifiche pronte per l'esportazione.","success");
+}
+
+let draggedWaypointIndex = null;
+const flightPointList = $("flightPointList");
+flightPointList.addEventListener("dragstart",event=>{
+  const handle = event.target.closest(".flight-drag-handle");
+  const card = event.target.closest(".flight-point");
+  if(!handle || !card) { event.preventDefault(); return; }
+  draggedWaypointIndex = Number(card.dataset.index);
+  card.classList.add("dragging");
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain",String(draggedWaypointIndex));
+});
+flightPointList.addEventListener("dragover",event=>{
+  const card = event.target.closest(".flight-point");
+  if(draggedWaypointIndex === null || !card) return;
+  event.preventDefault();
+  flightPointList.querySelectorAll(".drop-target").forEach(item=>item.classList.remove("drop-target"));
+  card.classList.add("drop-target");
+});
+flightPointList.addEventListener("drop",event=>{
+  const card = event.target.closest(".flight-point");
+  if(draggedWaypointIndex === null || !card) return;
+  event.preventDefault();
+  const targetIndex = Number(card.dataset.index);
+  const after = event.clientY > card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2;
+  const insertionIndex = targetIndex + (after ? 1 : 0);
+  const [point] = flightPlan.splice(draggedWaypointIndex,1);
+  flightPlan.splice(insertionIndex > draggedWaypointIndex ? insertionIndex - 1 : insertionIndex,0,point);
+  draggedWaypointIndex = null;
+  renderFlightPlanEditor();
+  updateFlightPlanLayer();
+  setFlightStatus("flightPlanStatus","Ordine dei punti aggiornato · modifiche pronte per l'esportazione.","success");
+});
+flightPointList.addEventListener("dragend",()=>{
+  draggedWaypointIndex = null;
+  flightPointList.querySelectorAll(".dragging,.drop-target").forEach(card=>card.classList.remove("dragging","drop-target"));
+});
+
+function updateFlightPlanLayer(){
+  if(!useLeaflet || !map){
+    if(mapReady) drawFallback();
+    return;
+  }
+  if(!flightPlanLayer) flightPlanLayer = L.layerGroup().addTo(map);
+  flightPlanLayer.clearLayers();
+  const points = flightPlan.map(point=>[point.lat,point.lon]);
+  if(points.length > 1){
+    L.polyline(points,{color:getComputedStyle(document.documentElement).getPropertyValue("--primary").trim(),weight:3,opacity:.9}).addTo(flightPlanLayer);
+  }
+  flightPlan.forEach((point,index)=>{
+    const marker = L.circleMarker([point.lat,point.lon],{
+      radius:6,color:"#081018",weight:2,fillColor:getComputedStyle(document.documentElement).getPropertyValue("--primary").trim(),fillOpacity:1
+    }).addTo(flightPlanLayer);
+    const label = document.createElement("span");
+    label.textContent = (index + 1) + " · " + (point.ident || "WP");
+    marker.bindTooltip(label,{direction:"top",offset:[0,-7]});
+  });
+}
+
+function focusFlightPlan(){
+  if(!flightPlan.length) return;
+  setFollow(false);
+  if(useLeaflet && map){
+    const bounds = L.latLngBounds(flightPlan.map(point=>[point.lat,point.lon]));
+    if(flightPlan.length === 1) map.setView(bounds.getCenter(),9,{animate:false});
+    else map.fitBounds(bounds,{padding:[48,48],maxZoom:10,animate:false});
+  }else{
+    const latitudes = flightPlan.map(point=>point.lat);
+    const longitudes = flightPlan.map(point=>point.lon);
+    const south = Math.min(...latitudes), north = Math.max(...latitudes);
+    const west = Math.min(...longitudes), east = Math.max(...longitudes);
+    const centerLat = (south + north) / 2, centerLon = (west + east) / 2;
+    const cosLat = Math.max(.15,Math.cos(centerLat*Math.PI/180));
+    const latRange = Math.max(north - south,.002), lonRange = Math.max((east - west)*cosLat,.002);
+    const wrap = $("mapfallback");
+    const availableWidth = Math.max(100,wrap.clientWidth - 100);
+    const availableHeight = Math.max(100,wrap.clientHeight - 100);
+    const scale = Math.min(availableWidth/lonRange,availableHeight/latRange);
+    fbZoom = Math.max(2,Math.min(18,Math.floor(Math.log2(scale*360/256))));
+    fallbackRouteCenter = [centerLat,centerLon];
+    drawFallback();
+  }
+}
+
+$("flightFile").addEventListener("change",async event=>{
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+  event.target.value = "";
+  if(file.size > MAX_FLIGHT_FILE_BYTES){
+    setFlightStatus("flightPlanStatus","File troppo grande (massimo 2 MB).","error");
+    return;
+  }
+  try{
+    const parsed = JSON.parse(await file.text());
+    flightPlan = parseFlightPlan(parsed);
+    fallbackRouteCenter = null;
+    flightPlanName = (file.name.replace(/\.json$/i,"") || "geofs-flight-plan") + "-edited.json";
+    renderFlightPlanEditor();
+    updateFlightPlanLayer();
+    setFlightStatus("flightPlanStatus",file.name + " · " + flightPlan.length + " punti caricati.","success");
+  }catch(error){
+    setFlightStatus("flightPlanStatus","Impossibile caricare il piano: " + error.message,"error");
+  }
+});
+
+$("flightAddPoint").addEventListener("click",()=>{
+  if(flightPlan.length >= MAX_FLIGHT_POINTS){
+    setFlightStatus("flightPlanStatus","Raggiunto il limite di " + MAX_FLIGHT_POINTS + " punti.","error");
+    return;
+  }
+  const form = $("waypointForm");
+  form.elements.ident.value = "WP" + (flightPlan.length + 1);
+  form.elements.type.value = "WPT";
+  form.elements.lat.value = state.position.lat === null ? "" : String(state.position.lat);
+  form.elements.lon.value = state.position.lon === null ? "" : String(state.position.lon);
+  form.elements.alt.value = state.position.alt === null ? "" : String(state.position.alt);
+  form.elements.heading.value = "";
+  $("waypointDialog").showModal();
+  form.elements.ident.focus();
+});
+
+$("waypointCancel").addEventListener("click",()=>$("waypointDialog").close());
+$("waypointForm").addEventListener("submit",event=>{
+  event.preventDefault();
+  if(flightPlan.length >= MAX_FLIGHT_POINTS){
+    $("waypointDialog").close();
+    setFlightStatus("flightPlanStatus","Raggiunto il limite di " + MAX_FLIGHT_POINTS + " punti.","error");
+    return;
+  }
+  const form = event.currentTarget;
+  const data = new FormData(form);
+  const point = {
+    ident:String(data.get("ident")).trim(),
+    type:String(data.get("type")).trim(),
+    lat:Number(data.get("lat")),
+    lon:Number(data.get("lon"))
+  };
+  ["alt","heading"].forEach(field=>{
+    const value = String(data.get(field)).trim();
+    if(value !== "") point[field] = Number(value);
+  });
+  try{
+    const [validated] = parseFlightPlan([point]);
+    flightPlan.push(validated);
+    $("waypointDialog").close();
+    renderFlightPlanEditor();
+    updateFlightPlanLayer();
+    setFlightStatus("flightPlanStatus",flightPlan.length + " punti nel piano.","success");
+  }catch(error){
+    setFlightStatus("flightPlanStatus","Punto non valido: " + error.message,"error");
+  }
+});
+
+$("flightExport").addEventListener("click",()=>{
+  if(!flightPlan.length) return;
+  const blob = new Blob([JSON.stringify(flightPlan,null,2)],{type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = flightPlanName;
+  link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+
+$("flightShowMap").addEventListener("click",()=>{
+  showPage("map");
+  setTimeout(focusFlightPlan,80);
+});
+
 /* ============================== MAPPA ================================== */
 let map = null, marker = null, trackLine = null, useLeaflet = false;
 let follow = true, showTrack = true, trackDirty = false, mapReady = false;
@@ -1764,6 +2675,8 @@ function initMap(){
   }).addTo(map);
 
   trackLine = L.polyline([], {color:getComputedStyle(document.documentElement).getPropertyValue("--primary").trim(), weight:2.5, opacity:.65}).addTo(map);
+  flightPlanLayer = L.layerGroup().addTo(map);
+  updateFlightPlanLayer();
   map.on("dragstart", ()=>setFollow(false));
   mapReady = true;
   requestAnimationFrame(()=>{
@@ -1849,7 +2762,11 @@ function drawFallback(){
   const accent = styles.getPropertyValue("--primary").trim();
   g.fillStyle = styles.getPropertyValue("--bg").trim(); g.fillRect(0,0,W,H);
 
-  const lat = state.position.lat, lon = state.position.lon;
+  const aircraftLat = state.position.lat, aircraftLon = state.position.lon;
+  const routeLat = flightPlan.length ? flightPlan.reduce((sum,point)=>sum + point.lat,0) / flightPlan.length : null;
+  const routeLon = flightPlan.length ? flightPlan.reduce((sum,point)=>sum + point.lon,0) / flightPlan.length : null;
+  const center = fallbackRouteCenter || (aircraftLat === null && flightPlan.length ? [routeLat,routeLon] : [aircraftLat,aircraftLon]);
+  const lat = center[0], lon = center[1];
   const scale = Math.pow(2, fbZoom) * 256 / 360;          // px per grado di longitudine
   const cx = W/2, cy = H/2;
   const cosLat = lat === null ? 1 : Math.cos(lat*Math.PI/180);
@@ -1879,12 +2796,32 @@ function drawFallback(){
       g.stroke();
       g.globalAlpha = 1;
     }
+    if(flightPlan.length){
+      g.strokeStyle = accent; g.globalAlpha = .95; g.lineWidth = 3; g.beginPath();
+      flightPlan.forEach((point,index)=>{
+        const q = px(point.lat,point.lon);
+        index ? g.lineTo(q[0],q[1]) : g.moveTo(q[0],q[1]);
+      });
+      if(flightPlan.length > 1) g.stroke();
+      g.globalAlpha = 1;
+      flightPlan.forEach((point,index)=>{
+        const q = px(point.lat,point.lon);
+        g.fillStyle = accent; g.strokeStyle = "#081018"; g.lineWidth = 2;
+        g.beginPath(); g.arc(q[0],q[1],6,0,Math.PI*2); g.fill(); g.stroke();
+        g.fillStyle = "#081018"; g.font = "bold 8px ui-monospace,monospace"; g.textAlign = "center";
+        g.fillText(String(index + 1),q[0],q[1] + 3);
+      });
+      g.textAlign = "start";
+    }
     // aereo
-    const hdg = state.attitude.heading;
-    g.save(); g.translate(cx,cy); if(hdg !== null) g.rotate(hdg*Math.PI/180);
-    g.fillStyle = accent; g.shadowColor = accent; g.shadowBlur = 10;
-    g.beginPath(); g.moveTo(0,-16); g.lineTo(12,12); g.lineTo(0,6); g.lineTo(-12,12); g.closePath(); g.fill();
-    g.restore();
+    if(aircraftLat !== null && aircraftLon !== null){
+      const aircraftPoint = px(aircraftLat,aircraftLon);
+      const hdg = state.attitude.heading;
+      g.save(); g.translate(aircraftPoint[0],aircraftPoint[1]); if(hdg !== null) g.rotate(hdg*Math.PI/180);
+      g.fillStyle = accent; g.shadowColor = accent; g.shadowBlur = 10;
+      g.beginPath(); g.moveTo(0,-16); g.lineTo(12,12); g.lineTo(0,6); g.lineTo(-12,12); g.closePath(); g.fill();
+      g.restore();
+    }
   }else{
     g.fillStyle = styles.getPropertyValue("--muted").trim(); g.font = "13px ui-monospace,monospace"; g.textAlign = "center";
     g.fillText(activeLanguage === "en" ? "WAITING FOR POSITION" : "IN ATTESA DELLA POSIZIONE", W/2, H/2);
@@ -1921,6 +2858,7 @@ function updateMap(){
 function setFollow(on){
   follow = on;
   $("followBtn").classList.toggle("on", on);
+  if(on && !useLeaflet){ fallbackRouteCenter = null; drawFallback(); }
   if(on && useLeaflet && state.position.lat !== null)
     map.setView([state.position.lat, state.position.lon], map.getZoom(), {animate:true});
 }
@@ -2186,10 +3124,7 @@ $("vfrBasePick").addEventListener("click", e=>{
 const CFGMAP = [
   ["cfgUrl","url","str"], ["cfgInterval","interval","int"], ["cfgTimeout","staleMs","int"],
   ["cfgAltUnit","altUnit","str"],
-  ["cfgSpdSrc","spdSrc","str"], ["cfgSpdUnit","spdUnit","str"], ["cfgSpdFactor","spdFactor","float"],
-  ["cfgMachSrc","machSrc","str"], ["cfgMachFactor","machFactor","float"],
-  ["cfgHtrH","htrH","int"], ["cfgHtrP","htrP","int"], ["cfgHtrR","htrR","int"],
-  ["cfgHdgSrc","hdgSrc","str"], ["cfgZoom","zoom","int"],
+  ["cfgZoom","zoom","int"],
   ["cfgOpenAipKey","openaipKey","str"],
   ["cfgTheme","theme","str"], ["cfgLanguage","language","str"], ["cfgAccent","accentColor","str"]
 ];
@@ -2208,6 +3143,8 @@ function formToCfg(){
     else if(type === "float"){ const v = parseFloat(el.value); if(isFinite(v)) CFG[key] = v; }
     else CFG[key] = String(el.value).trim() || DEFAULTS[key];
   });
+  Object.assign(CFG, FIXED_SETTINGS);
+  if(!ACCENT_PALETTES.includes(CFG.accentColor)) CFG.accentColor = DEFAULTS.accentColor;
   CFG.interval = Math.max(50, Math.min(5000, CFG.interval));
   CFG.staleMs  = Math.max(500, CFG.staleMs);
 }
@@ -2243,7 +3180,8 @@ $("clearTrack").addEventListener("click", ()=>{
   state.track.length = 0; trackDirty = true;
   if(useLeaflet && trackLine) trackLine.setLatLngs([]); else drawFallback();
 });
-$("calGo").addEventListener("click", ()=>{
+const calGo = $("calGo");
+if(calGo) calGo.addEventListener("click", ()=>{
   const raw = parseFloat($("calRaw").value), kt = parseFloat($("calKt").value);
   if(!isFinite(raw) || raw === 0 || !isFinite(kt)){
     $("calOut").textContent = "Inserisci il valore grezzo e i nodi reali per calcolare il fattore.";

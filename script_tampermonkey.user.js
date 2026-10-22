@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GeoFS Tablet Bridge
 // @namespace    GeoFS-Tablet
-// @version      2.0
+// @version      2.1
 // @description  Invia tutti i dati disponibili di GeoFS al server della dashboard
 // @match        https://www.geo-fs.com/*
 // @match        https://geo-fs.com/*
@@ -19,13 +19,10 @@
   );
 
   const SERVER = "http://127.0.0.1:8080/data";
-  const COMMANDS = "http://127.0.0.1:8080/command";
   let bridgeStarted = false;
   let lastSentData = {};
   let sendingData = false;
   let serverErrorLogged = false;
-  let commandPollInFlight = false;
-  let commandErrorLogged = false;
   let lastWeatherFetch = 0;
 
   function startBridge() {
@@ -79,37 +76,6 @@
     }
 
     setInterval(fetchWeather, 5000);
-
-    async function pollCommands() {
-      if (commandPollInFlight) return;
-      commandPollInFlight = true;
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 1500);
-      try {
-        const response = await fetch(COMMANDS, { cache: "no-store", signal: controller.signal });
-        if (!response.ok) throw new Error("HTTP " + response.status);
-        const payload = await response.json();
-        if (Array.isArray(payload.commands)) {
-          payload.commands.forEach(command => {
-            if (command !== "toggle_autopilot") return;
-            const key = { key: "a", code: "KeyA", keyCode: 65, which: 65, bubbles: true, cancelable: true };
-            document.dispatchEvent(new KeyboardEvent("keydown", key));
-            document.dispatchEvent(new KeyboardEvent("keyup", key));
-          });
-        }
-        commandErrorLogged = false;
-      } catch (error) {
-        if (!commandErrorLogged) {
-          console.error("[GeoFS Tablet] Lettura comandi non riuscita:", error);
-          commandErrorLogged = true;
-        }
-      } finally {
-        clearTimeout(timeout);
-        commandPollInFlight = false;
-      }
-    }
-
-    setInterval(pollCommands, 250);
 
     setInterval(() => {
       try {

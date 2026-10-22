@@ -1,7 +1,7 @@
 <h1 align="center">GeoFS Dashboard</h1>
 
 <p align="center">
-  A local flight dashboard for GeoFS, with live telemetry, maps, and aircraft instruments.
+  A local flight dashboard for GeoFS, with live telemetry, maps, and flight-plan editing.
 </p>
 
 <p align="center">
@@ -19,13 +19,13 @@
 
 - Live position, altitude, speed, heading, attitude, engine, and flight-status data.
 - A map with the aircraft position and track, satellite and OpenStreetMap basemaps, and an OpenAIP aeronautical-data overlay.
-- A six-pack-style instruments page with an airspeed indicator, attitude indicator, altimeter, turn coordinator, heading indicator, and vertical-speed indicator.
+- A flight-planning page for importing GeoFS JSON routes, editing waypoint identifiers, types, coordinates, altitude, and heading, and exporting the edited plan.
 - Optional weather data retrieved from the GeoFS weather service.
 - An airports page with live METAR/TAF, airport elevation, runway and radio-frequency data, nearby weather stations, and links to official NOTAM sources.
-- A setup page for the data URL, display units, dashboard settings, light/dark theme, Italian/English interface language, and customizable accent color.
+- A setup page for the data URL, display units, dashboard settings, light/dark theme, multiple interface languages, and preset accent-color palettes.
 - A Windows GUI and an optional one-file Windows executable.
 
-The instruments page uses analog aircraft-style gauges. The autopilot toggle is not part of the dashboard.
+The flight-plan route is drawn over the main map. The fallback canvas map also draws route points; use **Show on Map** to frame the complete route.
 
 ## Requirements
 
@@ -47,7 +47,7 @@ Running the server from Python uses only the Python standard library. Building t
    python server_gui.py
    ```
 
-5. In the GeoFS Server window, click **Attiva server**. The server listens on port `8080`.
+5. In the GeoFS Server window, click **Start server**. The server listens on port `8080`.
 6. On the same computer, open <http://127.0.0.1:8080/> in a browser.
 
 The server can also be started without the GUI:
@@ -66,6 +66,7 @@ The dashboard needs the userscript to send it data.
 4. To run the script, you need to modify the extension's settings from the Chrome Web Store and change the **Allow user scripts** option. Go to `chrome://extensions/?id=dhdgffkkebhmkfjojejmpbldmpobfkfo`, open the extension details, and enable **Allow user scripts**.
 5. Start the Python server and open GeoFS at one of the supported `geo-fs.com` addresses. Make sure the userscript is enabled.
 6. Open the dashboard. Its connection indicator should change from **DISCONNECTED** to **CONNECTED** after GeoFS has loaded and telemetry is being received.
+7. Open **Flight** to load a GeoFS flight-plan JSON file. Add waypoints with the waypoint dialog, edit their fields, and reorder them by dragging or using the move buttons. Export the updated JSON when ready, then use **Show on Map** to frame the route.
 
 By default, the userscript sends telemetry to `http://127.0.0.1:8080/data`. This is correct when the browser running GeoFS and the server are on the same computer.
 
@@ -76,18 +77,17 @@ You can view the dashboard on a tablet or another device on the same trusted loc
 1. Keep the server running on the computer that runs GeoFS.
 2. Find that computer's local IPv4 address. The GUI displays an address, or run `ipconfig` in Command Prompt.
 3. On the other device, open `http://<computer-ip>:8080/`, replacing `<computer-ip>` with the server computer's address.
-4. If the dashboard cannot connect, open **SETUP** and set **Indirizzo dei dati** to `http://<computer-ip>:8080/data`, then save the settings. Allow Python through Windows Firewall on a **private** network if Windows asks.
+4. If the dashboard cannot connect, open **Setup** and set **Data URL** to `http://<computer-ip>:8080/data`, then save the settings. Allow Python through Windows Firewall on a **private** network if Windows asks.
 
-Dashboard settings are saved in the browser's local storage on that device. Use **SETUP** to adjust units, map options, or the data URL.
-The **PERSONALIZZAZIONE** settings let you select the light or dark theme, switch the interface between Italian and English, and choose its accent color. Save the settings to keep your choices on the current device.
+Dashboard settings are saved in the browser's local storage on that device. Use **Setup** to adjust units, map options, or the data URL. The page also provides light and dark themes, multiple interface languages, and preset accent-color palettes. Save the settings to keep your choices on the current device.
 
 ### OpenAIP aeronautical map
 
 The map's **VFR** layer displays OpenAIP's worldwide aeronautical-data PNG tiles over the OpenStreetMap basemap. To enable it:
 
 1. Create an OpenAIP account and request an API client/key from your profile. See the [OpenAIP developer documentation](https://www.openaip.net/docs).
-2. Open **SETUP**, enter the key under **MAPPA**, and save the settings.
-3. Select **VFR** in the map layer controls, then choose **SAT**, **OSM**, or **NESSUNA** as the background beneath OpenAIP.
+2. Open **Setup**, enter the key under **Map**, and save the settings.
+3. Select **VFR** in the map layer controls, then choose **SAT**, **OSM**, or **None** as the background beneath OpenAIP.
 
 The key is stored in this browser's local storage and sent to OpenAIP with tile requests over HTTPS. It is not stored in the project files, but local storage is not encrypted; do not configure the key in a shared browser profile. Never paste a real key into source code or commit it. If a key has already been published, revoke it and create a replacement.
 
@@ -125,26 +125,20 @@ The executable bundles the dashboard and can be run without installing Python on
 ## Screenshots
 
 
-![Satellite map](screenshots/satellitare.png)
-*Map: satellite view for following the aircraft position and track.*
-
-![OpenStreetMap](screenshots/openstreetmap.png)
-*Map: OpenStreetMap as the cartographic basemap.*
-
-![VFR map](screenshots/vfr.png)
-*Map: OpenAIP aeronautical data; coverage varies and is not certified for navigation.*
+![Dashboard map](screenshots/map.png)
+*Map: aircraft position, track, map-layer controls, and live flight summary. There is VFR, Satellitar, Openstreetmap*
 
 ![Flight data](screenshots/data.png)
 *Data: detailed position, speed, aerodynamics, engine, and aircraft-status telemetry.*
 
-![Aircraft instruments](screenshots/tools.png)
-*Instruments: analog six-pack with airspeed, attitude, altitude, turn rate, heading, and vertical speed.*
+![Flight plan](screenshots/flight.png)
+*Flight: import a GeoFS JSON plan, add and edit waypoints, reorder them, export the plan, and view its route on the map.*
 
 ![Airport information](screenshots/airport.png)
 *Airports: airport details, runways, frequencies, METAR, and TAF, with links to official NOTAM sources.*
 
-![Multiplayer map](screenshots/multi.png)
-*Multi: GeoFS multiplayer map, also available in a separate browser tab.*
+![Settings](screenshots/setup.png)
+*Setup: configure the connection, display units, interface language, theme, and accent palette.*
 
 ## Project files
 
