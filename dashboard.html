@@ -63,6 +63,7 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
 }
 .navbtn svg{width:24px;height:24px}
 #nav .navspacer{flex:1}
+#nav .navbtn[hidden],#page-multi[hidden]{display:none!important}
 
 #pages{position:relative;min-height:0;min-width:0;overflow:hidden}
 .page{position:absolute;inset:0;display:none;overflow-y:auto;overflow-x:hidden;
@@ -166,8 +167,13 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
 #mapwrap{position:relative;min-height:0;background:#0a1117}
 #map{position:absolute;inset:0;background:#0a1117}
 #mapfallback{position:absolute;inset:0;display:none}
-#mapfallback canvas{width:100%;height:100%;display:block}
+#mapfallback canvas{width:100%;height:100%;display:block;touch-action:none}
 .leaflet-container{background:#0a1117;font-family:var(--sans)}
+.route-waypoint-marker{
+  border:2px solid #081018!important;border-radius:50%;background:var(--primary)!important;
+  box-shadow:0 1px 6px rgba(0,0,0,.55);cursor:grab
+}
+.route-waypoint-marker:active{cursor:grabbing}
 .leaflet-control-attribution{background:rgba(8,13,18,.7)!important;color:var(--muted)!important;font-size:9px!important}
 .leaflet-control-attribution a{color:var(--muted)!important}
 .leaflet-control-scale-line{background:rgba(8,13,18,.65)!important;border-color:var(--line)!important;
@@ -176,6 +182,13 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
 .mapui{position:absolute;z-index:500;display:flex;flex-direction:column;gap:8px}
 .mapui.tr{top:12px;right:12px}
 .mapui.tl{top:12px;left:12px;max-width:min(54%,280px)}
+#mapwrap.drawing #map,#mapwrap.drawing #mapfallback{cursor:crosshair}
+#mapActionStatus{
+  position:absolute;z-index:510;left:50%;bottom:88px;max-width:calc(100% - 32px);
+  transform:translateX(-50%);padding:8px 12px;border-radius:999px;background:var(--panel);
+  color:var(--text);font-size:12px;text-align:center;box-shadow:var(--shadow);pointer-events:none
+}
+#mapActionStatus[hidden]{display:none}
 .mapui.bl{bottom:12px;left:12px}
 .mbtn{
   width:46px;height:46px;border-radius:13px;background:var(--glass);border:1px solid var(--line-soft);
@@ -325,6 +338,12 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
   .airport-head h1{align-self:center}
   .airport-search{grid-template-columns:minmax(0,1fr) auto}
   .airport-search #airportNearest{grid-column:1 / -1}
+  #page-airport .airport-actions{flex:1 1 100%;width:100%}
+  #page-airport .airport-actions button{
+    display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;
+    border-radius:16px;font-size:12px;letter-spacing:.04em;
+    box-shadow:0 3px 10px color-mix(in srgb,var(--primary) 18%,transparent)
+  }
   .airport-overview .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .airport-metar-panel .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .airport-table th,.airport-table td{padding:8px 6px}
@@ -336,7 +355,9 @@ input[type="color"]{height:42px;padding:4px;cursor:pointer}
   #mapstrip{grid-template-columns:repeat(2,1fr)}
   .brand small{display:none}
   .row3{grid-template-columns:1fr}
-  .conn{padding:6px 9px;font-size:11px}
+  .conn{padding:0;border:0;background:transparent}
+  .conn .led{width:12px;height:12px}
+  .conn #connText{display:none}
   #page-data>.cols>.panel:last-child .status{gap:7px;padding:10px}
   #page-data>.cols>.panel:last-child .status .k{font-size:9px}
 }
@@ -535,6 +556,9 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 2px color-
 #page-set .setup-grid .field label{
   margin-bottom:7px;color:var(--muted);font-size:12px;letter-spacing:.01em
 }
+#page-set .setup-grid .setup-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#page-set .setup-grid .setup-toggle label{margin:0}
+#page-set .setup-grid .setup-toggle input{width:22px;height:22px;min-height:22px;padding:0;accent-color:var(--primary)}
 #page-set .setup-grid input,
 #page-set .setup-grid select{
   min-height:46px;border:1px solid var(--line-soft);border-radius:14px;
@@ -603,7 +627,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 2px color-
     </div>
     <div class="spacer"></div>
     <div class="clock" id="clockUtc">--:--:-- Z</div>
-    <div class="conn bad" id="connBox"><span class="led"></span><span id="connText">CONNECTING</span></div>
+    <div class="conn bad" id="connBox" aria-label="Stato connessione"><span class="led"></span><span id="connText">CONNECTING</span></div>
   </header>
 
   <div id="main">
@@ -659,10 +683,14 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 2px color-
             <button class="mbtn" id="trackBtn" aria-label="Mostra o nascondi la traccia">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 19c4 0 3-6 7-6s3-8 8-8"/><circle cx="4" cy="19" r="1.6" fill="currentColor"/><circle cx="19" cy="5" r="1.6" fill="currentColor"/></svg>
             </button>
+            <button class="mbtn" id="drawBtn" aria-label="Attiva o disattiva la penna" title="Trascina per disegnare; tieni premuto sulla mappa per aggiungere un waypoint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m4 20 4.5-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.5 16 4 20Z"/><path d="m14.5 6.5 3 3M4 20h6"/></svg>
+            </button>
             <button class="mbtn" id="clearTrackMap" aria-label="Cancella la traccia">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 13h12l1-13M9 7V4h6v3"/></svg>
             </button>
           </div>
+          <div id="mapActionStatus" role="status" aria-live="polite" hidden></div>
         </div>
 
         <div id="mapstrip">
@@ -852,6 +880,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 2px color-
               <button type="button" id="flightAddPoint">AGGIUNGI PUNTO</button>
               <button type="button" id="flightExport" disabled>ESPORTA JSON</button>
               <button type="button" id="flightShowMap" disabled>MOSTRA SULLA MAPPA</button>
+              <button type="button" id="flightClearPlan" class="ghost" disabled>CANCELLA PIANO</button>
             </div>
             <div class="flight-status" id="flightPlanStatus" role="status" aria-live="polite">Nessun piano caricato.</div>
             <div class="flight-point-list" id="flightPointList"><div class="flight-empty">Carica un file JSON o aggiungi un punto.</div></div>
@@ -1037,6 +1066,10 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 2px color-
                 <option value="#64b5f6">Blu</option>
               </select>
             </div>
+            <div class="field setup-toggle">
+              <label for="cfgShowMulti">Mostra pagina multiplayer</label>
+              <input id="cfgShowMulti" type="checkbox">
+            </div>
             <div class="note">Scegli una palette per il colore d'accento dell'interfaccia.</div>
           </div>
 
@@ -1080,7 +1113,8 @@ const DEFAULTS = {
   openaipKey: "",
   theme: "dark",
   language: "it",
-  accentColor: "#00d9ff"
+  accentColor: "#00d9ff",
+  showMulti: true
 };
 let CFG = Object.assign({}, DEFAULTS);
 
@@ -1128,6 +1162,11 @@ const EN_TEXT = {
   "RIORDINA":"REORDER","SPOSTA IN ALTO":"MOVE UP","SPOSTA IN BASSO":"MOVE DOWN",
   "VOLO":"FLIGHT","PIANO DI VOLO":"FLIGHT PLAN",
   "AGGIUNGI PUNTO":"ADD WAYPOINT","ESPORTA JSON":"EXPORT JSON","MOSTRA SULLA MAPPA":"SHOW ON MAP",
+  "CANCELLA PIANO":"CLEAR FLIGHT PLAN",
+  "Confermi di voler cancellare tutto il piano di volo?":"Are you sure you want to delete the entire flight plan?",
+  "Piano di volo cancellato.":"Flight plan cleared.",
+  "Sposta il waypoint trascinandolo sulla mappa.":"Drag the waypoint on the map to move it.",
+  "Punto rotta spostato.":"Waypoint moved.",
   "RIMUOVI":"REMOVE","IDENT":"IDENT","TIPO":"TYPE","LAT":"LAT",
   "LON":"LON","ALT · FT":"ALT · FT","HDG · °":"HDG · °",
   "ELEV. SLM (FT)":"ELEVATION (FT ASL)","VARIAZIONE MAG.":"MAG. VARIATION",
@@ -1191,7 +1230,17 @@ const EN_TEXT = {
   "Per usare VFR, crea una chiave API nel":"To use VFR, create an API key in your",
   "profilo OpenAIP":"OpenAIP profile",
   ". La chiave resta nelle impostazioni di questo browser e viene inviata nelle richieste tile. Dati globali a copertura variabile, non ufficiali e non certificati per la navigazione; licenza CC BY-NC 4.0.":". The key stays in this browser's settings and is sent with tile requests. Global data coverage varies; data is unofficial and not certified for navigation. CC BY-NC 4.0 license.",
-  "Cancella la traccia":"Clear track","PERSONALIZZAZIONE":"CUSTOMIZATION",
+  "Cancella la traccia":"Clear track","Disegna annotazioni sulla mappa":"Draw map annotations",
+  "Attiva o disattiva la penna":"Toggle the drawing pen","Mostra pagina multiplayer":"Show multiplayer page",
+  "Punto rotta aggiunto con quota media tra i waypoint vicini.":"Waypoint added with the average altitude of the neighboring points.",
+  "Punto rotta aggiunto alla fine del piano.":"Waypoint added at the end of the flight plan.",
+  "Quota del punto impostata sulla quota attuale dell'aereo.":"Waypoint altitude set to the aircraft's current altitude.",
+  "Quota del punto copiata dal waypoint più vicino.":"Waypoint altitude copied from the nearest route point.",
+  "Quota lasciata vuota: non ci sono quote di riferimento disponibili.":"Altitude left blank: no reference altitude is available.",
+  "Attiva la penna e trascina sulla mappa per disegnare.":"Enable the pen and drag on the map to draw.",
+  "Penna disattivata.":"Drawing pen disabled.",
+  "Traccia e annotazioni cancellate.":"Track and annotations cleared.",
+  "PERSONALIZZAZIONE":"CUSTOMIZATION",
   "Tema":"Theme","Scuro":"Dark","Chiaro":"Light","Lingua":"Language","Italiano":"Italian",
   "Colore secondario":"Accent color","Palette colori":"Color palette",
   "Azzurro (predefinita)":"Cyan (default)","Viola":"Purple","Corallo":"Coral",
@@ -1266,11 +1315,23 @@ const LOCALE_TEXT = {
     "Already a Mach number":"Déjà un nombre de Mach","Mach factor":"Facteur Mach",
     "ATTITUDE · htr MAPPING":"ASSIETTE · MAPPING htr","unused":"inutilisé",
     "Heading source":"Source du cap","Select":"Sélectionner","Initial zoom":"Zoom initial",
-    "OpenAIP API key":"Clé API OpenAIP","Clear track":"Effacer la trace","CUSTOMIZATION":"PERSONNALISATION",
+    "OpenAIP API key":"Clé API OpenAIP","Clear track":"Effacer la trace",
+    "Draw map annotations":"Dessiner sur la carte","Waypoint added with the average altitude of the neighboring points.":"Waypoint ajouté à mi-altitude entre les points voisins.",
+    "Waypoint added at the end of the flight plan.":"Waypoint ajouté à la fin du plan de vol.",
+    "Waypoint altitude set to the aircraft's current altitude.":"Altitude du waypoint définie à celle de l'avion.",
+    "Waypoint altitude copied from the nearest route point.":"Altitude du waypoint copiée du point de route le plus proche.",
+    "Altitude left blank: no reference altitude is available.":"Altitude laissée vide : aucune altitude de référence n'est disponible.",
+    "Enable the pen and drag on the map to draw.":"Activez le stylet et faites-le glisser sur la carte pour dessiner.",
+    "Drawing pen disabled.":"Stylet désactivé.","Track and annotations cleared.":"Trace et annotations effacées.",
+    "Show multiplayer page":"Afficher la page multijoueur",
+    "CUSTOMIZATION":"PERSONNALISATION",
     "Theme":"Thème","Dark":"Sombre","Light":"Clair","Language":"Langue","Italian":"Italien",
     "Accent color":"Couleur d’accent","Color palette":"Palette de couleurs","Cyan (default)":"Cyan (par défaut)",
     "Purple":"Violet","Coral":"Corail","Teal":"Turquoise","Amber":"Ambre","Blue":"Bleu",
     "Choose a palette for the interface accent color.":"Choisissez une palette pour la couleur d’accent de l’interface.",
+    "CLEAR FLIGHT PLAN":"EFFACER LE PLAN DE VOL","Are you sure you want to delete the entire flight plan?":"Confirmez-vous la suppression de tout le plan de vol ?",
+    "Flight plan cleared.":"Plan de vol effacé.","Drag the waypoint on the map to move it.":"Faites glisser le waypoint sur la carte pour le déplacer.",
+    "Waypoint moved.":"Waypoint déplacé.",
     "SETTINGS":"PARAMÈTRES","Save settings":"Enregistrer les paramètres",
     "Restore defaults":"Rétablir les valeurs par défaut","Settings are stored on this device.":"Les paramètres sont enregistrés sur cet appareil.",
     "Settings saved on this device.":"Paramètres enregistrés sur cet appareil.",
@@ -1321,10 +1382,21 @@ const LOCALE_TEXT = {
     "ATTITUDE · htr MAPPING":"FLUGLAGE · htr-ZUORDNUNG","unused":"ungenutzt",
     "Heading source":"Kursquelle","Select":"Auswählen","Initial zoom":"Start-Zoom",
     "OpenAIP API key":"OpenAIP-API-Schlüssel","Clear track":"Flugspur löschen",
+    "Draw map annotations":"Kartenanmerkungen zeichnen","Waypoint added with the average altitude of the neighboring points.":"Wegpunkt mit der mittleren Höhe der benachbarten Punkte hinzugefügt.",
+    "Waypoint added at the end of the flight plan.":"Wegpunkt am Ende des Flugplans hinzugefügt.",
+    "Waypoint altitude set to the aircraft's current altitude.":"Wegpunkthöhe auf die aktuelle Flughöhe gesetzt.",
+    "Waypoint altitude copied from the nearest route point.":"Wegpunkthöhe vom nächstgelegenen Routenpunkt übernommen.",
+    "Altitude left blank: no reference altitude is available.":"Höhe bleibt leer: keine Referenzhöhe verfügbar.",
+    "Enable the pen and drag on the map to draw.":"Stift aktivieren und zum Zeichnen über die Karte ziehen.",
+    "Drawing pen disabled.":"Stift deaktiviert.","Track and annotations cleared.":"Flugspur und Anmerkungen gelöscht.",
+    "Show multiplayer page":"Mehrspielerkarte anzeigen",
     "CUSTOMIZATION":"ANPASSUNG","Theme":"Design","Dark":"Dunkel","Light":"Hell","Language":"Sprache",
     "Italian":"Italienisch","Accent color":"Akzentfarbe","Color palette":"Farbpalette",
     "Cyan (default)":"Cyan (Standard)","Purple":"Violett","Coral":"Koralle","Teal":"Türkis",
     "Amber":"Bernstein","Blue":"Blau","Choose a palette for the interface accent color.":"Wählen Sie eine Palette für die Akzentfarbe der Oberfläche.",
+    "CLEAR FLIGHT PLAN":"FLUGPLAN LÖSCHEN","Are you sure you want to delete the entire flight plan?":"Möchten Sie den gesamten Flugplan wirklich löschen?",
+    "Flight plan cleared.":"Flugplan gelöscht.","Drag the waypoint on the map to move it.":"Ziehen Sie den Wegpunkt auf der Karte, um ihn zu verschieben.",
+    "Waypoint moved.":"Wegpunkt verschoben.",
     "SETTINGS":"EINSTELLUNGEN",
     "Save settings":"Einstellungen speichern","Restore defaults":"Standardeinstellungen wiederherstellen",
     "Settings are stored on this device.":"Einstellungen werden auf diesem Gerät gespeichert.",
@@ -1375,10 +1447,21 @@ const LOCALE_TEXT = {
     "ATTITUDE · htr MAPPING":"ACTITUD · ASIGNACIÓN htr","unused":"sin usar",
     "Heading source":"Fuente del rumbo","Select":"Seleccionar","Initial zoom":"Zoom inicial",
     "OpenAIP API key":"Clave API de OpenAIP","Clear track":"Borrar trayectoria",
+    "Draw map annotations":"Dibujar anotaciones en el mapa","Waypoint added with the average altitude of the neighboring points.":"Waypoint añadido con la altitud media de los puntos cercanos.",
+    "Waypoint added at the end of the flight plan.":"Waypoint añadido al final del plan de vuelo.",
+    "Waypoint altitude set to the aircraft's current altitude.":"Altitud del waypoint ajustada a la altitud actual del avión.",
+    "Waypoint altitude copied from the nearest route point.":"Altitud del waypoint copiada del punto de ruta más cercano.",
+    "Altitude left blank: no reference altitude is available.":"Altitud vacía: no hay una altitud de referencia disponible.",
+    "Enable the pen and drag on the map to draw.":"Activa el lápiz y arrastra sobre el mapa para dibujar.",
+    "Drawing pen disabled.":"Lápiz desactivado.","Track and annotations cleared.":"Trayectoria y anotaciones borradas.",
+    "Show multiplayer page":"Mostrar página multijugador",
     "CUSTOMIZATION":"PERSONALIZACIÓN","Theme":"Tema","Dark":"Oscuro","Light":"Claro",
     "Language":"Idioma","Italian":"Italiano","Accent color":"Color de acento","Color palette":"Paleta de colores",
     "Cyan (default)":"Cian (predeterminado)","Purple":"Morado","Coral":"Coral","Teal":"Verde azulado",
     "Amber":"Ámbar","Blue":"Azul","Choose a palette for the interface accent color.":"Elija una paleta para el color de acento de la interfaz.",
+    "CLEAR FLIGHT PLAN":"BORRAR PLAN DE VUELO","Are you sure you want to delete the entire flight plan?":"¿Confirma que desea borrar todo el plan de vuelo?",
+    "Flight plan cleared.":"Plan de vuelo borrado.","Drag the waypoint on the map to move it.":"Arrastra el waypoint en el mapa para moverlo.",
+    "Waypoint moved.":"Waypoint movido.",
     "SETTINGS":"AJUSTES",
     "Save settings":"Guardar ajustes","Restore defaults":"Restaurar valores predeterminados",
     "Settings are stored on this device.":"Los ajustes se guardan en este dispositivo.",
@@ -1428,10 +1511,21 @@ const LOCALE_TEXT = {
     "ATTITUDE · htr MAPPING":"ATITUDE · MAPEAMENTO htr","unused":"não utilizado",
     "Heading source":"Fonte do rumo","Select":"Selecionar","Initial zoom":"Zoom inicial",
     "OpenAIP API key":"Chave de API OpenAIP","Clear track":"Apagar rastro",
+    "Draw map annotations":"Desenhar anotações no mapa","Waypoint added with the average altitude of the neighboring points.":"Waypoint adicionado com a altitude média dos pontos vizinhos.",
+    "Waypoint added at the end of the flight plan.":"Waypoint adicionado ao fim do plano de voo.",
+    "Waypoint altitude set to the aircraft's current altitude.":"Altitude do waypoint definida pela altitude atual da aeronave.",
+    "Waypoint altitude copied from the nearest route point.":"Altitude do waypoint copiada do ponto de rota mais próximo.",
+    "Altitude left blank: no reference altitude is available.":"Altitude deixada em branco: não há altitude de referência disponível.",
+    "Enable the pen and drag on the map to draw.":"Ative a caneta e arraste no mapa para desenhar.",
+    "Drawing pen disabled.":"Caneta desativada.","Track and annotations cleared.":"Rastro e anotações apagados.",
+    "Show multiplayer page":"Mostrar página multijogador",
     "CUSTOMIZATION":"PERSONALIZAÇÃO","Theme":"Tema","Dark":"Escuro","Light":"Claro",
     "Language":"Idioma","Italian":"Italiano","Accent color":"Cor de destaque","Color palette":"Paleta de cores",
     "Cyan (default)":"Ciano (padrão)","Purple":"Roxo","Coral":"Coral","Teal":"Verde-água",
     "Amber":"Âmbar","Blue":"Azul","Choose a palette for the interface accent color.":"Escolha uma paleta para a cor de destaque da interface.",
+    "CLEAR FLIGHT PLAN":"APAGAR PLANO DE VOO","Are you sure you want to delete the entire flight plan?":"Confirma que deseja apagar todo o plano de voo?",
+    "Flight plan cleared.":"Plano de voo apagado.","Drag the waypoint on the map to move it.":"Arraste o waypoint no mapa para movê-lo.",
+    "Waypoint moved.":"Waypoint movido.",
     "SETTINGS":"CONFIGURAÇÕES",
     "Save settings":"Salvar configurações","Restore defaults":"Restaurar padrões",
     "Settings are stored on this device.":"As configurações ficam salvas neste dispositivo.",
@@ -1481,10 +1575,21 @@ const LOCALE_TEXT = {
     "ATTITUDE · htr MAPPING":"स्थिति · htr मैपिंग","unused":"उपयोग नहीं",
     "Heading source":"दिशा का स्रोत","Select":"चुनें","Initial zoom":"प्रारंभिक ज़ूम",
     "OpenAIP API key":"OpenAIP API कुंजी","Clear track":"मार्ग मिटाएँ",
+    "Draw map annotations":"मानचित्र पर टिप्पणियाँ बनाएँ","Waypoint added with the average altitude of the neighboring points.":"आस-पास के बिंदुओं की औसत ऊँचाई पर वेपॉइंट जोड़ा गया।",
+    "Waypoint added at the end of the flight plan.":"उड़ान योजना के अंत में वेपॉइंट जोड़ा गया।",
+    "Waypoint altitude set to the aircraft's current altitude.":"वेपॉइंट की ऊँचाई विमान की वर्तमान ऊँचाई पर सेट की गई।",
+    "Waypoint altitude copied from the nearest route point.":"वेपॉइंट की ऊँचाई निकटतम मार्ग बिंदु से ली गई।",
+    "Altitude left blank: no reference altitude is available.":"ऊँचाई खाली छोड़ी गई: संदर्भ ऊँचाई उपलब्ध नहीं है।",
+    "Enable the pen and drag on the map to draw.":"पेन चालू करें और मानचित्र पर खींचकर बनाएँ।",
+    "Drawing pen disabled.":"पेन बंद है।","Track and annotations cleared.":"ट्रैक और टिप्पणियाँ मिटाई गईं।",
+    "Show multiplayer page":"मल्टीप्लेयर पृष्ठ दिखाएँ",
     "CUSTOMIZATION":"अनुकूलन","Theme":"थीम","Dark":"गहरा","Light":"हल्का","Language":"भाषा",
     "Italian":"इतालवी","Accent color":"एक्सेंट रंग","Color palette":"रंग पैलेट",
     "Cyan (default)":"सियान (डिफ़ॉल्ट)","Purple":"बैंगनी","Coral":"कोरल","Teal":"टील",
     "Amber":"अंबर","Blue":"नीला","Choose a palette for the interface accent color.":"इंटरफ़ेस के एक्सेंट रंग के लिए पैलेट चुनें।",
+    "CLEAR FLIGHT PLAN":"उड़ान योजना मिटाएँ","Are you sure you want to delete the entire flight plan?":"क्या आप पूरी उड़ान योजना मिटाना चाहते हैं?",
+    "Flight plan cleared.":"उड़ान योजना मिटा दी गई।","Drag the waypoint on the map to move it.":"वेपॉइंट को मानचित्र पर खींचकर स्थानांतरित करें।",
+    "Waypoint moved.":"वेपॉइंट स्थानांतरित किया गया।",
     "SETTINGS":"सेटिंग्स",
     "Save settings":"सेटिंग्स सहेजें","Restore defaults":"डिफ़ॉल्ट पुनर्स्थापित करें",
     "Settings are stored on this device.":"सेटिंग्स इस डिवाइस पर सहेजी जाती हैं।",
@@ -2037,6 +2142,7 @@ function updateConnection(){
   state.connection.status = cls;
   if(box.className !== "conn " + cls) box.className = "conn " + cls;
   if(txt.textContent !== label) txt.textContent = label;
+  box.setAttribute("aria-label", label);
 }
 
 /* ---- striscia sotto la mappa ---- */
@@ -2458,6 +2564,7 @@ function renderFlightPlanEditor(){
   const hasPlan = flightPlan.length > 0;
   $("flightExport").disabled = !hasPlan;
   $("flightShowMap").disabled = !hasPlan;
+  $("flightClearPlan").disabled = !hasPlan;
 }
 
 function moveFlightPoint(fromIndex,toIndex){
@@ -2518,9 +2625,20 @@ function updateFlightPlanLayer(){
     L.polyline(points,{color:getComputedStyle(document.documentElement).getPropertyValue("--primary").trim(),weight:3,opacity:.9}).addTo(flightPlanLayer);
   }
   flightPlan.forEach((point,index)=>{
-    const marker = L.circleMarker([point.lat,point.lon],{
-      radius:6,color:"#081018",weight:2,fillColor:getComputedStyle(document.documentElement).getPropertyValue("--primary").trim(),fillOpacity:1
+    const marker = L.marker([point.lat,point.lon],{
+      draggable:true,
+      icon:L.divIcon({className:"route-waypoint-marker",html:"",iconSize:[18,18],iconAnchor:[9,9]}),
+      keyboard:true,
+      title:"Sposta il waypoint trascinandolo sulla mappa."
     }).addTo(flightPlanLayer);
+    marker.on("dragend",()=>{
+      const position = marker.getLatLng();
+      point.lat = position.lat;
+      point.lon = position.lng;
+      renderFlightPlanEditor();
+      updateFlightPlanLayer();
+      setFlightStatus("flightPlanStatus","Punto rotta spostato.","success");
+    });
     const label = document.createElement("span");
     label.textContent = (index + 1) + " · " + (point.ident || "WP");
     marker.bindTooltip(label,{direction:"top",offset:[0,-7]});
@@ -2637,10 +2755,329 @@ $("flightShowMap").addEventListener("click",()=>{
   setTimeout(focusFlightPlan,80);
 });
 
+$("flightClearPlan").addEventListener("click",()=>{
+  if(!flightPlan.length || !window.confirm(translateDynamicText("Confermi di voler cancellare tutto il piano di volo?"))) return;
+  flightPlan = [];
+  fallbackRouteCenter = null;
+  flightPlanName = "geofs-flight-plan.json";
+  renderFlightPlanEditor();
+  updateFlightPlanLayer();
+  setFlightStatus("flightPlanStatus","Piano di volo cancellato.","success");
+});
+
 /* ============================== MAPPA ================================== */
 let map = null, marker = null, trackLine = null, useLeaflet = false;
 let follow = true, showTrack = true, trackDirty = false, mapReady = false;
 let tileLayers = {}, activeLayer = "sat", vfrBaseLayer = "osm";
+let annotationLayer = null, penMode = false, activeInkStroke = null;
+const mapAnnotations = [];
+const MAX_MAP_ANNOTATIONS = 200;
+const MAX_ANNOTATION_POINTS = 2000;
+let mapStatusTimer = null;
+
+function showMapStatus(message){
+  const status = $("mapActionStatus");
+  status.textContent = translateDynamicText(message);
+  status.hidden = false;
+  clearTimeout(mapStatusTimer);
+  mapStatusTimer = setTimeout(()=>{ status.hidden = true; },3000);
+}
+
+function redrawMapAnnotations(){
+  if(useLeaflet && map){
+    if(!annotationLayer) annotationLayer = L.layerGroup().addTo(map);
+    annotationLayer.clearLayers();
+    const color = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
+    mapAnnotations.forEach(points=>{
+      if(points.length < 2) return;
+      L.polyline(points,{color,weight:3,opacity:.9,interactive:false,smoothFactor:.5}).addTo(annotationLayer);
+    });
+  }else if(mapReady){
+    drawFallback();
+  }
+}
+
+function setPenMode(enabled){
+  penMode = enabled;
+  $("drawBtn").classList.toggle("on",enabled);
+  $("drawBtn").setAttribute("aria-pressed",String(enabled));
+  $("mapwrap").classList.toggle("drawing",enabled);
+  showMapStatus(enabled ? "Attiva la penna e trascina sulla mappa per disegnare." : "Penna disattivata.");
+}
+
+function addWaypointAt(latlng){
+  if(flightPlan.length >= MAX_FLIGHT_POINTS){
+    showMapStatus("Il piano supera il limite di " + MAX_FLIGHT_POINTS + " punti.");
+    return;
+  }
+  const {lat, lng:lon} = latlng;
+  let insertionIndex = flightPlan.length;
+  let altitude;
+  let altitudeSource = "";
+  const hasAltitude = point=>point.alt !== null && point.alt !== undefined && point.alt !== "" &&
+    Number.isFinite(Number(point.alt));
+
+  if(flightPlan.length >= 2){
+    const cosLat = Math.max(.01,Math.cos(lat*Math.PI/180));
+    let nearestSegmentDistance = Infinity;
+    for(let index=0; index<flightPlan.length-1; index++){
+      const start = flightPlan[index], end = flightPlan[index+1];
+      const dx = norm180(end.lon-start.lon)*cosLat;
+      const dy = end.lat-start.lat;
+      const px = norm180(lon-start.lon)*cosLat;
+      const py = lat-start.lat;
+      const lengthSquared = dx*dx+dy*dy;
+      const fraction = lengthSquared ? Math.max(0,Math.min(1,(px*dx+py*dy)/lengthSquared)) : 0;
+      const distanceX = px-fraction*dx, distanceY = py-fraction*dy;
+      const distance = distanceX*distanceX+distanceY*distanceY;
+      if(distance < nearestSegmentDistance){
+        nearestSegmentDistance = distance;
+        insertionIndex = index+1;
+      }
+    }
+    const previous = flightPlan[insertionIndex-1], next = flightPlan[insertionIndex];
+    if(hasAltitude(previous) && hasAltitude(next)){
+      altitude = Math.round((Number(previous.alt)+Number(next.alt))/2);
+      altitudeSource = "midpoint";
+    }
+  }
+
+  if(altitude === undefined && state.position.alt !== null){
+    altitude = Math.round(state.position.alt*M_TO_FT);
+    altitudeSource = "aircraft";
+  }
+  if(altitude === undefined && flightPlan.length){
+    const referenceIndex = Math.max(0,Math.min(flightPlan.length-1,insertionIndex-1));
+    const referenceAltitude = Number(flightPlan[referenceIndex].alt);
+    if(hasAltitude(flightPlan[referenceIndex])){
+      altitude = Math.round(referenceAltitude);
+      altitudeSource = "route";
+    }
+  }
+
+  let identNumber = 1;
+  while(flightPlan.some(point=>point.ident === "WP" + identNumber)) identNumber++;
+  const point = {ident:"WP" + identNumber,type:"WPT",lat,lon};
+  if(altitude !== undefined) point.alt = altitude;
+  flightPlan.splice(insertionIndex,0,point);
+  renderFlightPlanEditor();
+  updateFlightPlanLayer();
+  if(altitudeSource === "midpoint"){
+    showMapStatus("Punto rotta aggiunto con quota media tra i waypoint vicini.");
+  }else if(altitudeSource === "aircraft"){
+    showMapStatus(flightPlan.length > 1 ? "Quota del punto impostata sulla quota attuale dell'aereo." : "Punto rotta aggiunto alla fine del piano.");
+  }else if(altitudeSource === "route"){
+    showMapStatus("Quota del punto copiata dal waypoint più vicino.");
+  }else if(altitude === undefined){
+    showMapStatus("Quota lasciata vuota: non ci sono quote di riferimento disponibili.");
+  }else{
+    showMapStatus("Punto rotta aggiunto alla fine del piano.");
+  }
+  setFlightStatus("flightPlanStatus",flightPlan.length + " punti nel piano · modifiche pronte per l'esportazione.","success");
+}
+
+function startInkStroke(latlng){
+  if(mapAnnotations.length >= MAX_MAP_ANNOTATIONS){
+    showMapStatus("Limite annotazioni raggiunto; cancella la traccia per ricominciare.");
+    return false;
+  }
+  activeInkStroke = [[latlng.lat,latlng.lng]];
+  mapAnnotations.push(activeInkStroke);
+  redrawMapAnnotations();
+  return true;
+}
+
+function extendInkStroke(latlng){
+  if(!activeInkStroke || activeInkStroke.length >= MAX_ANNOTATION_POINTS) return;
+  const previous = activeInkStroke[activeInkStroke.length-1];
+  if(Math.abs(previous[0]-latlng.lat)+Math.abs(previous[1]-latlng.lng) < 0.000002) return;
+  activeInkStroke.push([latlng.lat,latlng.lng]);
+  redrawMapAnnotations();
+}
+
+function clearMapTrackAndAnnotations(){
+  state.track.length = 0;
+  trackDirty = true;
+  mapAnnotations.length = 0;
+  activeInkStroke = null;
+  if(useLeaflet){
+    if(trackLine) trackLine.setLatLngs([]);
+    if(annotationLayer) annotationLayer.clearLayers();
+  }else{
+    drawFallback();
+  }
+  showMapStatus("Traccia e annotazioni cancellate.");
+}
+
+function handleLeafletPointerDown(event){
+  if(!penMode || event.button !== 0 || !map) return;
+  const draggingWasEnabled = map.dragging.enabled();
+  if(draggingWasEnabled) map.dragging.disable();
+  const point = map.mouseEventToLatLng(event);
+  if(!startInkStroke(point)){
+    if(draggingWasEnabled) map.dragging.enable();
+    return;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  const pointerId = event.pointerId;
+  const container = map.getContainer();
+  try{ container.setPointerCapture(pointerId); }catch(error){ /* pointer capture is optional */ }
+  const onMove = moveEvent=>{
+    if(moveEvent.pointerId !== pointerId) return;
+    moveEvent.preventDefault();
+    moveEvent.stopPropagation();
+    extendInkStroke(map.mouseEventToLatLng(moveEvent));
+  };
+  const onEnd = endEvent=>{
+    if(endEvent.pointerId !== pointerId) return;
+    endEvent.preventDefault();
+    endEvent.stopPropagation();
+    activeInkStroke = null;
+    if(draggingWasEnabled) map.dragging.enable();
+    container.removeEventListener("pointermove",onMove,true);
+    container.removeEventListener("pointerup",onEnd,true);
+    container.removeEventListener("pointercancel",onEnd,true);
+  };
+  container.addEventListener("pointermove",onMove,true);
+  container.addEventListener("pointerup",onEnd,true);
+  container.addEventListener("pointercancel",onEnd,true);
+}
+
+let lastWaypointHoldAt = 0;
+let activeWaypointHold = false;
+function handleLeafletWaypointHold(event){
+  if(penMode || (event.button !== undefined && event.button !== 0) ||
+      (event.target.closest && event.target.closest(".route-waypoint-marker"))) return;
+  const startX = event.clientX, startY = event.clientY;
+  let moved = false;
+  activeWaypointHold = true;
+  const cleanup = ()=>{
+    clearTimeout(timer);
+    activeWaypointHold = false;
+    window.removeEventListener("pointermove",onMove,true);
+    window.removeEventListener("pointerup",onUp,true);
+    window.removeEventListener("pointercancel",onUp,true);
+  };
+  const onMove = moveEvent=>{
+    if(moveEvent.pointerId !== event.pointerId) return;
+    if(Math.abs(moveEvent.clientX-startX)>10 || Math.abs(moveEvent.clientY-startY)>10){
+      moved = true;
+      cleanup();
+    }
+  };
+  const onUp = upEvent=>{
+    if(upEvent.pointerId === event.pointerId) cleanup();
+  };
+  const timer = setTimeout(()=>{
+    if(moved) return;
+    lastWaypointHoldAt = Date.now();
+    setFollow(false);
+    addWaypointAt(map.mouseEventToLatLng(event));
+    cleanup();
+  },600);
+  window.addEventListener("pointermove",onMove,true);
+  window.addEventListener("pointerup",onUp,true);
+  window.addEventListener("pointercancel",onUp,true);
+}
+
+function handleFallbackPointerDown(event){
+  if(event.button !== undefined && event.button !== 0) return;
+  const canvas = $("fbCanvas");
+  const startX = event.clientX, startY = event.clientY;
+  let longPressTimer = null, drawing = false, moved = false;
+  const toLatLng = pointerEvent=>{
+    const rect = canvas.getBoundingClientRect();
+    const W = rect.width, H = rect.height;
+    const center = fallbackMapCenter();
+    if(!center || !W || !H) return null;
+    const [centerLat,centerLon] = center;
+    const scale = Math.pow(2,fbZoom)*256/360;
+    const cosLat = Math.cos(centerLat*Math.PI/180);
+    return {
+      lat:centerLat-(pointerEvent.clientY-rect.top-H/2)/scale,
+      lng:centerLon+(pointerEvent.clientX-rect.left-W/2)/(scale*cosLat)
+    };
+  };
+  let draggedPoint = null;
+  if(!penMode && flightPlan.length){
+    const pointer = toLatLng(event);
+    const center = fallbackMapCenter();
+    if(pointer && center){
+      const scale = Math.pow(2,fbZoom)*256/360;
+      const cosLat = Math.cos(center[0]*Math.PI/180);
+      const nearby = flightPlan.map(point=>({
+        point,
+        distance:Math.hypot((point.lon-pointer.lng)*cosLat*scale,(point.lat-pointer.lat)*scale)
+      })).sort((a,b)=>a.distance-b.distance)[0];
+      if(nearby && nearby.distance <= 18) draggedPoint = nearby.point;
+    }
+  }
+  const cleanup = ()=>{
+    clearTimeout(longPressTimer);
+    window.removeEventListener("pointermove",onMove,true);
+    window.removeEventListener("pointerup",onUp,true);
+    window.removeEventListener("pointercancel",onUp,true);
+  };
+  const onMove = moveEvent=>{
+    if(moveEvent.pointerId !== event.pointerId) return;
+    if(!drawing && (Math.abs(moveEvent.clientX-startX)>9 || Math.abs(moveEvent.clientY-startY)>9)){
+      moved = true;
+      clearTimeout(longPressTimer);
+    }
+    if(drawing){
+      moveEvent.preventDefault();
+      moveEvent.stopPropagation();
+      const point = toLatLng(moveEvent);
+      if(point) extendInkStroke(point);
+    }else if(draggedPoint){
+      if(Math.abs(moveEvent.clientX-startX)>3 || Math.abs(moveEvent.clientY-startY)>3) moved = true;
+      if(moved){
+        moveEvent.preventDefault();
+        const point = toLatLng(moveEvent);
+        if(point){
+          draggedPoint.lat = point.lat;
+          draggedPoint.lon = point.lng;
+          drawFallback();
+        }
+      }
+    }
+  };
+  const onUp = upEvent=>{
+    if(upEvent.pointerId !== event.pointerId) return;
+    if(drawing){
+      upEvent.preventDefault();
+      upEvent.stopPropagation();
+      activeInkStroke = null;
+    }else if(draggedPoint && moved){
+      renderFlightPlanEditor();
+      updateFlightPlanLayer();
+      setFlightStatus("flightPlanStatus","Punto rotta spostato.","success");
+    }
+    cleanup();
+  };
+
+  window.addEventListener("pointermove",onMove,true);
+  window.addEventListener("pointerup",onUp,true);
+  window.addEventListener("pointercancel",onUp,true);
+
+  if(penMode){
+    event.preventDefault();
+    event.stopPropagation();
+    const point = toLatLng(event);
+    if(point) drawing = startInkStroke(point);
+  }else{
+    if(!draggedPoint) longPressTimer = setTimeout(()=>{
+      if(moved) return;
+      const point = toLatLng(event);
+      if(point){
+        setFollow(false);
+        addWaypointAt(point);
+      }
+      cleanup();
+    },600);
+  }
+}
 
 const PLANE_SVG =
   '<svg viewBox="0 0 24 24" width="42" height="42" id="planeicon" class="acft-dot">' +
@@ -2676,9 +3113,21 @@ function initMap(){
 
   trackLine = L.polyline([], {color:getComputedStyle(document.documentElement).getPropertyValue("--primary").trim(), weight:2.5, opacity:.65}).addTo(map);
   flightPlanLayer = L.layerGroup().addTo(map);
+  annotationLayer = L.layerGroup().addTo(map);
   updateFlightPlanLayer();
+  map.on("contextmenu",event=>{
+    if(penMode) return;
+    L.DomEvent.preventDefault(event);
+    if(activeWaypointHold || Date.now()-lastWaypointHoldAt<1200) return;
+    setFollow(false);
+    addWaypointAt(event.latlng);
+  });
+  map.getContainer().addEventListener("pointerdown",handleLeafletPointerDown,true);
+  map.getContainer().addEventListener("pointerdown",handleLeafletWaypointHold,true);
+  map.getContainer().addEventListener("contextmenu",event=>event.preventDefault());
   map.on("dragstart", ()=>setFollow(false));
   mapReady = true;
+  redrawMapAnnotations();
   requestAnimationFrame(()=>{
     if(map){ map.invalidateSize(); updateMap(); }
   });
@@ -2742,11 +3191,20 @@ function setVfrBaseLayer(layer){
 
 /* --- mappa di riserva su canvas, se Leaflet non è raggiungibile --- */
 let fbZoom = 12;
+function fallbackMapCenter(){
+  const aircraftLat = state.position.lat, aircraftLon = state.position.lon;
+  const routeLat = flightPlan.length ? flightPlan.reduce((sum,point)=>sum + point.lat,0) / flightPlan.length : null;
+  const routeLon = flightPlan.length ? flightPlan.reduce((sum,point)=>sum + point.lon,0) / flightPlan.length : null;
+  return fallbackRouteCenter || (aircraftLat === null && flightPlan.length ? [routeLat,routeLon] :
+    aircraftLat === null ? null : [aircraftLat,aircraftLon]);
+}
 function initFallbackMap(){
   $("mapfallback").style.display = "block";
   $("map").style.display = "none";
   fbZoom = CFG.zoom;
   mapReady = true;
+  $("fbCanvas").addEventListener("pointerdown",handleFallbackPointerDown);
+  $("fbCanvas").addEventListener("contextmenu",event=>event.preventDefault());
   window.addEventListener("resize", drawFallback);
   drawFallback();
 }
@@ -2763,10 +3221,8 @@ function drawFallback(){
   g.fillStyle = styles.getPropertyValue("--bg").trim(); g.fillRect(0,0,W,H);
 
   const aircraftLat = state.position.lat, aircraftLon = state.position.lon;
-  const routeLat = flightPlan.length ? flightPlan.reduce((sum,point)=>sum + point.lat,0) / flightPlan.length : null;
-  const routeLon = flightPlan.length ? flightPlan.reduce((sum,point)=>sum + point.lon,0) / flightPlan.length : null;
-  const center = fallbackRouteCenter || (aircraftLat === null && flightPlan.length ? [routeLat,routeLon] : [aircraftLat,aircraftLon]);
-  const lat = center[0], lon = center[1];
+  const center = fallbackMapCenter();
+  const lat = center ? center[0] : null, lon = center ? center[1] : null;
   const scale = Math.pow(2, fbZoom) * 256 / 360;          // px per grado di longitudine
   const cx = W/2, cy = H/2;
   const cosLat = lat === null ? 1 : Math.cos(lat*Math.PI/180);
@@ -2821,6 +3277,20 @@ function drawFallback(){
       g.fillStyle = accent; g.shadowColor = accent; g.shadowBlur = 10;
       g.beginPath(); g.moveTo(0,-16); g.lineTo(12,12); g.lineTo(0,6); g.lineTo(-12,12); g.closePath(); g.fill();
       g.restore();
+    }
+    if(mapAnnotations.length){
+      g.strokeStyle = accent; g.globalAlpha = .9; g.lineWidth = 3;
+      g.lineJoin = "round"; g.lineCap = "round";
+      mapAnnotations.forEach(points=>{
+        if(points.length < 2) return;
+        g.beginPath();
+        points.forEach((point,index)=>{
+          const q = px(point[0],point[1]);
+          index ? g.lineTo(q[0],q[1]) : g.moveTo(q[0],q[1]);
+        });
+        g.stroke();
+      });
+      g.globalAlpha = 1;
     }
   }else{
     g.fillStyle = styles.getPropertyValue("--muted").trim(); g.font = "13px ui-monospace,monospace"; g.textAlign = "center";
@@ -3049,7 +3519,7 @@ async function loadNearbyAirports(autoSelect){
     nearbyLoaded = true;
     if(stations.length){
       setAirportState("Trovate " + stations.length + " stazioni meteo entro circa 220 km; seleziona un codice per i dettagli.");
-      if(autoSelect && !airportSelectedCode) await loadAirport(stations[0].icaoId);
+      if(autoSelect) await loadAirport(stations[0].icaoId);
     }else setAirportState("Nessuna stazione METAR/TAF trovata entro circa 220 km.");
   }catch(error){
     setAirportState("Ricerca AWC non riuscita: " + error.message + ". Verifica la connessione Internet.");
@@ -3060,7 +3530,7 @@ $("airportSearchForm").addEventListener("submit", event=>{
   event.preventDefault();
   loadAirport($("airportCodeInput").value);
 });
-$("airportNearest").addEventListener("click", ()=>loadNearbyAirports(false));
+$("airportNearest").addEventListener("click", ()=>loadNearbyAirports(true));
 $("airportNearby").addEventListener("click", event=>{
   const button = event.target.closest("[data-airport-code]");
   if(button) loadAirport(button.dataset.airportCode);
@@ -3072,6 +3542,7 @@ $("airportRefresh").addEventListener("click", ()=>{
 
 /* ============================ INTERFACCIA ============================== */
 function showPage(id){
+  if(id === "multi" && !CFG.showMulti) id = "map";
   currentPage = id;
   document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === "page-"+id));
   document.querySelectorAll(".navbtn").forEach(b => b.classList.toggle("active", b.dataset.page === id));
@@ -3082,6 +3553,15 @@ function showPage(id){
   render();
 }
 document.querySelectorAll(".navbtn").forEach(b => b.addEventListener("click", ()=>showPage(b.dataset.page)));
+
+function applyMultiPageVisibility(){
+  const visible = !!CFG.showMulti;
+  const button = document.querySelector('.navbtn[data-page="multi"]');
+  const page = $("page-multi");
+  button.hidden = !visible;
+  page.hidden = !visible;
+  if(!visible && currentPage === "multi") showPage("map");
+}
 
 $("zIn").addEventListener("click", ()=>{ if(useLeaflet) map.zoomIn(); else { fbZoom = Math.min(18, fbZoom+1); drawFallback(); } });
 $("zOut").addEventListener("click", ()=>{ if(useLeaflet) map.zoomOut(); else { fbZoom = Math.max(2, fbZoom-1); drawFallback(); } });
@@ -3094,12 +3574,8 @@ $("trackBtn").addEventListener("click", ()=>{
 });
 $("trackBtn").classList.add("on");
 
-$("clearTrackMap").addEventListener("click", ()=>{
-  state.track.length = 0;
-  trackDirty = true;
-  if(useLeaflet && trackLine) trackLine.setLatLngs([]);
-  else drawFallback();
-});
+$("drawBtn").addEventListener("click",()=>setPenMode(!penMode));
+$("clearTrackMap").addEventListener("click",clearMapTrackAndAnnotations);
 
 $("layerPick").addEventListener("click", e=>{
   const b = e.target.closest("button"); if(!b || !useLeaflet) return;
@@ -3126,7 +3602,8 @@ const CFGMAP = [
   ["cfgAltUnit","altUnit","str"],
   ["cfgZoom","zoom","int"],
   ["cfgOpenAipKey","openaipKey","str"],
-  ["cfgTheme","theme","str"], ["cfgLanguage","language","str"], ["cfgAccent","accentColor","str"]
+  ["cfgTheme","theme","str"], ["cfgLanguage","language","str"], ["cfgAccent","accentColor","str"],
+  ["cfgShowMulti","showMulti","bool"]
 ];
 function cfgToForm(){
   CFGMAP.forEach(([id,key,type])=>{
@@ -3149,6 +3626,7 @@ function formToCfg(){
   CFG.staleMs  = Math.max(500, CFG.staleMs);
 }
 cfgToForm();
+applyMultiPageVisibility();
 applyPreferences();
 
 ["cfgTheme","cfgLanguage","cfgAccent"].forEach(id=>{
@@ -3162,6 +3640,7 @@ applyPreferences();
 
 $("saveCfg").addEventListener("click", ()=>{
   formToCfg();
+  applyMultiPageVisibility();
   applyPreferences();
   const ok = saveCfg();
   restartPolling();
@@ -3173,13 +3652,10 @@ $("saveCfg").addEventListener("click", ()=>{
 });
 $("resetCfg").addEventListener("click", ()=>{
   CFG = Object.assign({}, DEFAULTS);
-  saveCfg(); cfgToForm(); restartPolling(); applyPreferences();
+  saveCfg(); cfgToForm(); applyMultiPageVisibility(); restartPolling(); applyPreferences();
   $("cfgSaved").textContent = "Valori iniziali ripristinati.";
 });
-$("clearTrack").addEventListener("click", ()=>{
-  state.track.length = 0; trackDirty = true;
-  if(useLeaflet && trackLine) trackLine.setLatLngs([]); else drawFallback();
-});
+$("clearTrack").addEventListener("click",clearMapTrackAndAnnotations);
 const calGo = $("calGo");
 if(calGo) calGo.addEventListener("click", ()=>{
   const raw = parseFloat($("calRaw").value), kt = parseFloat($("calKt").value);
