@@ -8,7 +8,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License"></a>
   <img src="https://img.shields.io/badge/GeoFS-3.9%20%2F%204.0-blue" alt="GeoFS 3.9 and 4.0">
   <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python 3.10 or later">
-  <img src="https://img.shields.io/badge/Platform-Windows-blue" alt="Windows">
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-blue" alt="Windows and Linux">
 </p>
 
 <p align="center">
@@ -23,18 +23,18 @@
 - Optional weather data retrieved from the GeoFS weather service.
 - An airports page with live METAR/TAF, airport elevation, runway and radio-frequency data, nearby weather stations, and links to official NOTAM sources.
 - A setup page for the data URL, display units, dashboard settings, light/dark theme, multiple interface languages, and preset accent-color palettes.
-- A Windows GUI and an optional one-file Windows executable.
+- A GUI and an optional one-file executable for Windows, plus an AppImage for Linux.
 
-The flight-plan route is drawn over the main map. The fallback canvas map also draws route points; use **Show on Map** to frame the complete route.
+The flight-plan route is drawn over the main map. A single left-click (or tap on a phone/tablet) adds a waypoint at the end of the plan. On a computer, **Shift + left-click** inserts it on the nearest route segment; touch input always adds at the end. The fallback canvas map supports the same gestures. Use **Show on Map** to frame the complete route.
 
 ## Requirements
 
-- Windows 10 or later is recommended for the included `.bat` scripts and executable build.
-- Python 3.10 or later with Tkinter for running the Python GUI. The standard Windows Python installer normally includes Tkinter.
+- Windows 10 or later is recommended for the included `.bat` scripts and Windows executable build.
+- Python 3.10 or later with Tkinter for running the Python GUI. The standard Windows Python installer normally includes Tkinter; Linux users may need to install their distribution's Tk package (for example, `python3-tk`).
 - A supported browser with the Tampermonkey extension to run the GeoFS bridge userscript.
 - An internet connection for GeoFS, the weather service, Leaflet, and online map tiles. Leaflet loads asynchronously so the dashboard remains usable while it loads; a canvas map fallback is available if Leaflet cannot be loaded.
 
-Running the server from Python uses only the Python standard library. Building the executable also requires PyInstaller and Pillow; `crea_exe.bat` installs them.
+Running the server from Python uses only the Python standard library. Building an executable requires PyInstaller; the build scripts install it in their build environment.
 
 ## Run from source
 
@@ -79,6 +79,8 @@ You can view the dashboard on a tablet or another device on the same trusted loc
 3. On the other device, open `http://<computer-ip>:8080/`, replacing `<computer-ip>` with the server computer's address.
 4. If the dashboard cannot connect, open **Setup** and set **Data URL** to `http://<computer-ip>:8080/data`, then save the settings. Allow Python through Windows Firewall on a **private** network if Windows asks.
 
+Flight plans, map drawings, and the aircraft track are stored by the server and synchronized automatically across connected dashboard devices. The server keeps this shared state across restarts in the current user's application-data folder (`%LOCALAPPDATA%\GeoFS Dashboard\shared_state.json` on Windows, or `$XDG_STATE_HOME/geofs-dashboard/shared_state.json` on Linux; the default Linux state directory is `~/.local/state`). The aircraft track is recorded from incoming GeoFS telemetry, so keep the GeoFS bridge connected to the same server. To keep the saved track bounded, older sections are progressively simplified while retaining the complete route.
+
 Dashboard settings are saved in the browser's local storage on that device. Use **Setup** to adjust units, map options, or the data URL. The page also provides light and dark themes, multiple interface languages, and preset accent-color palettes. Save the settings to keep your choices on the current device.
 
 ### OpenAIP aeronautical map
@@ -98,20 +100,39 @@ OpenAIP data coverage varies by region and is community-maintained. This layer i
 From the project folder, run:
 
 ```bat
-crea_exe.bat
+scripts_build\crea_exe.bat
 ```
 
-The script installs or updates PyInstaller and builds a windowed, one-file executable at `dist\GeoFS_Server.exe`, using the existing `icon\icon.ico`. The generated `build/` and `dist/` folders are local build output and are excluded from Git by `.gitignore`.
+The script asks for the application version, installs or updates PyInstaller, and builds a windowed, one-file executable at `dist\GeoFS_Server.exe`, using `icon\GeoFS_Server.ico`. The entered version is embedded in the executable and used by the dashboard update check. The generated `build/` and `dist/` folders are local build output and are excluded from Git by `.gitignore`.
 
 To keep build packages separate from other Python projects, create and activate a virtual environment in Command Prompt before running the batch file:
 
 ```bat
 py -m venv .venv
 .venv\Scripts\activate.bat
-crea_exe.bat
+scripts_build\crea_exe.bat
 ```
 
 The executable bundles the dashboard and can be run without installing Python on the target computer. Windows may show a security warning for an unsigned executable; only run builds you trust.
+
+## Build the Linux AppImage
+
+Build the AppImage on Linux x86_64; PyInstaller cannot create a Linux executable natively on Windows. On Linux, install Python 3 with venv and Tkinter, plus `appimagetool` from [AppImageKit releases](https://github.com/AppImage/AppImageKit/releases), then run:
+
+```sh
+chmod +x scripts_build/crea_appimage.sh
+./scripts_build/crea_appimage.sh
+```
+
+On Windows, install and initialize WSL with a Linux x86_64 distribution (for example, `wsl --install`), then install the same Linux prerequisites inside that distribution. Run `scripts_build\crea_appimage.bat`; it invokes the Linux script through WSL and saves the AppImage under `dist\`. Both scripts use the same Linux build process.
+
+The script asks for the application version, creates an isolated `.venv-linux` environment, and writes the executable to `dist/linux/GeoFS_Server` and the AppImage to `dist/GeoFS_Server-x86_64.AppImage`. The entered version is embedded in the app and used by the dashboard update check. The AppImage can be launched directly; some Linux systems may require FUSE support.
+
+Whenever the dashboard opens, it compares its embedded version with the latest stable GitHub Release for [`Pl4yj4ck/GeoFs-dashboard`](https://github.com/Pl4yj4ck/GeoFs-dashboard/releases/latest). If a newer release exists, an update banner links to it. The check requires an internet connection; if GitHub is unreachable, the dashboard continues to work normally.
+
+## Publish a GitHub Release
+
+Build the Windows executable and Linux AppImage first. Then run `github_publish\pubblica_github.bat` on Windows, enter the release version (for example, `1.2.3`), and authenticate with GitHub CLI using `gh auth login` if needed. The script uses the current repository when available; otherwise, it asks for `owner/repository`. It creates a `v<version>` release and uploads `GeoFS_Server.exe`, `GeoFS_Server-x86_64.AppImage`, and the userscript as `script_tampermonkey.js`. A version tag can be published only once. The `github_publish/` folder is intentionally excluded from Git, so keep a local copy of the publisher script.
 
 ## Privacy and network security
 
@@ -146,7 +167,10 @@ The executable bundles the dashboard and can be run without installing Python on
 - `server_gui.py`: Tkinter GUI for starting and stopping the server.
 - `dashboard.html`: browser dashboard.
 - `script_tampermonkey.user.js`: GeoFS userscript that sends telemetry.
-- `crea_exe.bat` and `GeoFS_Server.spec`: Windows executable build files.
+- `scripts_build/crea_exe.bat` and `GeoFS_Server.spec`: Windows executable build files.
+- `scripts_build/crea_appimage.sh`: Linux x86_64 AppImage build script.
+- `scripts_build/crea_appimage.bat`: Windows launcher for the Linux AppImage build through WSL.
+- `github_publish/pubblica_github.bat`: local interactive GitHub Release publisher, excluded from Git.
 - `geofs_dashboard.bat`: optional command-line server launcher.
 - `CHANGELOG.md`: notable dashboard and server changes.
 - `icon/icon.ico`: application icon used by the build process and GUI.

@@ -9,9 +9,11 @@ import csv
 from collections import defaultdict
 import io
 import json
+import math
 import os
 import re
 import sys
+import tempfile
 from datetime import datetime
 from threading import Lock
 import time
@@ -21,6 +23,7 @@ from urllib.request import Request, urlopen
 
 HOST = "0.0.0.0"
 PORT = 8080
+APP_VERSION = "1.2.3"
 
 latest_data = {
     "altitude": 0,
@@ -33,6 +36,96 @@ latest_data = {
     "roll": 0
 }
 latest_data_lock = Lock()
+MAX_SHARED_STATE_BYTES = 5 * 1024 * 1024
+MAX_SHARED_TRACK_POINTS = 20000
+
+
+def shared_state_path():
+    """Return a writable per-user path for dashboard state."""
+    if os.name == "nt":
+        data_dir = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+        return os.path.join(data_dir, "GeoFS Dashboard", "shared_state.json")
+    data_dir = os.environ.get("XDG_STATE_HOME") or os.path.join(os.path.expanduser("~"), ".local", "state")
+    return os.path.join(data_dir, "geofs-dashboard", "shared_state.json")
+
+
+SHARED_STATE_PATH = shared_state_path()
+shared_state = {"revision": 0, "flightPlan": [], "annotations": [], "track": []}
+shared_state_lock = Lock()
+
+
+def persist_shared_state(state):
+    """Atomically persist shared dashboard state."""
+    directory = os.path.dirname(SHARED_STATE_PATH)
+    os.makedirs(directory, exist_ok=True)
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=directory, delete=False
+        ) as state_file:
+            temporary_path = state_file.name
+            json.dump(state, state_file, ensure_ascii=False, separators=(",", ":"))
+        os.replace(temporary_path, SHARED_STATE_PATH)
+    except Exception:
+        if temporary_path and os.path.exists(temporary_path):
+            os.unlink(temporary_path)
+        raise
+
+
+def load_shared_state():
+    """Load persisted dashboard state, retaining defaults on first run."""
+    try:
+        with open(SHARED_STATE_PATH, "r", encoding="utf-8") as state_file:
+            saved_state = json.load(state_file)
+    except FileNotFoundError:
+        return
+    if (not isinstance(saved_state, dict) or
+            not isinstance(saved_state.get("revision"), int) or
+            not isinstance(saved_state.get("flightPlan"), list) or
+            not isinstance(saved_state.get("annotations"), list) or
+            not isinstance(saved_state.get("track"), list)):
+        raise ValueError(f"Stato dashboard non valido in {SHARED_STATE_PATH}")
+    shared_state.update(saved_state)
+
+
+load_shared_state()
+
+
+def is_valid_coordinate_pair(point):
+    return (
+        isinstance(point, (list, tuple)) and len(point) == 2 and
+        all(isinstance(value, (int, float)) and math.isfinite(value) for value in point) and
+        -90 <= point[0] <= 90 and -180 <= point[1] <= 180
+    )
+
+
+def validate_flight_plan(value):
+    if not isinstance(value, list) or len(value) > 500:
+        raise ValueError("Piano di volo non valido")
+    for point in value:
+        if not isinstance(point, dict) or not is_valid_coordinate_pair([point.get("lat"), point.get("lon")]):
+            raise ValueError("Waypoint non valido")
+        for field in ("ident", "type"):
+            if field in point and not isinstance(point[field], str):
+                raise ValueError(f"Campo {field} non valido")
+        for field in ("alt", "heading"):
+            if field in point and (
+                not isinstance(point[field], (int, float)) or
+                not math.isfinite(point[field]) or
+                (field == "heading" and not 0 <= point[field] < 360)
+            ):
+                raise ValueError(f"Campo {field} non valido")
+
+
+def validate_annotations(value):
+    if not isinstance(value, list) or len(value) > 200:
+        raise ValueError("Annotazioni non valide")
+    if any(not isinstance(stroke, list) or len(stroke) > 2000 or
+           any(not is_valid_coordinate_pair(point) for point in stroke)
+           for stroke in value):
+        raise ValueError("Tratto di annotazione non valido")
+
+
 ourairports_cache = {"expires": 0, "airport_codes": {}, "runways": {}, "frequencies": {}}
 ourairports_cache_lock = Lock()
 OURAIRPORTS_BASE = "https://davidmegginson.github.io/ourairports-data/"
@@ -146,6 +239,46 @@ class Handler(BaseHTTPRequestHandler):
         """Gestisci GET: serve HTML e JSON"""
 
         parsed_path = urlparse(self.path)
+
+        if parsed_path.path == "/shared-state":
+            try:
+                with shared_state_lock:
+                    data = json.dumps(shared_state, ensure_ascii=False).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                self.send_header("Content-Length", str(len(data)))
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(data)
+            except (BrokenPipeError, ConnectionAbortedError):
+                return
+            return
+
+        if parsed_path.path == "/version":
+            version = APP_VERSION
+            bundle_dir = getattr(
+                sys,
+                "_MEIPASS",
+                os.path.dirname(os.path.abspath(__file__)),
+            )
+            version_path = os.path.join(bundle_dir, "app_version.txt")
+            try:
+                with open(version_path, "r", encoding="utf-8") as version_file:
+                    candidate = version_file.read().strip()
+                if re.fullmatch(r"\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?", candidate):
+                    version = candidate
+            except FileNotFoundError:
+                pass
+
+            data = json.dumps({"version": version}).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(data)
+            return
 
         if parsed_path.path == "/aviation":
             self.serve_aviation_data(parsed_path.query)
@@ -312,6 +445,10 @@ class Handler(BaseHTTPRequestHandler):
         """Gestisci POST: ricevi dati da GeoFS Bridge"""
         global latest_data
 
+        if self.path == "/shared-state":
+            self.update_shared_state()
+            return
+
         if self.path != "/data":
             self.send_error(404)
             return
@@ -331,16 +468,39 @@ class Handler(BaseHTTPRequestHandler):
             # Parsa il JSON
             incoming_data = json.loads(body.decode("utf-8"))
 
-            # Inverti latitudine e longitudine se presenti
-            if "latitude" in incoming_data and "longitude" in incoming_data:
-                incoming_data["latitude"], incoming_data["longitude"] = (
-                    incoming_data["longitude"], 
-                    incoming_data["latitude"]
-                )
-
             # Aggiorna i dati globali (merge, non sovrascrittura totale)
             with latest_data_lock:
                 latest_data.update(incoming_data)
+
+            latitude = incoming_data.get("latitude")
+            longitude = incoming_data.get("longitude")
+            if ("latitude" in incoming_data and "longitude" in incoming_data and
+                    is_valid_coordinate_pair([latitude, longitude])):
+                point = [latitude, longitude]
+                with shared_state_lock:
+                    previous = shared_state["track"][-1] if shared_state["track"] else None
+                    if previous is None:
+                        should_append = True
+                    else:
+                        latitude_radians = math.radians((previous[0] + latitude) / 2)
+                        delta_latitude = math.radians(latitude - previous[0])
+                        delta_longitude = math.radians(longitude - previous[1])
+                        distance = 6371000 * math.hypot(
+                            delta_latitude, delta_longitude * math.cos(latitude_radians)
+                        )
+                        should_append = distance > 2
+                    if should_append:
+                        updated_state = dict(shared_state)
+                        track = shared_state["track"]
+                        if len(track) >= MAX_SHARED_TRACK_POINTS:
+                            compacted_track = track[::2]
+                            if compacted_track[-1] != track[-1]:
+                                compacted_track.append(track[-1])
+                            track = compacted_track
+                        updated_state["track"] = track + [point]
+                        updated_state["revision"] += 1
+                        persist_shared_state(updated_state)
+                        shared_state.update(updated_state)
 
             # Log
             ts = datetime.now().strftime("%H:%M:%S")
@@ -363,6 +523,63 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as e:
             self.send_error(500, str(e))
             self.log_message(f"Errore /data POST: {str(e)}")
+
+    def update_shared_state(self):
+        """Validate and persist dashboard edits shared by all connected clients."""
+        try:
+            content_length = int(self.headers.get("Content-Length", 0))
+            if content_length <= 0 or content_length > MAX_SHARED_STATE_BYTES:
+                self.send_error(413 if content_length > MAX_SHARED_STATE_BYTES else 400, "Dimensione stato non valida")
+                return
+            incoming_state = json.loads(self.rfile.read(content_length).decode("utf-8"))
+            if not isinstance(incoming_state, dict) or not incoming_state:
+                self.send_error(400, "Stato condiviso non valido")
+                return
+            allowed_fields = {"flightPlan", "annotations", "addAnnotations", "clearTrack"}
+            if set(incoming_state) - allowed_fields:
+                self.send_error(400, "Campi stato non validi")
+                return
+            if "flightPlan" in incoming_state:
+                validate_flight_plan(incoming_state["flightPlan"])
+            if "annotations" in incoming_state:
+                validate_annotations(incoming_state["annotations"])
+            if "addAnnotations" in incoming_state:
+                validate_annotations(incoming_state["addAnnotations"])
+            if "clearTrack" in incoming_state and incoming_state["clearTrack"] is not True:
+                self.send_error(400, "Comando di cancellazione non valido")
+                return
+
+            with shared_state_lock:
+                updated_state = dict(shared_state)
+                if "flightPlan" in incoming_state:
+                    updated_state["flightPlan"] = incoming_state["flightPlan"]
+                if "annotations" in incoming_state:
+                    updated_state["annotations"] = incoming_state["annotations"]
+                if "addAnnotations" in incoming_state:
+                    additions = incoming_state["addAnnotations"]
+                    if len(updated_state["annotations"]) + len(additions) > 200:
+                        raise ValueError("Limite annotazioni raggiunto")
+                    updated_state["annotations"] = updated_state["annotations"] + additions
+                if incoming_state.get("clearTrack") is True:
+                    updated_state["track"] = []
+                updated_state["revision"] += 1
+                persist_shared_state(updated_state)
+                shared_state.update(updated_state)
+                response_data = json.dumps(shared_state, ensure_ascii=False).encode("utf-8")
+
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(response_data)))
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(response_data)
+        except (json.JSONDecodeError, UnicodeDecodeError, ValueError) as error:
+            self.send_error(400, f"Stato condiviso non valido: {error}")
+        except (BrokenPipeError, ConnectionAbortedError):
+            return
+        except Exception as error:
+            self.send_error(500, str(error))
+            self.log_message(f"Errore /shared-state POST: {error}")
 
     def log_message(self, format, *args):
         """Personalizza i messaggi di log"""

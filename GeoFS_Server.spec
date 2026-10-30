@@ -5,7 +5,7 @@ a = Analysis(
     ['server_gui.py'],
     pathex=[],
     binaries=[],
-    datas=[('dashboard.html', '.'), ('icon/GeoFS_Server.ico', 'icon'), ('icon/planefavicon.svg', 'icon')],
+    datas=[('dashboard.html', '.'), ('app_version.txt', '.'), ('icon/GeoFS_Server.ico', 'icon'), ('icon/planefavicon.svg', 'icon')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

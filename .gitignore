@@ -1,10 +1,14 @@
 .venv/
+.venv-linux/
 __pycache__/
 *.py[cod]
 build/
 dist/
+/github_publish/
+/app_version.txt
 
 # Local credentials and private keys
+.claude/
 .env
 .env.*
 !.env.example
